@@ -117,12 +117,14 @@ const Online: React.FC = () => {
     return (
         <>
             {isOpen && (
-                <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:right-0 md:w-64 md:bg-white md:border-l md:border-gray-200 z-40 shadow-lg">
+                <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:right-0 md:w-64 md:bg-white md:border-l md:border-gray-200 z-40 shadow-lg
+                dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none">
                     <div className="flex items-center justify-between px-4 py-4 border-b">
                         <span className="font-semibold text-lg">Friend</span>
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="text-gray-500 hover:text-black text-lg font-bold cursor-pointer"
+                            className="text-gray-500 hover:text-black text-lg font-bold cursor-pointer
+                            dark:hover:text-white transition-colors"
                             title="Thu nhỏ"
                         >
                             –
@@ -131,7 +133,8 @@ const Online: React.FC = () => {
                     {/* Loi moi ket ban */}
                     <button
                         onClick={handleOpenFriendRequests}
-                        className="flex items-center justify-between gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b border-gray-200 text-sm font-medium">
+                        className="flex items-center justify-between gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b border-gray-200 text-sm font-medium
+                        dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors">
                         <span>Lời mời kết bạn</span>
                         <span className="inline-flex items-center justify-center rounded-full bg-green-500 text-white text-xs font-semibold px-2 min-w-[20px] h-5">
                             1
@@ -146,7 +149,7 @@ const Online: React.FC = () => {
                                     </h2>
                                     <button
                                         onClick={() => setIsOpenModel(false)}
-                                        className="p-2 hover:bg-gray-100 rounded-full"
+                                        className="p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
                                     >
                                         x
                                     </button>
@@ -176,10 +179,10 @@ const Online: React.FC = () => {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => handleAcceptFriend(friend.friend_info.id)}
-                                                    className="px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 transition">
+                                                    className="px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 transition dark:bg-blue-600 dark:hover:bg-blue-700">
                                                     Chấp nhận
                                                 </button>
-                                                <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 transition">
+                                                <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 transition dark:bg-gray-600 dark:hover:bg-gray-500">
                                                     Xóa
                                                 </button>
                                             </div>
@@ -193,7 +196,7 @@ const Online: React.FC = () => {
                     <div className="flex-1 overflow-y-auto px-4 py-2">
                         <div
                             onClick={() => openChat({ id: 0, name: "Tất cả bạn bè", online: true, image: 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=400' })}
-                            className="flex items-center justify-between mb-3 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded">
+                            className="flex items-center justify-between mb-3 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors">
                             <div className="flex items-center gap-3">
                                 <img
                                     src='https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=400'
@@ -212,7 +215,7 @@ const Online: React.FC = () => {
                             <div
                                 key={friend.id}
                                 onClick={() => openChat({ id: friend.friend_info.id, name: friend.friend_info.first_name + ' ' + friend.friend_info.last_name, online: true, image: friend.friend_info.avatar ? friend.friend_info.avatar : 'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=400' })}
-                                className="flex items-center justify-between mb-3 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded"
+                                className="flex items-center justify-between mb-3 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
                                     <img
@@ -247,7 +250,8 @@ const Online: React.FC = () => {
                     {activeChats.map((user, index) => (
                         <div
                             key={user.id}
-                            className="absolute bottom-1 h-96 w-80 rounded-xl shadow-2xl border border-gray-200 bg-white flex flex-col overflow-hidden animate-slide-up-fade"
+                            className="absolute bottom-1 h-96 w-80 rounded-xl shadow-2xl border border-gray-200 bg-white flex flex-col overflow-hidden animate-slide-up-fade
+                            dark:border-gray-700 dark:bg-black dark:bg-opacity-900 dark:text-white"
                             style={{ right: `${index * 330 + 20}px`, zIndex: 50 }}
                         >
                             <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
@@ -263,28 +267,28 @@ const Online: React.FC = () => {
                                     ✕
                                 </button>
                             </div>
-                            <div className="flex-1 px-4 py-2 overflow-y-auto text-sm text-gray-700 space-y-3 bg-gray-50">
+                            <div className="flex-1 px-4 py-2 overflow-y-auto text-sm text-gray-700 space-y-3 bg-gray-50 dark:bg-gray-800 dark:text-gray-300">
                                 <div className="flex items-end gap-2">
                                     <img
                                         src={user.image}
                                         alt={user.name}
                                         className="w-6 h-6 rounded-full self-end"
                                     />
-                                    <div className="bg-white rounded-lg px-3 py-2 shadow text-gray-800 max-w-[70%]">
+                                    <div className="bg-white rounded-lg px-3 py-2 shadow text-gray-800 max-w-[70%] dark:bg-gray-600 dark:text-gray-300">
                                         <p className="leading-snug">Chào bạn!</p>
                                     </div>
                                 </div>
                                 <div className="flex justify-end">
-                                    <div className="bg-blue-500 text-white rounded-lg px-3 py-2 shadow max-w-[70%]">
+                                    <div className="bg-blue-500 text-white rounded-lg px-3 py-2 shadow max-w-[70%] dark:bg-blue-600">
                                         <p className="leading-snug">Hello!</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center px-3 py-2 bg-white border-t border-gray-200">
+                            <div className="flex items-center px-3 py-2 bg-white border-t border-gray-200 dark:bg-gray-800 dark:border-gray-600">
                                 <input
                                     type="text"
                                     placeholder="Nhập tin nhắn..."
-                                    className="flex-1 text-sm px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                    className="flex-1 text-sm px-3 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-400 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300"
                                 />
                                 <button className="ml-2 px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 transition">
                                     Gửi

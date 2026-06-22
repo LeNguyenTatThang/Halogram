@@ -1,4 +1,3 @@
-"use client"
 import React, { useState } from 'react'
 import type { Post as PostType } from '../../types/Post'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react'
@@ -22,7 +21,7 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
     }
 
     return (
-        <div className="bg-white border-b border-gray-200 pb-4">
+        <div className="bg-white border-b border-gray-200 pb-4 dark:bg-black dark:border-gray-700 dark:text-white">
             <div className="flex items-center justify-between p-4">
                 <div className="flex items-center space-x-3">
                     <img
@@ -47,8 +46,8 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                         <span className="text-xs text-gray-500">{post.timestamp}</span>
                     </div>
                 </div>
-                <button className="p-2 hover:bg-gray-100 rounded-full">
-                    <MoreHorizontal className="w-5 h-5 text-gray-600" />
+                <button className="p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors">
+                    <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
             </div>
             <div className="mb-2">
@@ -79,15 +78,15 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                                     }`}
                             />
                         </button>
-                        <button className="hover:bg-gray-100 p-2 rounded-full transition-colors">
-                            <MessageCircle className="w-6 h-6 text-gray-700" />
+                        <button className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-gray-700 dark:hover:bg-opacity-50">
+                            <MessageCircle className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                         </button>
-                        <button className="hover:bg-gray-100 p-2 rounded-full transition-colors">
-                            <Send className="w-6 h-6 text-gray-700" />
+                        <button className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-gray-700 dark:hover:bg-opacity-50">
+                            <Send className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                         </button>
                     </div>
-                    <button className="hover:bg-gray-100 p-2 rounded-full transition-colors">
-                        <Bookmark className="w-6 h-6 text-gray-700" />
+                    <button className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-gray-700 dark:hover:bg-opacity-50">
+                        <Bookmark className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                     </button>
                 </div>
 

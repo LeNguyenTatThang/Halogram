@@ -9,7 +9,7 @@ const Notifications = () => {
                 />
                 <div>
                     <p className="font-semibold">John Doe</p>
-                    <p className="text-gray-600">Liked your post</p>
+                    <p className="text-gray-600 dark:text-gray-400">Liked your post</p>
                 </div>
             </div>
             <div className="flex items-start gap-3">
@@ -20,7 +20,7 @@ const Notifications = () => {
                 />
                 <div>
                     <p className="font-semibold">Jane Doe</p>
-                    <p className="text-gray-600">Commented on your post</p>
+                    <p className="text-gray-600 dark:text-gray-400">Commented on your post</p>
                 </div>
             </div>
         </div>

@@ -14,9 +14,9 @@ interface FeedProps {
 
 const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryClick }) => {
     return (
-        <div className="max-w-md mx-auto bg-white">
+        <div className="max-w-md mx-auto bg-white dark:bg-black">
             <Stories stories={stories} onStoryClick={onStoryClick} />
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {posts.map((post) => (
                     <Post
                         key={post.id}

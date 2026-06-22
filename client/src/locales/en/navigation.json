@@ -4,5 +4,6 @@
     "create": "Create",
     "notifications": "Notifications",
     "profile": "Profile",
+    "settings": "Settings",
     "logout": "Logout"
 }

@@ -12,7 +12,7 @@ const Stories: React.FC<StoriesProps> = ({ stories, onStoryClick }) => {
     // const { user } = useAuth()
 
     return (
-        <div className="bg-white border-b border-gray-200 px-4 py-4">
+        <div className="bg-white border-b border-gray-200 px-4 py-4 dark:bg-black">
             <div className="flex space-x-4 overflow-x-auto">
                 <div className="flex-shrink-0 text-center">
                     <div className="relative">
@@ -29,7 +29,7 @@ const Stories: React.FC<StoriesProps> = ({ stories, onStoryClick }) => {
                             <Plus className="w-3 h-3 text-white" />
                         </div>
                     </div>
-                    <p className="text-xs text-gray-900 mt-1 truncate w-16">Your story</p>
+                    <p className="text-xs text-gray-900 mt-1 truncate w-16 dark:text-white">Your story</p>
                 </div>
 
                 {stories.map((story) => (
@@ -50,7 +50,7 @@ const Stories: React.FC<StoriesProps> = ({ stories, onStoryClick }) => {
                                 />
                             </div>
                         </div>
-                        <p className="text-xs text-gray-900 mt-1 truncate w-16">
+                        <p className="text-xs text-gray-900 mt-1 truncate w-16 dark:text-white">
                             {story.user.username}
                         </p>
                     </div>

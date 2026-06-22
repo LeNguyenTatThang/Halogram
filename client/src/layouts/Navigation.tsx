@@ -4,7 +4,9 @@ import {
     Search as SearchIcon,
     PlusSquare,
     Heart,
-    User
+    User,
+    Settings as SettingsIcon,
+    LogOut
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -13,6 +15,7 @@ import { useAuth } from '../hooks/useAuth'
 import Search from '../pages/search/Search'
 import CreatePost from '../pages/post/CreatePost'
 import Notifications from '../pages/notifications/Notifications'
+import Settings from '../pages/settings/Settings'
 
 const navItems = [
     {
@@ -41,6 +44,11 @@ const navItems = [
         icon: User,
         href: '/profile',
         type: 'link'
+    },
+    {
+        id: 'settings',
+        icon: SettingsIcon,
+        type: 'tab'
     }
 ] as const
 
@@ -67,7 +75,8 @@ const Navigation: React.FC<NavigationProps> = () => {
     return (
         <nav>
             {/* Desktop Sidebar */}
-            <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-64 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg">
+            <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-64 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg
+            dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none">
                 <div className="flex items-center justify-between px-4 py-4 border-b">
                     <div className="flex items-center">
                         <img
@@ -93,7 +102,7 @@ const Navigation: React.FC<NavigationProps> = () => {
 
                         const content = (
                             <div
-                                className="flex items-center justify-between mb-3 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded"
+                                className="flex items-center justify-between mb-3 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
                                 onClick={
                                     item.type === 'tab'
                                         ? () => openTab(item.id)
@@ -132,7 +141,7 @@ const Navigation: React.FC<NavigationProps> = () => {
                         onClick={handleLogout}
                     >
                         <div className="flex items-center gap-3">
-                            <User className="w-6 h-6" />
+                            <LogOut className="w-6 h-6" />
                             <span className="text-sm font-medium">
                                 {t('logout')}
                             </span>
@@ -142,8 +151,9 @@ const Navigation: React.FC<NavigationProps> = () => {
             </div>
 
             {/* Sidebar Panel */}
-            {['search', 'create', 'notifications'].includes(activeTab) && (
-                <div className="hidden md:block fixed left-64 w-80 h-full z-50 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            {['search', 'create', 'notifications', 'settings'].includes(activeTab) && (
+                <div className="hidden md:block fixed left-64 w-80 h-full z-50 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden flex flex-col
+                dark:bg-black dark:border-gray-700 dark:bg-opacity-900">
                     <div className="flex items-center justify-between px-4 py-2 border-b">
                         <span className="font-semibold text-sm capitalize">
                             {activeTab}
@@ -157,7 +167,7 @@ const Navigation: React.FC<NavigationProps> = () => {
                         </button>
                     </div>
 
-                    <div className="flex-1 px-4 py-2 overflow-y-auto bg-gray-50">
+                    <div className="flex-1 px-4 py-2 overflow-y-auto bg-gray-50 dark:bg-black dark:bg-opacity-900">
                         {activeTab === 'search' && (
                             <Search
                             />
@@ -174,6 +184,10 @@ const Navigation: React.FC<NavigationProps> = () => {
 
                         {activeTab === 'notifications' && (
                             <Notifications />
+                        )}
+
+                        {activeTab === 'settings' && (
+                            <Settings />
                         )}
                     </div>
                 </div>

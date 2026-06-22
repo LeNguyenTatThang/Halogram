@@ -1,0 +1,12 @@
+{
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "logout": "Logout",
+    "changePassword": "Change Password",
+    "deleteAccount": "Delete Account"
+}

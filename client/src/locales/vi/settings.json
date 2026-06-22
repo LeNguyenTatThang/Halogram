@@ -1,0 +1,12 @@
+{
+    "settings": "Cài đặt",
+    "language": "Ngôn ngữ",
+    "theme": "Chủ đề",
+    "dark": "Tối",
+    "light": "Sáng",
+    "notifications": "Thông báo",
+    "privacy": "Riêng tư",
+    "logout": "Đăng xuất",
+    "changePassword": "Đổi mật khẩu",
+    "deleteAccount": "Xóa tài khoản"
+}
