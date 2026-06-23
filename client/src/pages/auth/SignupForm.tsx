@@ -25,10 +25,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (password !== confirmPassword) {
-            alert(t('passwordMismatch') || 'Passwords do not match')
-            return
-        }
+        // if (password !== confirmPassword) {
+        //     alert(t('passwordMismatch') || 'Passwords do not match')
+        //     return
+        // }
         setIsLoading(true)
         try {
             // await signup(firstName, lastName, email, password, confirmPassword)
@@ -43,10 +43,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
             const data = await response.json()
             console.log(data)
             // Xử lý phản hồi từ server nếu cần thiết
-            if (data.status === 'success') {
-                alert(t('signupSuccess') || 'Sign up successful')
-                }
-            window.location.href = '/auth'
+            // if (data.status === 'success') {
+            //     alert(t('signupSuccess') || 'Sign up successful')
+            //     }
+            // window.location.href = '/auth'
             setEmail('')
             setPassword('')
             setFirstName('')
