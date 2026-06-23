@@ -20,6 +20,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     const [isLoading, setIsLoading] = useState(false)
 
     const { signup } = useAuth()
+    console.log('signup function:', signup) // Log the signup function to check if it's defined
     const {t} = useTranslation('auth')
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +31,21 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
         }
         setIsLoading(true)
         try {
-            await signup(firstName, lastName, email, password, confirmPassword)
+            // await signup(firstName, lastName, email, password, confirmPassword)
+            //POST http://localhost:3000/auth/sign-up
+            const response = await fetch('http://localhost:3000/auth/sign-up', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ firstName, lastName, email, password, confirmPassword }),
+            })
+            const data = await response.json()
+            console.log(data)
+            // Xử lý phản hồi từ server nếu cần thiết
+            if (data.status === 'success') {
+                alert(t('signupSuccess') || 'Sign up successful')
+                }
             window.location.href = '/auth'
             setEmail('')
             setPassword('')

@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id          String @id @default(cuid())
+  username    String @unique @db.VarChar(50)
+  displayName String
+  email       String @unique @db.VarChar(255)
+  password    String @db.VarChar(255)
+
+  firstName String
+  lastName  String
+
+  avatar String?
+  bio    String? @db.Text
+
+  isVerified Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  followers Follow[] @relation("followers")
+  following Follow[] @relation("following")
+
+  stories  Story[]
+  posts    Post[]
+  comments Comment[]
+
+  postLikes  PostLike[]
+  storyViews StoryView[]
+
+  @@map("users")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+
+  follower User @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  following User @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Story {
+  id    String @id @default(cuid())
+  image String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  storyViews StoryView[]
+
+  @@index([userId])
+  @@map("stories")
+}
+
+model Post {
+  id      String  @id @default(cuid())
+  image   String
+  caption String? @db.Text
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments Comment[]
+  likes    PostLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("posts")
+}
+
+model Comment {
+  id   String @id @default(cuid())
+  text String @db.Text
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model PostLike {
+  userId String
+  postId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("post_likes")
+}
+
+model StoryView {
+  userId  String
+  storyId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  viewedAt DateTime @default(now())
+
+  @@id([userId, storyId])
+  @@index([storyId])
+  @@map("story_views")
+}

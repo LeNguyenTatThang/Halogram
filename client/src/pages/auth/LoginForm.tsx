@@ -18,7 +18,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         e.preventDefault()
         setIsLoading(true)
         try {
-            await login(email, password)
+            // await login(email, password)
+            //POST http://localhost:3000/auth/login
+            const response = await fetch('http://localhost:3000/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            })
+            const data = await response.json()
+            console.log(data)
+            // Xử lý phản hồi từ server nếu cần thiết
+            login(data.data.user, data.data.access_token)
         } catch (error) {
             console.error('Login failed:', error)
         } finally {
