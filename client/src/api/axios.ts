@@ -12,7 +12,7 @@ export const configAxios = axios.create({
 
 configAxios.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('access_token')
+        const token = localStorage.getItem('accessToken')
         if (token) config.headers.Authorization = `Bearer ${token}`
         return config
     },
@@ -27,7 +27,7 @@ configAxios.interceptors.response.use(
             originalRequest._retry = true
             try {
                 const res = await refeshToken()
-                localStorage.setItem('access_token', res.access_token)
+                localStorage.setItem('accessToken', res.access_token)
                 return configAxios(originalRequest)
             } catch (err) {
                 return Promise.reject(err)

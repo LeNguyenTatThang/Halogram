@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_BASE_URL
 
 export interface LoginPayload {
     email: string
@@ -11,6 +11,7 @@ export interface RegisterPayload {
     first_name: string
     last_name: string
     email: string
+    username: string
     password: string
     password_confirmation: string
 }
@@ -20,7 +21,7 @@ export const loginUser = async (
     password: string
 ) => {
     return await axios.post(
-        `${API_URL}/login`,
+        `${API_URL}/auth/login`,
         {
             email,
             password,
@@ -29,18 +30,14 @@ export const loginUser = async (
 }
 
 export const register = async (
-    first_name: string,
-    last_name: string,
-    email: string,
-    password: string,
-    password_confirmation: string
-) => {
+first_name: string, last_name: string, email: string, username: string, password: string, password_confirmation: string) => {
     return await axios.post(
-        `${API_URL}/register`,
+        `${API_URL}/auth/sign-up`,
         {
             first_name,
             last_name,
             email,
+            username,
             password,
             password_confirmation,
         }
@@ -48,7 +45,7 @@ export const register = async (
 }
 
 export const getCurrentUser = async () => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem('accessToken')
 
     return await axios.get(
         `${API_URL}/me`,

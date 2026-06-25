@@ -28,22 +28,21 @@ export const AuthProvider = ({
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const token =
-                    localStorage.getItem('access_token')
+                const token = localStorage.getItem('accessToken')
 
                 if (!token) {
                     setLoading(false)
                     return
                 }
 
-                const response =
-                    await getCurrentUser()
+                const response = await getCurrentUser()
 
-                setUser(response.data)
+                setUser(response.data.data)
+                
             } catch (error) {
                 console.error(error)
                 localStorage.removeItem(
-                    'access_token'
+                    'accessToken'
                 )
 
                 setUser(null)
@@ -54,30 +53,30 @@ export const AuthProvider = ({
 
         fetchCurrentUser()
     }, [])
-
+    
     const login = async (
         email: string,
         password: string
     ) => {
-        const response =
-            await loginUser(email, password)
+        const response = await loginUser(email, password)
 
         localStorage.setItem(
-            'access_token',
-            response.data.access_token
+            'accessToken',
+            response.data.accessToken
         )
 
-        setUser(response.data.user)
+        setUser(response.data.data)
     }
 
     const logout = () => {
-        localStorage.removeItem('access_token')
+        localStorage.removeItem('accessToken')
         setUser(null)
     }
 
     const signup = async (
         first_name: string,
         last_name: string,
+        username: string,
         email: string,
         password: string,
         password_confirmation: string
@@ -86,6 +85,7 @@ export const AuthProvider = ({
             first_name,
             last_name,
             email,
+            username,
             password,
             password_confirmation
         )

@@ -1,52 +1,84 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { UserTransformer } from '../common/transformers/user.transformer';
 import { SignUpDto } from './dto/sign-up.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+import { SignInDto } from './dto/sign-in.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async login() {
-    const user = {
-      id: 1,
-      username: 'john_doe',
-      email: 'johndoe@example.com',
-      password: '123456',
-      avatar:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
-      bio: 'Just a regular guy who loves photography and travel.',
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+  async login(dto: SignInDto) {
+    console.log('JWT SERVICE:', this.jwtService);
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: dto.email }, { username: dto.username }],
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid password');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
     };
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const accessToken = await this.jwtService.signAsync(payload);
+    console.log('token: ', accessToken);
     return {
       message: 'Login successful',
+      accessToken,
       data: UserTransformer.transform(user),
     };
   }
 
   async signUp(dto: SignUpDto) {
-    const existsUser = await this.prisma.user.findUnique({
+    const existsUser = await this.prisma.user.findFirst({
       where: {
-        email: dto.email,
+        OR: [{ email: dto.email }, { username: dto.username }],
       },
     });
 
     if (existsUser) {
-      throw new Error('Email already exists');
+      throw new BadRequestException(
+        existsUser.email === dto.email
+          ? 'Email already exists'
+          : 'Username already exists',
+      );
     }
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         username: dto.username,
-        password: dto.password,
+        password: await this.hashPassword(dto.password),
         displayName: dto.username,
         firstName: dto.firstName,
         lastName: dto.lastName,
       },
     });
+
     return {
       message: 'Sign up successful',
       data: UserTransformer.transform(user),
     };
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
   }
 }

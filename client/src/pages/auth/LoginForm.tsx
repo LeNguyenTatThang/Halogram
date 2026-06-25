@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import Logo from '../../assets/Logo.png'
 interface LoginFormProps {
     onSwitchToSignup: () => void
 }
@@ -18,19 +19,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
         e.preventDefault()
         setIsLoading(true)
         try {
-            // await login(email, password)
-            //POST http://localhost:3000/auth/login
-            const response = await fetch('http://localhost:3000/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            })
-            const data = await response.json()
-            console.log(data)
-            // Xử lý phản hồi từ server nếu cần thiết
-            login(data.data.user, data.data.access_token)
+            await login(email, password)
         } catch (error) {
             console.error('Login failed:', error)
         } finally {
@@ -39,10 +28,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
     }
 
     return (
-        <div className="max-w-sm mx-auto bg-white border border-gray-300 rounded-lg p-8">
+        <div className="max-w-md w-full mx-auto bg-white border border-gray-300 rounded-lg p-8">
             <div className="text-center mb-8">
                 <img
-                    src="/logo.png"
+                    src={Logo}
                     alt="Logo"
                     width={48}
                     height={48}
@@ -55,7 +44,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
                 <div>
                     <input
                         type="text"
-                        placeholder={t('email')}
+                        placeholder={t('emailOrUsername')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

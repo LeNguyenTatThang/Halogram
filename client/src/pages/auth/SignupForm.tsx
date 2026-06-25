@@ -1,10 +1,8 @@
-
-'use client'
-
 import React, { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import Logo from '../../assets/Logo.png'
 
 interface SignupFormProps {
     onSwitchToLogin: () => void
@@ -14,6 +12,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
     const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -38,16 +37,20 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ firstName, lastName, email, password, confirmPassword }),
+                body: JSON.stringify({ firstName, lastName, email, username, password, confirmPassword }),
             })
             const data = await response.json()
             console.log(data)
+            if(data.success === true){
+                alert(t('signupSuccess') || 'Sign up successful')
+            }
             // Xử lý phản hồi từ server nếu cần thiết
             // if (data.status === 'success') {
             //     alert(t('signupSuccess') || 'Sign up successful')
             //     }
             // window.location.href = '/auth'
             setEmail('')
+            setUsername('')
             setPassword('')
             setFirstName('')
             setLastName('')
@@ -60,9 +63,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     }
 
     return (
-        <div className="max-w-sm mx-auto bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
+        <div className="max-w-md w-full mx-auto bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
             <div className="text-center mb-8">
-                <img src="/logo.png" alt="Logo" width={48} height={48} className="mx-auto mb-4" />
+                <img src={Logo} alt="Logo" width={48} height={48} className="mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-gray-900">Halogram</h1>
                 <p className="text-gray-500 mt-2">{t('registerTitle')}</p>
             </div>
@@ -93,6 +96,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
                     placeholder={t('email')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                />
+
+                <input 
+                    type="text"
+                    placeholder={t('username')}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                 />
