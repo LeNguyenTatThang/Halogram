@@ -46,9 +46,8 @@ first_name: string, last_name: string, email: string, username: string, password
 
 export const getCurrentUser = async () => {
     const token = localStorage.getItem('accessToken')
-
     return await axios.get(
-        `${API_URL}/me`,
+        `${API_URL}/auth/me`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,

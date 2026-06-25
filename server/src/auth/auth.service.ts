@@ -13,7 +13,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   async login(dto: SignInDto) {
-    console.log('JWT SERVICE:', this.jwtService);
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [{ email: dto.email }, { username: dto.username }],
@@ -38,7 +37,6 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const accessToken = await this.jwtService.signAsync(payload);
-    console.log('token: ', accessToken);
     return {
       message: 'Login successful',
       accessToken,
@@ -76,6 +74,20 @@ export class AuthService {
       message: 'Sign up successful',
       data: UserTransformer.transform(user),
     };
+  }
+
+  async getCurrentUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return UserTransformer.transform(user);
   }
 
   async hashPassword(password: string): Promise<string> {

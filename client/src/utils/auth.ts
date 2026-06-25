@@ -8,11 +8,12 @@ export const loginUser = async (email: string, password: string) => {
     return res.data
 }
 
-export const register = async (first_name: string, last_name: string, email: string, password: string, password_confirmation: string) => {
+export const register = async (first_name: string, last_name: string, email: string, username: string, password: string, password_confirmation: string) => {
     const res = await configAxios.post('/auth/sign-up', {
         first_name,
         last_name,
         email,
+        username,
         password,
         password_confirmation
     })
@@ -28,7 +29,7 @@ export const getCurrentUser = async () => {
     const res = await configAxios.get('/auth/detail-user',
         {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`
             },
         }
     )
