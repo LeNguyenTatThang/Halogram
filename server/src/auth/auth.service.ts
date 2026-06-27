@@ -5,7 +5,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
 import { JwtService } from '@nestjs/jwt';
-
+interface JwtPayload {
+  sub: string;
+  email: string;
+  username: string;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,35 +17,44 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   async login(dto: SignInDto) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: dto.email }, { username: dto.username }],
-      },
-    });
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          OR: [{ email: dto.email }, { username: dto.username }],
+        },
+      });
 
-    if (!user) {
-      throw new BadRequestException('User not found');
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+
+      if (!isPasswordValid) {
+        throw new BadRequestException('Invalid password');
+      }
+
+      const payload = {
+        sub: user.id,
+        email: user.email,
+        username: user.username,
+      };
+      const accessToken = await this.jwtService.signAsync(payload, {
+        expiresIn: '15m',
+      });
+      const refreshToken = await this.jwtService.signAsync(payload, {
+        secret: process.env.REFRESH_TOKEN_SECRET,
+        expiresIn: '7d',
+      });
+      return {
+        message: 'Login successful',
+        accessToken,
+        refreshToken,
+        data: UserTransformer.transform(user),
+      };
+    } catch (e) {
+      throw new BadRequestException(e);
     }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-
-    if (!isPasswordValid) {
-      throw new BadRequestException('Invalid password');
-    }
-
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      username: user.username,
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const accessToken = await this.jwtService.signAsync(payload);
-    return {
-      message: 'Login successful',
-      accessToken,
-      data: UserTransformer.transform(user),
-    };
   }
 
   async signUp(dto: SignUpDto) {
@@ -92,5 +105,32 @@ export class AuthService {
 
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(
+        refreshToken,
+        {
+          secret: process.env.REFRESH_TOKEN_SECRET,
+        },
+      );
+      const accessToken = await this.jwtService.signAsync(
+        {
+          sub: payload.sub,
+          email: payload.email,
+          username: payload.username,
+        },
+        {
+          expiresIn: '15m',
+        },
+      );
+
+      return {
+        accessToken,
+      };
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
   }
 }

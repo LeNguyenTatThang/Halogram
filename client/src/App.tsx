@@ -10,9 +10,26 @@ import { Navigate } from 'react-router-dom'
 import { currentUser, mockPosts, mockStories } from './store/mockData'
 import MainLayout from './layouts/MainLayout'
 import { useAuth } from './hooks/useAuth'
+import { useEffect, useState } from 'react'
+import type { Post } from './types/Post'
+import { getAllPost } from './utils/post'
 
 function App() {
     const {isAuthenticated} = useAuth()
+
+    const [posts, setPosts] = useState<Post[]>([])
+    useEffect(() => {
+        const getPost = async () => {
+            try {
+                const res = await getAllPost()
+                setPosts(res.posts)
+            } catch (err) {
+                console.error('Lỗi load posts:', err)
+            }
+        }
+
+        getPost()
+    }, [])
     
     return (
         <Router>
@@ -33,7 +50,7 @@ function App() {
                         path="/"
                         element={
                             <Feed
-                                posts={mockPosts}
+                                posts={posts}
                                 stories={mockStories}
                                 onLike={() => {}}
                                 onComment={() => {}}

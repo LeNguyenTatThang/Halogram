@@ -1,4 +1,3 @@
-"use client"
 import React, { useState } from 'react'
 import { Upload, X, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
@@ -6,27 +5,37 @@ import { createPost } from '../../utils/post'
 
 interface CreatePostProps {
     onClose: () => void;
-    onPost: (image: string | null, caption: string) => void;
+    onPost: (images: string[], caption: string) => void;
 }
 
 const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
     const [step, setStep] = useState<'upload' | 'caption'>('upload')
-    const [selectedImage, setSelectedImage] = useState<string | null>(null)
-    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [selectedImages, setSelectedImages] = useState<string[]>([])
+    const [imageFiles, setImageFiles] = useState<File[]>([])
     const [caption, setCaption] = useState('')
     const { user } = useAuth()
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0]
-        if (file) {
-            setImageFile(file)
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                setSelectedImage(e.target?.result as string)
-                setStep('caption')
-            }
-            reader.readAsDataURL(file)
-        }
+        const files = Array.from(event.target.files ?? [])
+        if (!files.length) return
+        setImageFiles(files)
+        Promise.all(
+            files.map(
+                (file) =>
+                    new Promise<string>((resolve) => {
+                        const reader = new FileReader()
+
+                        reader.onload = (e) => {
+                            resolve(e.target?.result as string)
+                        }
+
+                        reader.readAsDataURL(file)
+                    }),
+            ),
+        ).then((images) => {
+            setSelectedImages(images)
+            setStep('caption')
+        })
     }
 
     const handlePost = async () => {
@@ -35,14 +44,16 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
             formData.append('caption', caption)
             formData.append('status', '1')
 
-            if (imageFile) {
-                formData.append('thumbnail', imageFile)
+            if(imageFiles.length > 0){
+                imageFiles.forEach((file) => {
+                formData.append('images', file)})
+                console.log(formData)
             }
-            console.log(formData)
+            
             const response = await createPost(formData)
 
             console.log(response)
-            onPost(selectedImage, caption)
+            onPost(selectedImages, caption)
             onClose()
         } catch (error) {
             console.error(error)
@@ -92,6 +103,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                                 <input
                                     type="file"
                                     accept="image/*"
+                                    multiple
                                     onChange={handleImageUpload}
                                     className="hidden"
                                 />
@@ -108,8 +120,8 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                                         alt={`Sample ${index + 1}`}
                                         className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80"
                                         onClick={() => {
-                                            setSelectedImage(image)
-                                            setImageFile(null) // sample images không gửi file
+                                            setSelectedImages(images => [...images, image])
+                                            setImageFiles([]) // sample images không gửi file
                                             setStep('caption')
                                         }}
                                     />
@@ -139,13 +151,24 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                                     </div>
                                 </div>
 
-                                {selectedImage && (
+                                {selectedImages && (
                                     <div className="mt-4">
                                         <img
-                                            src={selectedImage}
+                                            src={selectedImages[0]}
                                             alt="Selected"
                                             className="w-full h-40 object-cover rounded-lg"
                                         />
+                                    </div>
+                                )}
+                                {selectedImages.length > 0 && (
+                                    <div className="grid grid-cols-2 gap-2 mt-4">
+                                        {selectedImages.map((image, index) => (
+                                            <img
+                                                key={index}
+                                                src={image}
+                                                className="w-full h-40 object-cover rounded-lg"
+                                            />
+                                        ))}
                                     </div>
                                 )}
                             </div>

@@ -1,11 +1,10 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-  moduleFormat = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -22,6 +21,8 @@ model User {
   bio    String? @db.Text
 
   isVerified Boolean @default(false)
+
+  refreshToken String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,20 +74,32 @@ model Story {
 
 model Post {
   id      String  @id @default(cuid())
-  image   String
   caption String? @db.Text
-
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  images PostImage[]
   comments Comment[]
   likes    PostLike[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("posts")
+}
+
+model PostImage {
+  id String @id @default(cuid())
+  url String @db.Text
+  postId String
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
+  @@map("post_images")
 }
 
 model Comment {

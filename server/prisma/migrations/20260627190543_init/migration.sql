@@ -4,11 +4,13 @@ CREATE TABLE `users` (
     `username` VARCHAR(50) NOT NULL,
     `displayName` VARCHAR(191) NOT NULL,
     `email` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
     `firstName` VARCHAR(191) NOT NULL,
     `lastName` VARCHAR(191) NOT NULL,
     `avatar` VARCHAR(191) NULL,
     `bio` TEXT NULL,
     `isVerified` BOOLEAN NOT NULL DEFAULT false,
+    `refreshToken` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -43,13 +45,25 @@ CREATE TABLE `stories` (
 -- CreateTable
 CREATE TABLE `posts` (
     `id` VARCHAR(191) NOT NULL,
-    `image` VARCHAR(191) NOT NULL,
     `caption` TEXT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    INDEX `posts_userId_idx`(`userId`),
+    INDEX `posts_createdAt_idx`(`createdAt` DESC),
+    INDEX `posts_userId_createdAt_idx`(`userId`, `createdAt` DESC),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `post_images` (
+    `id` VARCHAR(191) NOT NULL,
+    `url` TEXT NOT NULL,
+    `postId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `post_images_postId_idx`(`postId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -98,6 +112,9 @@ ALTER TABLE `stories` ADD CONSTRAINT `stories_userId_fkey` FOREIGN KEY (`userId`
 
 -- AddForeignKey
 ALTER TABLE `posts` ADD CONSTRAINT `posts_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `post_images` ADD CONSTRAINT `post_images_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `comments` ADD CONSTRAINT `comments_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

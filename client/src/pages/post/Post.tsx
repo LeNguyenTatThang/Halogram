@@ -20,99 +20,111 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
         }
     }
 
+    const comments = post.comments ?? []
+
     return (
         <div className="bg-white border-b border-gray-200 pb-4 dark:bg-black dark:border-gray-700 dark:text-white">
+
+            {/* HEADER */}
             <div className="flex items-center justify-between p-4">
                 <div className="flex items-center space-x-3">
                     <img
-                        src={post.user?.avatar ? post.user?.avatar : 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400'}
-                        alt={post.caption}
+                        src={
+                            post.user?.avatar ||
+                            'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400'
+                        }
+                        alt="User Avatar"
                         className="w-8 h-8 rounded-full object-cover"
-                        width={8}
-                        height={8}
                     />
+
                     <div>
                         <div className="flex items-center space-x-1">
-                            <span className="font-semibold text-sm">{post.user?.firstName} {post.user?.lastName}</span>
-
-                            <div className="w-3 h-3 pt-1 flex items-center justify-center">
-                                <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="text-blue-400" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill="none" d="M0 0h24v24H0z"></path>
-                                    <path d="m23 12-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z"></path>
-                                </svg>
-                            </div>
-
+                            <span className="font-semibold text-sm">
+                                {post.user?.displayName ?? post.user?.username}
+                            </span>
                         </div>
-                        <span className="text-xs text-gray-500">{post.timestamp}</span>
+
+                        <span className="text-xs text-gray-500">
+                            {new Date(post.createdAt).toLocaleString()}
+                        </span>
                     </div>
                 </div>
-                <button className="p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors">
-                    <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+
+                <button className="p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700 transition-colors">
+                    <MoreHorizontal className="w-5 h-5" />
                 </button>
             </div>
-            <div className="mb-2">
+
+            {/* CAPTION */}
+            <div className="mb-2 px-4">
                 <span className="text-sm">{post.caption}</span>
             </div>
 
-            {post.image && (
+            {/* IMAGES */}
+            {(post.images ?? []).length > 0 && (
                 <div className="relative">
+                    {(post.images ?? []).map((img) => (
                     <img
-                        src={post.image}
+                        key={img.id}
+                        src={img.url}
                         alt="Post"
                         className="w-full aspect-square object-cover"
-                        width={1000}
-                        height={1000}
                     />
+                    ))}
                 </div>
             )}
 
+            {/* ACTIONS */}
             <div className="px-4 pt-4">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-4">
-                        <button
-                            onClick={() => onLike(post.id)}
-                            className="hover:bg-gray-100 p-2 rounded-full -ml-2 transition-colors"
-                        >
+                        <button onClick={() => onLike(post.id)}>
                             <Heart
-                                className={`w-6 h-6 ${post.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-700'
-                                    }`}
+                                className={`w-6 h-6 ${
+                                    post.isLiked ? 'fill-red-500 text-red-500' : ''
+                                }`}
                             />
                         </button>
-                        <button className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-gray-700 dark:hover:bg-opacity-50">
-                            <MessageCircle className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                        </button>
-                        <button className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-gray-700 dark:hover:bg-opacity-50">
-                            <Send className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                        </button>
+
+                        <MessageCircle className="w-6 h-6" />
+                        <Send className="w-6 h-6" />
                     </div>
-                    <button className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-gray-700 dark:hover:bg-opacity-50">
-                        <Bookmark className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                    </button>
+
+                    <Bookmark className="w-6 h-6" />
                 </div>
 
+                {/* LIKES */}
                 <div className="mb-2">
-                    <span className="font-semibold text-sm">{post.likes} likes</span>
+                    <span className="font-semibold text-sm">
+                        {post._count?.likes ?? 0} likes
+                    </span>
                 </div>
 
-                {post.comments?.length > 0 && (
+                {/* COMMENTS */}
+                {comments.length > 0 && (
                     <div className="mb-3">
-                        {!showAllComments && post.comments.length > 2 && (
+
+                        {!showAllComments && comments.length > 2 && (
                             <button
                                 onClick={() => setShowAllComments(true)}
                                 className="text-sm text-gray-500 mb-2 hover:underline"
                             >
-                                View all {post.comments.length} comments
+                                View all {comments.length} comments
                             </button>
                         )}
-                        {(showAllComments ? post.comments : post.comments.slice(0, 2)).map((comment) => (
-                            <div key={comment.id} className="mb-1">
-                                <span className="font-semibold text-sm mr-2">{comment.user.username}</span>
-                                <span className="text-sm">{comment.text}</span>
+
+                        {(showAllComments ? comments : comments.slice(0, 2)).map((c) => (
+                            <div key={c.id} className="mb-1">
+                                <span className="font-semibold text-sm mr-2">
+                                    {c.user?.username}
+                                </span>
+                                <span className="text-sm">{c.text}</span>
                             </div>
                         ))}
                     </div>
                 )}
 
+                {/* COMMENT INPUT */}
                 <form onSubmit={handleSubmitComment} className="flex items-center space-x-3">
                     <input
                         type="text"
@@ -121,11 +133,9 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                         onChange={(e) => setComment(e.target.value)}
                         className="flex-1 text-sm border-none outline-none bg-transparent"
                     />
+
                     {comment.trim() && (
-                        <button
-                            type="submit"
-                            className="text-sm font-semibold text-blue-500 hover:text-blue-700"
-                        >
+                        <button type="submit" className="text-sm font-semibold text-blue-500">
                             Post
                         </button>
                     )}

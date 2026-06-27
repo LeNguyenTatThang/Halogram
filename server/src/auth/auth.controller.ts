@@ -39,7 +39,12 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async me(@Req() req: AuthRequest) {
-    console.log(req.user);
     return this.authService.getCurrentUser(req.user.id);
+  }
+
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Body() dto: { refreshToken: string }) {
+    return this.authService.refreshToken(dto.refreshToken);
   }
 }

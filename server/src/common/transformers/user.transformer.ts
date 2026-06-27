@@ -8,9 +8,17 @@ export class UserTransformer {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       email: user.email,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      avatarUrl: user.avatarUrl,
+      displayName: user.displayName,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      firstName: user.firstName,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      lastName: user.lastName,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      avatar: user.avatar,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       bio: user.bio,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      isVerified: user.isVerified,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       createdAt: user.createdAt,
     };

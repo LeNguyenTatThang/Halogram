@@ -1,20 +1,34 @@
-import type { User } from "./User"
-
-export interface PostComment {
-  id: string
-  user: User
-  text: string
-  timestamp: string
-  likes: number
-}
-
 export interface Post {
   id: string
-  user: User
-  image: string
-  caption: string
-  likes: number
-  comments: PostComment[]
-  timestamp: string
-  isLiked: boolean
+  caption: string | null
+
+  user?: {
+    id: string
+    username: string
+    displayName: string
+    avatar: string | null
+  }
+
+  images?: {
+    id: string
+    url: string
+  }[]
+
+  comments?: {
+    id: string
+    text: string
+    user: {
+      username: string
+    }
+  }[] | null
+
+  _count?: {
+    likes: number
+    comments: number
+  }
+
+  createdAt: string
+  updatedAt: string
+
+  isLiked?: boolean
 }
