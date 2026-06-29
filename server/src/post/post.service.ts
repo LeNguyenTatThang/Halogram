@@ -161,7 +161,6 @@ export class PostService {
           skip: 1,
         }),
       });
-      console.log(posts);
       const nextCursor =
         posts.length === limit ? posts[posts.length - 1].id : null;
       return {
@@ -174,8 +173,15 @@ export class PostService {
     }
   }
 
-  async detailPost(userId: string, postId: string) {
-    return this.prisma.post.findFirst({ where: { userId, id: postId } });
+  async detailPost(viewerId: string, postId: string) {
+    return this.prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        user: true,
+        comments: true,
+        likes: true,
+      },
+    });
   }
 
   async deletePost(userId: string, postId: string) {
