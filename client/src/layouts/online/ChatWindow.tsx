@@ -1,5 +1,6 @@
 import React from 'react'
 import type { User } from './mockData'
+import { motion } from "framer-motion"
 
 interface ChatWindowProps {
     user: User
@@ -9,7 +10,10 @@ interface ChatWindowProps {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
     return (
-        <div
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
             className="absolute bottom-1 h-96 w-80 rounded-xl shadow-2xl border border-gray-200 bg-white flex flex-col overflow-hidden animate-slide-up-fade dark:border-gray-700 dark:bg-black dark:bg-opacity-900 dark:text-white"
             style={{ right: `${index * 330 + 20}px`, zIndex: 50 }}
         >
@@ -49,7 +53,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     Gửi
                 </button>
             </div>
-        </div>
+        </motion.div>
     )
 }
 

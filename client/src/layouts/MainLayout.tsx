@@ -8,7 +8,7 @@ const MainLayout = () => {
             <Navigation locale="en" />
             <Online />
 
-            <div className="ml-64">
+            <div className="mx-auto">
                 <Outlet />
             </div>
         </>

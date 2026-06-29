@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import type { Post as PostType } from '../../types/Post'
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PostProps {
     post: PostType
@@ -11,6 +11,9 @@ interface PostProps {
 const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
     const [comment, setComment] = useState('')
     const [showAllComments, setShowAllComments] = useState(false)
+    const [activeImageIndex, setActiveImageIndex] = useState(0)
+    const touchStartX = useRef<number | null>(null)
+    const touchEndX = useRef<number | null>(null)
 
     const handleSubmitComment = (e: React.FormEvent) => {
         e.preventDefault()
@@ -21,6 +24,35 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
     }
 
     const comments = post.comments ?? []
+    const images = post.images ?? []
+    const hasMultipleImages = images.length > 1
+
+    const goToPreviousImage = () => {
+        setActiveImageIndex(prev => (prev === 0 ? images.length - 1 : prev - 1))
+    }
+
+    const goToNextImage = () => {
+        setActiveImageIndex(prev => (prev === images.length - 1 ? 0 : prev + 1))
+    }
+
+    const handleTouchStart = (event: React.TouchEvent) => {
+        touchStartX.current = event.touches[0].clientX
+    }
+
+    const handleTouchEnd = (event: React.TouchEvent) => {
+        touchEndX.current = event.changedTouches[0].clientX
+        if (touchStartX.current === null || touchEndX.current === null) return
+
+        const delta = touchStartX.current - touchEndX.current
+        if (delta > 50) {
+            goToNextImage()
+        } else if (delta < -50) {
+            goToPreviousImage()
+        }
+
+        touchStartX.current = null
+        touchEndX.current = null
+    }
 
     return (
         <div className="bg-white border-b border-gray-200 pb-4 dark:bg-black dark:border-gray-700 dark:text-white">
@@ -61,16 +93,53 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
             </div>
 
             {/* IMAGES */}
-            {(post.images ?? []).length > 0 && (
-                <div className="relative">
-                    {(post.images ?? []).map((img) => (
-                    <img
-                        key={img.id}
-                        src={img.url}
-                        alt="Post"
-                        className="w-full aspect-square object-cover"
-                    />
-                    ))}
+            {images.length > 0 && (
+                <div
+                    className="relative overflow-hidden bg-black"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    <div className="relative w-full aspect-square overflow-hidden">
+                        <img
+                            key={images[activeImageIndex]?.id}
+                            src={images[activeImageIndex]?.url}
+                            alt="Post"
+                            className="h-full w-full object-cover transition-all duration-300"
+                        />
+
+                        {hasMultipleImages && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={goToPreviousImage}
+                                    className="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={goToNextImage}
+                                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {hasMultipleImages && (
+                        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 backdrop-blur-sm">
+                            {images.map((_, index) => (
+                                <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => setActiveImageIndex(index)}
+                                    className={`h-1.75 w-1.75 rounded-full transition ${index === activeImageIndex ? 'bg-white' : 'bg-white/50'}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
