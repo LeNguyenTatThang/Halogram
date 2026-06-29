@@ -1,0 +1,75 @@
+import React from 'react'
+import type { FriendRequest } from './mockData'
+import { defaultAvatarUrl } from './mockData'
+
+interface FriendRequestModalProps {
+    isOpen: boolean
+    onClose: () => void
+    requests: FriendRequest[]
+    onAcceptFriend: (friendId: number) => void
+}
+
+const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
+    isOpen,
+    onClose,
+    requests,
+    onAcceptFriend,
+}) => {
+    if (!isOpen) {
+        return null
+    }
+
+    return (
+        <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[90vh] overflow-hidden dark:bg-gray-900">
+                <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                    <h2 className="text-lg font-semibold">Lời mời kết bạn</h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
+                    >
+                        x
+                    </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-4 py-2">
+                    {requests.length === 0 && (
+                        <p className="text-center text-gray-500">Không có lời mời kết bạn nào</p>
+                    )}
+
+                    {requests.map(friend => (
+                        <div
+                            key={friend.id}
+                            className="flex items-center justify-between mb-3 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src={friend.friend_info.avatar ?? defaultAvatarUrl}
+                                    alt={friend.friend_info.username}
+                                    width={32}
+                                    height={32}
+                                    className="w-8 h-8 rounded-full object-cover"
+                                />
+                                <span className="text-sm font-medium">
+                                    {friend.friend_info.first_name} {friend.friend_info.last_name}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => onAcceptFriend(friend.friend_info.id)}
+                                    className="px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 transition dark:bg-blue-600 dark:hover:bg-blue-700"
+                                >
+                                    Chấp nhận
+                                </button>
+                                <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300 transition dark:bg-gray-600 dark:hover:bg-gray-500">
+                                    Xóa
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default FriendRequestModal
