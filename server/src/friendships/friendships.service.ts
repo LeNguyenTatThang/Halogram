@@ -304,14 +304,14 @@ export class FriendshipsService {
             select: {
               id: true,
               username: true,
-              profileImage: true,
+              avatar: true,
             },
           },
           friend: {
             select: {
               id: true,
               username: true,
-              profileImage: true,
+              avatar: true,
             },
           },
         },
@@ -357,14 +357,14 @@ export class FriendshipsService {
             select: {
               id: true,
               username: true,
-              profileImage: true,
+              avatar: true,
             },
           },
           friend: {
             select: {
               id: true,
               username: true,
-              profileImage: true,
+              avatar: true,
             },
           },
         },
