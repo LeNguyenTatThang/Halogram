@@ -1,40 +1,42 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import AuthPage from './pages/auth/AuthPage'
 import Feed from './pages/post/Feed'
 import Profile from './pages/user/Profile'
 import Search from './pages/search/Search'
 import CreatePost from './pages/post/CreatePost'
 import Notifications from './pages/notifications/Notifications'
-import { Navigate } from 'react-router-dom'
-import { currentUser, mockPosts, mockStories } from './store/mockData'
 import MainLayout from './layouts/MainLayout'
 import { useAuth } from './hooks/useAuth'
-import { useEffect, useState } from 'react'
-import type { Post } from './types/Post'
+import { currentUser, mockPosts, mockStories } from './store/mockData'
 import { getAllPost } from './utils/post'
+import type { Post } from './types/Post'
+import NotFound from './pages/not-found/NotFound'
 
 function App() {
-    const {isAuthenticated} = useAuth()
+    const { isAuthenticated } = useAuth()
 
     const [posts, setPosts] = useState<Post[]>([])
+
     useEffect(() => {
+        if (!isAuthenticated) return
+
         const getPost = async () => {
             try {
                 const res = await getAllPost()
                 setPosts(res.posts)
             } catch (err) {
-                console.error('Lỗi load posts:', err)
+                console.error('Lỗi load posts:', err)
             }
         }
 
         getPost()
-    }, [])
-    
+    }, [isAuthenticated])
+
     return (
         <Router>
             <Routes>
-                {/* Không dùng layout */}
+                {/* Login */}
                 <Route
                     path="/login"
                     element={
@@ -44,8 +46,14 @@ function App() {
                     }
                 />
 
-                {/* Dùng layout */}
-                <Route element={<MainLayout />}>
+                {/* Protected Routes */}
+                <Route
+                    element={
+                        isAuthenticated
+                            ? <MainLayout />
+                            : <Navigate to="/login" replace />
+                    }
+                >
                     <Route
                         path="/"
                         element={
@@ -58,6 +66,7 @@ function App() {
                             />
                         }
                     />
+
                     <Route
                         path="/profile"
                         element={
@@ -69,10 +78,30 @@ function App() {
                             />
                         }
                     />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/create" element={<CreatePost onClose={() => {}} onPost={() => {}} />} />
-                    <Route path="/notifications" element={<Notifications />} />
+
+                    <Route
+                        path="/search"
+                        element={<Search />}
+                    />
+
+                    <Route
+                        path="/create"
+                        element={
+                            <CreatePost
+                                onClose={() => {}}
+                                onPost={() => {}}
+                            />
+                        }
+                    />
+
+                    <Route
+                        path="/notifications"
+                        element={<Notifications />}
+                    />
                 </Route>
+
+                {/* Route không tồn tại */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </Router>
     )
