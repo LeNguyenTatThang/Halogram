@@ -37,6 +37,9 @@ model User {
   postLikes  PostLike[]
   storyViews StoryView[]
 
+  sentRequests Friendship[] @relation("FriendRequests")
+  received    Friendship[]  @relation("FriendOf")
+
   @@map("users")
 }
 
@@ -148,4 +151,25 @@ model StoryView {
   @@id([userId, storyId])
   @@index([storyId])
   @@map("story_views")
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+
+  userId    String
+  friendId  String
+
+  status    FriendshipStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation("FriendRequests", fields: [userId], references: [id])
+  friend    User     @relation("FriendOf", fields: [friendId], references: [id])
 }
