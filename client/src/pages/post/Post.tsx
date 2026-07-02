@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import type { Post as PostType } from '../../types/Post'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { timeAgo } from '../../hooks/useTimeAgo'
 
 interface PostProps {
     post: PostType
@@ -77,7 +78,7 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                         </div>
 
                         <span className="text-xs text-gray-500">
-                            {new Date(post.createdAt).toLocaleString()}
+                            {timeAgo(post.createdAt)}
                         </span>
                     </div>
                 </div>
