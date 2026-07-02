@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserTransformer } from '../common/transformers/user.transformer';
 import { SignUpDto } from './dto/sign-up.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,44 +21,47 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
   async login(dto: SignInDto) {
-    try {
-      const user = await this.prisma.user.findFirst({
-        where: {
-          OR: [{ email: dto.email }, { username: dto.username }],
-        },
-      });
+    const user = await this.prisma.user.findFirst({
+      where: { email: dto.email, username: dto.username },
+    });
 
-      if (!user) {
-        throw new BadRequestException('User not found');
-      }
-
-      const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-
-      if (!isPasswordValid) {
-        throw new BadRequestException('Invalid password');
-      }
-
-      const payload = {
-        sub: user.id,
-        email: user.email,
-        username: user.username,
-      };
-      const accessToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '15m',
-      });
-      const refreshToken = await this.jwtService.signAsync(payload, {
-        secret: process.env.REFRESH_TOKEN_SECRET,
-        expiresIn: '7d',
-      });
-      return {
-        message: 'Login successful',
-        accessToken,
-        refreshToken,
-        data: UserTransformer.transform(user),
-      };
-    } catch (e) {
-      throw new BadRequestException(e);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      username: user.username,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.REFRESH_TOKEN_SECRET,
+      expiresIn: '7d',
+    });
+
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: hashedRefreshToken },
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      user: UserTransformer.transform(user),
+    };
   }
 
   async signUp(dto: SignUpDto) {

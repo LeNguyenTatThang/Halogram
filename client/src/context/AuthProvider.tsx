@@ -37,8 +37,7 @@ export const AuthProvider = ({
 
                 const response = await getCurrentUser()
 
-                setUser(response.data.data)
-                
+                setUser(response.data)
             } catch (error) {
                 console.error(error)
                 localStorage.removeItem(

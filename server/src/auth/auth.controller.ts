@@ -6,13 +6,14 @@ import {
   Post,
   Get,
   UseGuards,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Req } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request, Response } from 'express';
 interface AuthRequest extends Request {
   user: {
     id: string;
@@ -26,8 +27,25 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: SignInDto) {
-    return this.authService.login(dto);
+  async login(
+    @Body() dto: SignInDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(dto);
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/auth/refresh-token',
+    });
+
+    return {
+      message: 'Login successful',
+      accessToken: result.accessToken,
+      data: result.user,
+    };
   }
 
   @Post('sign-up')
