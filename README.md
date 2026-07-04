@@ -1,607 +1,296 @@
-# 📸 Halogram
+﻿# 📸 Halogram
 
-> A modern social media application inspired by Instagram, built with React, NestJS, Prisma, MySQL, and JWT Authentication.
+> Halogram là một ứng dụng mạng xã hội full-stack lấy cảm hứng từ Instagram. Frontend sử dụng React + Vite, backend sử dụng NestJS + Prisma, lưu trữ dữ liệu bằng MySQL và xác thực bằng JWT.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![NestJS](https://img.shields.io/badge/NestJS-11-red)
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748)
-![License](https://img.shields.io/badge/License-MIT-green)
+![License](https://img.shields.io/badge/License-ISC-green)
 
 ---
 
-# 📖 Introduction
+## 🚀 Tổng quan
 
-Halogram is a full-stack social media application inspired by Instagram.
+Halogram gồm hai ứng dụng tách biệt:
 
-Users can:
+- `client/` — frontend React + Vite
+- `server/` — backend NestJS + Prisma
 
-- Register and Login securely
-- Create posts with multiple images
-- Like and comment on posts
-- Send and accept friend requests
-- Browse friends' posts
-- Infinite scrolling feed
-- Upload avatars
-- View profiles
+Người dùng có thể:
+
+- Đăng ký và đăng nhập bảo mật
+- Tạo bài viết với nhiều hình ảnh
+- Thích / bỏ thích bài viết
+- Bình luận bài viết
+- Gửi, chấp nhận, huỷ yêu cầu kết bạn
+- Xem feed bạn bè và feed chính
+- Tìm kiếm người dùng
+- Upload avatar
+- Hệ thống story demo
+
+---
+
+## ✨ Tính năng chính
+
+### Authentication
+
+- Đăng ký tài khoản
+- Đăng nhập bằng email + password
 - JWT Authentication
-- Responsive UI
+- Các API bảo mật bằng JWT
+- Lấy thông tin user hiện tại `/me`
 
-The project is divided into two independent applications:
+### User
+
+- Xem profile
+- Cập nhật profile
+- Upload avatar
+- Hiển thị tên và username
+
+### Post
+
+- Tạo bài viết
+- Upload nhiều ảnh
+- Feed chính và feed bạn bè
+- Phân trang / infinite scroll
+
+### Like
+
+- Thích bài viết
+- Bỏ thích bài viết
+- Đếm số lượt thích
+
+### Comment
+
+- Bình luận bài viết
+- Hiển thị danh sách bình luận
+- Đếm số bình luận
+
+### Friendship
+
+- Gửi yêu cầu kết bạn
+- Chấp nhận yêu cầu
+- Từ chối / huỷ yêu cầu
+- Danh sách bạn bè
+
+### Stories
+
+- UI story
+- Xem story
+- Story hiện tại dùng mock data
+
+### Search
+
+- Tìm kiếm người dùng
+
+---
+
+## 🧱 Kiến trúc dự án
 
 ```
 halogram/
-│
-├── client/        React + Vite
-│
-└── server/        NestJS + Prisma
+├── client/        # Frontend React + Vite
+│   ├── public/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── features/
+│   │   ├── hooks/
+│   │   ├── layouts/
+│   ├── locales/
+│   │   ├── pages/
+│   │   ├── services/
+│   ├── store/
+│   ├── styles/
+│   ├── types/
+│   └── utils/
+│   ├── package.json
+│   └── tsconfig.json
+
+└── server/        # Backend NestJS + Prisma
+    ├── prisma/
+    │   ├── schema.prisma
+    │   └── seed.ts
+    ├── src/
+    │   ├── auth/
+    │   ├── cloudinary/
+    │   ├── comments/
+    │   ├── follows/
+    │   ├── friendships/
+    │   ├── likes/
+    │   ├── messages/
+    │   ├── notifications/
+    │   ├── post/
+    │   ├── prisma/
+    │   └── users/
+    ├── package.json
+    └── tsconfig.json
 ```
 
 ---
 
-# ✨ Features
+## 🛠 Công nghệ sử dụng
 
-## Authentication
+### Frontend
 
-- Register
-- Login
-- JWT Authentication
-- Protected Routes
-- Current User (/me)
-
----
-
-## User
-
-- View profile
-- Update profile
-- Upload avatar
-- Display name
-- Username
-
----
-
-## Friend
-
-- Send friend request
-- Accept request
-- Reject request
-- Cancel request
-- Friend list
-
----
-
-## Post
-
-- Create post
-- Multiple images
-- Feed
-- Friend feed
-- Pagination
-- Infinite Scroll
-
----
-
-## Like
-
-- Like post
-- Unlike post
-- Like count
-
----
-
-## Comment
-
-- Create comment
-- Display comments
-- Comment count
-
----
-
-## Stories
-
-- Story UI
-- Story Viewer
-
-(Currently mock data)
-
----
-
-## Search
-
-- Search users
-
----
-
-## Notifications
-
-UI completed.
-
-Backend coming soon.
-
----
-
-# 🛠 Tech Stack
-
-## Frontend
-
-- React
+- React 19
 - Vite
 - TypeScript
-- React Router
-- Axios
 - TailwindCSS
+- React Router DOM
+- Axios
+- Zustand
+- React Query
+- i18next
+- Framer Motion
 - Lucide React
 
----
+### Backend
 
-## Backend
-
-- NestJS
+- NestJS 11
 - Prisma ORM
+- MySQL
 - JWT
-- Passport
+- Passport JWT
 - bcrypt
-- MySQL
+- Cloudinary
+- Multer
+- cookie-parser
+- class-validator / class-transformer
 
 ---
 
-## Database
+## 🧩 Mô hình dữ liệu chính
 
-- MySQL
+Backend dùng Prisma schema với các model chính:
 
----
-
-# 📂 Project Structure
-
-```
-halogram
-│
-├── client
-│   ├── src
-│   │
-│   ├── components
-│   ├── hooks
-│   ├── layouts
-│   ├── pages
-│   ├── services
-│   ├── store
-│   ├── types
-│   ├── utils
-│   └── App.tsx
-│
-└── server
-    ├── prisma
-    │
-    ├── src
-    │
-    ├── auth
-    ├── comment
-    ├── friendship
-    ├── image
-    ├── like
-    ├── post
-    ├── upload
-    └── user
-```
+- `User`
+- `Post`
+- `PostImage`
+- `Comment`
+- `PostLike`
+- `Friendship`
+- `Follow`
+- `Story`
+- `StoryView`
 
 ---
 
-# 🗄 Database
+## 📦 Cài đặt và chạy
 
-Main Tables
-
-```
-User
-
-Post
-
-Image
-
-Comment
-
-Like
-
-Friendship
-```
-
-Relationship
-
-```
-User
- ├── Posts
- ├── Likes
- ├── Comments
- ├── Friendships
- └── Avatar
-```
-
----
-
-# 🚀 Installation
-
-## 1 Clone Repository
+### 1. Cài đặt dependencies toàn bộ workspace
 
 ```bash
-git clone https://github.com/LeNguyenTatThang/Halogram
+cd c:/project/halogram
+pnpm install
 ```
 
+### 2. Chạy đồng thời frontend và backend
+
+```bash
+pnpm dev
 ```
-cd halogram
-```
 
----
-
-# Backend Setup
-
-Go to server
+### 3. Chạy riêng backend
 
 ```bash
 cd server
+pnpm dev
 ```
 
-Install dependencies
-
-```bash
-npm install
-```
-
-Create .env
-
-```env
-DATABASE_URL="mysql://root:password@localhost:3306/halogram"
-
-JWT_SECRET=your_secret
-
-PORT=3000
-```
-
-Run migration
-
-```bash
-npx prisma migrate dev
-```
-
-Generate Prisma Client
-
-```bash
-npx prisma generate
-```
-
-Seed database (optional)
-
-```bash
-npm run seed
-```
-
-Start backend
-
-```bash
-npm run start:dev
-```
-
-Server
-
-```
-http://localhost:3000
-```
-
----
-
-# Frontend Setup
-
-Go to client
+### 4. Chạy riêng frontend
 
 ```bash
 cd client
+pnpm dev
 ```
 
-Install packages
+---
 
-```bash
-npm install
-```
+## 🔧 Biến môi trường
 
-Create .env
+### Backend (`server/.env`)
 
 ```env
-VITE_API_URL=http://localhost:3000
+DATABASE_URL="mysql://root:password@localhost:3306/halogram"
+JWT_SECRET=your_secret_key
+PORT=3000
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Run
-
-```bash
-npm run dev
-```
-
-Client
-
-```
-http://localhost:5173
-```
-
----
-
-# Authentication Flow
-
-```
-Login
-
-↓
-
-Server validates account
-
-↓
-
-JWT Token
-
-↓
-
-LocalStorage
-
-↓
-
-Axios Interceptor
-
-↓
-
-Authorization Header
-
-↓
-
-Protected API
-```
-
----
-
-# Feed Pagination
-
-Cursor Pagination
-
-```
-GET
-
-/post/list-post?cursor=postId
-```
-
-Response
-
-```json
-{
-  "success": true,
-  "posts": [],
-  "nextCursor": "post_id"
-}
-```
-
-Infinite Scroll
-
-```
-Load first page
-
-↓
-
-Render posts
-
-↓
-
-Reach bottom
-
-↓
-
-IntersectionObserver
-
-↓
-
-Fetch next page
-
-↓
-
-Append posts
-
-↓
-
-Repeat
-```
-
----
-
-# API Overview
-
-## Auth
-
-```
-POST /auth/register
-
-POST /auth/login
-
-GET /auth/me
-```
-
----
-
-## User
-
-```
-GET /user/profile
-
-PATCH /user/update
-
-POST /user/avatar
-```
-
----
-
-## Friend
-
-```
-POST /friend/request
-
-PATCH /friend/accept
-
-PATCH /friend/reject
-
-DELETE /friend/cancel
-
-GET /friend/list
-```
-
----
-
-## Post
-
-```
-POST /post/create
-
-GET /post/list-post
-
-GET /post/:id
-
-DELETE /post/:id
-```
-
----
-
-## Like
-
-```
-POST /like
-
-DELETE /like
-```
-
----
-
-## Comment
-
-```
-POST /comment
-
-GET /comment/:postId
-```
-
----
-
-# Screenshots
-
-```
-Login
-
-Feed
-
-Create Post
-
-Profile
-
-Stories
-
-Search
-
-Notifications
-```
-
-(Add screenshots here.)
-
----
-
-# Future Improvements
-
-- Realtime Chat
-- Story Upload
-- Story Expiration
-- Follow System
-- Video Posts
-- Saved Posts
-- Explore Page
-- Dark Mode
-- Notifications
-- Socket.io
-- Cloudinary
-- AWS S3
-- Docker
-- CI/CD
-- Unit Testing
-- E2E Testing
-
----
-
-# Scripts
-
-## Backend
-
-```bash
-npm run start:dev
-
-npm run build
-
-npm run lint
-
-npm run test
-
-npm run prisma:generate
-
-npm run prisma:migrate
-```
-
-## Frontend
-
-```bash
-npm run dev
-
-npm run build
-
-npm run preview
-
-npm run lint
-```
-
----
-
-# Environment Variables
-
-Backend
+### Frontend (`client/.env`)
 
 ```env
-DATABASE_URL=
-
-JWT_SECRET=
-
-PORT=
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
-Frontend
+> Lưu ý: frontend sử dụng `VITE_API_BASE_URL` trong `client/src/api/axios.ts`.
 
-```env
-VITE_API_URL=
+---
+
+## 🧪 Database và seed
+
+### Migrate schema
+
+```bash
+cd server
+pnpm exec prisma migrate dev
+```
+
+### Generate Prisma Client
+
+```bash
+cd server
+pnpm exec prisma generate
+```
+
+### Seed dữ liệu (tuỳ chọn)
+
+```bash
+cd server
+pnpm exec prisma db seed
 ```
 
 ---
 
-# Built With
+## 📌 Một số điểm quan trọng
 
-- React
-- Vite
-- TypeScript
-- TailwindCSS
-- NestJS
-- Prisma
-- MySQL
-- JWT
-- Axios
+- `server/src/main.ts` bật CORS cho `http://localhost:5173` và cho phép `credentials: true`.
+- `client/src/api/axios.ts` tự động gắn `Authorization: Bearer <token>` và xử lý refresh token khi gặp lỗi 401.
+- `server/src/cloudinary/cloudinary.service.ts` dùng Cloudinary để upload ảnh.
+- `server/src/auth` chứa các API đăng ký / đăng nhập / refresh JWT.
 
 ---
 
-# Author
+## 🧪 Scripts quan trọng
 
-**Dez**
+### Root
 
-Full Stack Developer
+- `pnpm dev` — chạy cùng lúc frontend và backend
 
-GitHub:
-https://github.com/LeNguyenTatThang
+### Client
+
+- `pnpm dev` — chạy frontend Vite
+- `pnpm build` — build frontend
+- `pnpm lint` — kiểm tra lint
+- `pnpm preview` — preview build
+
+### Server
+
+- `pnpm dev` — chạy NestJS ở chế độ watch
+- `pnpm build` — build backend
+- `pnpm start` — chạy app production
+- `pnpm lint` — kiểm tra lint
+- `pnpm test` — chạy test
+- `pnpm exec prisma migrate dev` — migrate schema
+- `pnpm exec prisma generate` — tạo Prisma Client
 
 ---
 
-# License
+## 📄 License
 
-This project is licensed under the MIT License.
+Dự án sử dụng license `ISC` theo cấu hình `package.json`.
