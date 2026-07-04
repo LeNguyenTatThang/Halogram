@@ -10,9 +10,9 @@ export const createPost = async (data: FormData) => {
     return res.data
 }
 
-export const getAllPost = async () => {
-    const res = await configAxios.get('/post/list-post', {
-        params: { userId: localStorage.getItem('userId') }
+export const getAllPost = async (cursor?: string) => {
+    const res = await configAxios.get("/post/list-post", {
+        params: { cursor }
     })
     return res.data
 }

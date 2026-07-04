@@ -22,14 +22,12 @@ export class PostService {
       if (!data.caption?.trim() && (!data.files || data.files.length === 0)) {
         throw new Error('Post must have a caption or an image');
       }
-      console.log(data.files);
       const imageUrls = data.files?.length
         ? await this.cloudinaryService.uploadImages(
             data.files,
             'halogram/posts',
           )
         : [];
-      console.log(imageUrls);
 
       const post = await this.prisma.post.create({
         data: {
@@ -53,11 +51,6 @@ export class PostService {
           images: true,
         },
       });
-      console.log(
-        imageUrls.map((url) => ({
-          url,
-        })),
-      );
 
       return {
         success: true,
@@ -131,8 +124,25 @@ export class PostService {
 
   async listPost(userId: string, cursor?: string, limit = 10) {
     try {
+      const friends = await this.prisma.friendship.findMany({
+        where: {
+          status: 'ACCEPTED',
+          OR: [{ userId }, { friendId: userId }],
+        },
+        select: {
+          userId: true,
+          friendId: true,
+        },
+      });
+      const friendIds = friends.map((f) =>
+        f.userId === userId ? f.friendId : f.userId,
+      );
       const posts = await this.prisma.post.findMany({
-        where: { userId },
+        where: {
+          userId: {
+            in: [userId, ...friendIds],
+          },
+        },
         include: {
           user: {
             select: {

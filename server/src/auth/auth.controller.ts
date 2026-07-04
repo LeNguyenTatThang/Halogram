@@ -7,6 +7,7 @@ import {
   Get,
   UseGuards,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -40,7 +41,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/auth/refresh-token',
+      path: '/auth/refresh',
     });
 
     return {
@@ -64,8 +65,15 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Body() dto: { refreshToken: string }) {
-    return this.authService.refreshToken(dto.refreshToken);
+  async refreshToken(@Req() req: Request) {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+    if (typeof refreshToken !== 'string') {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+    return this.authService.refreshToken(refreshToken);
   }
 
   @Post('logout')

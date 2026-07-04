@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AuthPage from './pages/auth/AuthPage'
 import Feed from './pages/post/Feed'
 import Profile from './pages/user/Profile'
@@ -14,9 +14,10 @@ import type { Post } from './types/Post'
 import NotFound from './pages/not-found/NotFound'
 
 function App() {
-    const { isAuthenticated } = useAuth()
-
+    const { isAuthenticated, loading  } = useAuth()
     const [posts, setPosts] = useState<Post[]>([])
+    const [nextCursor, setNextCursor] = useState<string | undefined>()
+    const [loadingMore, setLoadingMore] = useState(false)
 
     useEffect(() => {
         if (!isAuthenticated) return
@@ -25,6 +26,7 @@ function App() {
             try {
                 const res = await getAllPost()
                 setPosts(res.posts)
+                setNextCursor(res.nextCursor)
             } catch (err) {
                 console.error('Lỗi load posts:', err)
             }
@@ -32,6 +34,29 @@ function App() {
 
         getPost()
     }, [isAuthenticated])
+
+    const fetchMorePosts = useCallback(async () => {
+        if (!nextCursor || loadingMore) return
+
+        try {
+            setLoadingMore(true)
+
+            const res = await getAllPost(nextCursor)
+
+            setPosts(prev => {
+                return [...prev, ...res.posts]
+            })
+
+            setNextCursor(res.nextCursor)
+        } finally {
+            setLoadingMore(false)
+        }
+    }, [nextCursor, loadingMore])
+
+    
+    if (loading) {
+        return <div>Loading...</div>
+    }
 
     return (
         <Router>
@@ -63,6 +88,8 @@ function App() {
                                 onLike={() => {}}
                                 onComment={() => {}}
                                 onStoryClick={() => {}}
+                                nextCursor={nextCursor}
+                                fetchMorePosts={fetchMorePosts}
                             />
                         }
                     />

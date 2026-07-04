@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import type { SettingsPageProps } from './types'
 
-const Notification = ({ onBack }: SettingsPageProps) => {
-    console.log(onBack)
+const Notification = ( ) => {
+
     const [enabled, setEnabled] =
         useState(true)
 

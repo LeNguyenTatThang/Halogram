@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -56,8 +57,11 @@ export class PostController {
 
   @Get('list-post')
   @UseGuards(JwtAuthGuard)
-  async listPost(@CurrentUser() user: JwtUser) {
-    return this.postService.listPost(user.id);
+  async listPost(
+    @CurrentUser() user: JwtUser,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.postService.listPost(user.id, cursor);
   }
 
   @Post('detail-post/:id')

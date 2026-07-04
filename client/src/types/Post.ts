@@ -2,7 +2,7 @@ export interface Post {
   id: string
   caption: string | null
 
-  user?: {
+  user: {
     id: string
     username: string
     displayName: string

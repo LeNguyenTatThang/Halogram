@@ -47,7 +47,6 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
             if(imageFiles.length > 0){
                 imageFiles.forEach((file) => {
                 formData.append('images', file)})
-                console.log(formData)
             }
             
             const response = await createPost(formData)

@@ -16,12 +16,12 @@ export const cancelFriend = async (friendId: number) => {
 }
 
 export const listFriends = async () => {
-    const res = await configAxios.get('/friendships/list-friends')
+    const res = await configAxios.get('/friendships/friendships')
     return res.data
 }
 
 export const listFriendRequests = async () => {
-    const res = await configAxios.get('/friendships/list-friend-requests')
+    const res = await configAxios.get('/friendships/friendship-requests')
     return res.data
 }
 

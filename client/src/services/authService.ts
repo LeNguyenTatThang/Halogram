@@ -1,6 +1,4 @@
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_BASE_URL
+import configAxios from '../api/axios';
 
 export interface LoginPayload {
     email: string
@@ -20,8 +18,8 @@ export const loginUser = async (
     email: string,
     password: string
 ) => {
-    return await axios.post(
-        `${API_URL}/auth/login`,
+    return await configAxios.post(
+        '/auth/login',
         {
             email,
             password,
@@ -31,8 +29,8 @@ export const loginUser = async (
 
 export const register = async (
 first_name: string, last_name: string, email: string, username: string, password: string, password_confirmation: string) => {
-    return await axios.post(
-        `${API_URL}/auth/sign-up`,
+    return await configAxios.post(
+        '/auth/sign-up',
         {
             first_name,
             last_name,
@@ -46,8 +44,8 @@ first_name: string, last_name: string, email: string, username: string, password
 
 export const getCurrentUser = async () => {
     const token = localStorage.getItem('accessToken')
-    return await axios.get(
-        `${API_URL}/auth/me`,
+    return await configAxios.get(
+        '/auth/me',
         {
             headers: {
                 Authorization: `Bearer ${token}`,

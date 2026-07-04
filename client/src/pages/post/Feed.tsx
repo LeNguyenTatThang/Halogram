@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { Post as PostType } from '../../types/Post'
 import type { Story } from '../../types/Story'
 import  Post from './Post'
@@ -8,12 +8,39 @@ import SuggestedUsers from './SuggestedUsers'
 interface FeedProps {
     posts: PostType[]
     stories: Story[]
+
+    nextCursor?: string
+    fetchMorePosts?: () => void
+
     onLike: (postId: string) => void
     onComment: (postId: string, comment: string) => void
     onStoryClick: (story: Story) => void
 }
 
-const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryClick }) => {
+const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryClick, nextCursor, fetchMorePosts }) => {
+    const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+    useEffect(() =>{
+        if (!loadMoreRef.current) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && nextCursor && fetchMorePosts) {
+                    fetchMorePosts?.()
+                }
+            },
+            {
+                threshold: 1,
+            }
+        )
+
+        if (!loadMoreRef.current) {
+            observer.disconnect()
+        }
+
+        observer.observe(loadMoreRef.current)
+        return () => observer.disconnect()
+    }, [nextCursor, fetchMorePosts])
     return (
         <div className="ml-10 flex max-w-7xl items-start justify-center gap-8 px-4">
             {/* Sidebar */}
@@ -37,8 +64,13 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
                         />
                     ))}
                 </div>
+                <div 
+                    ref={loadMoreRef}
+                    className='h-16 flex items-center justify-center text-gray-500 dark:text-gray-400'>
+                        {nextCursor ? 'Loading more posts...' : 'No more posts'}
+                </div>
             </div>
-
+            
             
         </div>
     )

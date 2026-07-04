@@ -21,10 +21,9 @@ const Profile: React.FC<ProfileProps> = ({ user, posts, isOwnProfile, onFollow }
     ]
 
     const userPosts = posts.filter(post => post.user.id === user.id)
-    console.log('User Posts:', userPosts)
 
     return (
-        <div className="bg-white min-h-screen dark:bg-black">
+        <div className="px-18 mx-auto bg-white min-h-screen dark:bg-black">
             <div className="px-4 py-6">
                 <div className="flex items-center space-x-6 mb-6">
                     <img
@@ -90,19 +89,33 @@ const Profile: React.FC<ProfileProps> = ({ user, posts, isOwnProfile, onFollow }
 
             <div className="p-1">
                 {activeTab === 'posts' && (
-                    // <div className="grid grid-cols-3 gap-1">
-                    //     {userPosts.map((post) => (
-                    //         <div key={post.id} className="aspect-square">
-                    //             <img
-                    //                 src={post.image}
-                    //                 alt="Post"
-                    //                 className="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                    //             />
-                    //         </div>
-                    //     ))}
-                    // </div>
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 dark:text-gray-400">No tagged posts yet</p>
+                    <div className="grid grid-cols-3 gap-1">
+                        {userPosts.length > 0 ? (
+                            userPosts.map((post) => (
+                                <div
+                                    key={post.id}
+                                    className="aspect-square bg-gray-100 dark:bg-gray-800"
+                                >
+                                    {post.images?.[0] ? (
+                                        <img
+                                            src={post.images[0].url}
+                                            alt={post.caption ?? 'Post'}
+                                            className="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-gray-400">
+                                            No image
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-3 text-center py-12">
+                                <p className="text-gray-500 dark:text-gray-400">
+                                    No posts yet
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
                 {activeTab === 'tagged' && (
