@@ -42,6 +42,7 @@ export class AuthService {
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
       expiresIn: '15m',
     });
 
@@ -122,6 +123,18 @@ export class AuthService {
           secret: process.env.REFRESH_TOKEN_SECRET,
         },
       );
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
+      if (!user || !user.refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const isMatching = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isMatching) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
       const accessToken = await this.jwtService.signAsync(
         {
           sub: payload.sub,
@@ -129,6 +142,7 @@ export class AuthService {
           username: payload.username,
         },
         {
+          secret: process.env.JWT_SECRET,
           expiresIn: '15m',
         },
       );
@@ -136,8 +150,15 @@ export class AuthService {
       return {
         accessToken,
       };
-    } catch (e) {
-      throw new BadRequestException(e);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  async logout(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
   }
 }

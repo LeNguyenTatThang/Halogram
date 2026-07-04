@@ -37,7 +37,7 @@ export const getCurrentUser = async () => {
 }
 
 export const refeshToken = async () => {
-    const res = await configAxios.post('/auth/refresh-token'
+    const res = await configAxios.post('/auth/refresh'
     )
 
     return res.data
