@@ -1,11 +1,13 @@
 import React from 'react'
-import type { User } from './mockData'
+import type { FriendUser } from '../../types/Friend'
 import { motion } from "framer-motion"
+const defaultAvatarUrl =
+    'https://ui-avatars.com/api/?name=User&background=random'
 
 interface ChatWindowProps {
-    user: User
+    user: FriendUser
     index: number
-    onClose: (id: number) => void
+    onClose: (id: string) => void
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
@@ -19,8 +21,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
         >
             <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
                 <div className="flex items-center gap-2">
-                    <img src={user.image} alt={user.name} className="w-8 h-8 rounded-full border-2 border-white" />
-                    <span className="font-semibold text-sm">{user.name}</span>
+                    <img src={user.avatar || defaultAvatarUrl} alt={user.username} className="w-8 h-8 rounded-full border-2 border-white" />
+                    <span className="font-semibold text-sm">{user.username}</span>
                 </div>
                 <button
                     onClick={() => onClose(user.id)}
@@ -32,7 +34,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
             </div>
             <div className="flex-1 px-4 py-2 overflow-y-auto text-sm text-gray-700 space-y-3 bg-gray-50 dark:bg-gray-800 dark:text-gray-300">
                 <div className="flex items-end gap-2">
-                    <img src={user.image} alt={user.name} className="w-6 h-6 rounded-full self-end" />
+                    <img src={user.avatar || defaultAvatarUrl} alt={user.username} className="w-6 h-6 rounded-full self-end" />
                     <div className="bg-white rounded-lg px-3 py-2 shadow text-gray-800 max-w-[70%] dark:bg-gray-600 dark:text-gray-300">
                         <p className="leading-snug">Chào bạn!</p>
                     </div>

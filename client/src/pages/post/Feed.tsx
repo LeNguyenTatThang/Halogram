@@ -42,9 +42,9 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
         return () => observer.disconnect()
     }, [nextCursor, fetchMorePosts])
     return (
-        <div className="ml-10 flex max-w-7xl items-start justify-center gap-8 px-4">
+        <div className="ml-10 mx-auto flex justify-center min-w-2xl:max-w-7xl max-w-7xl items-start justify-center gap-8 px-4">
             {/* Sidebar */}
-            <aside className="hidden lg:block w-80 sticky top-6">
+            <aside className="2xl:block hidden w-80 sticky top-6">
                 <SuggestedUsers />
             </aside>
             {/* Feed */}
@@ -70,8 +70,6 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
                         {nextCursor ? 'Loading more posts...' : 'No more posts'}
                 </div>
             </div>
-            
-            
         </div>
     )
 }

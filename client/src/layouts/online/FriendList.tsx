@@ -1,10 +1,10 @@
 import React from 'react'
-import type { FriendRequest, User } from './mockData'
-import { defaultAvatarUrl } from './mockData'
+import type { Friend, FriendUser } from '../../types/Friend' 
+import Logo from '../../assets/logo.png'
 
 interface FriendListProps {
-    friends: FriendRequest[]
-    onOpenChat: (user: User) => void
+    friends: Friend[]
+    onOpenChat: (user: FriendUser) => void
 }
 
 const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat }) => {
@@ -13,23 +13,22 @@ const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat }) => {
             <button
                 onClick={() =>
                     onOpenChat({
-                        id: 0,
-                        name: 'Tất cả bạn bè',
-                        online: true,
-                        image: defaultAvatarUrl,
+                        id: 'all',
+                        username: 'AI Halogram',
+                        avatar: Logo,
                     })
                 }
                 className="flex items-center justify-between mb-3 w-full cursor-pointer hover:bg-gray-100 px-2 py-1 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
             >
                 <div className="flex items-center gap-3">
                     <img
-                        src={defaultAvatarUrl}
-                        alt="Tất cả bạn bè"
+                        src={Logo}
+                        alt="AI Halogram"
                         width={32}
                         height={32}
                         className="w-8 h-8 rounded-full object-cover"
                     />
-                    <span className="text-sm font-medium">Tất cả bạn bè</span>
+                    <span className="text-sm font-medium">AI Halogram</span>
                 </div>
                 <span className="h-3 w-3 rounded-full bg-green-500"></span>
             </button>
@@ -39,24 +38,23 @@ const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat }) => {
                     key={friend.id}
                     onClick={() =>
                         onOpenChat({
-                            id: friend.friend_info.id,
-                            name: `${friend.friend_info.first_name} ${friend.friend_info.last_name}`,
-                            online: true,
-                            image: friend.friend_info.avatar ?? defaultAvatarUrl,
+                            id: friend.friend.id,
+                            username: `${friend.friend.username}`,
+                            avatar: friend.friend.avatar ?? Logo,
                         })
                     }
                     className="flex items-center justify-between mb-3 w-full cursor-pointer hover:bg-gray-100 px-2 py-1 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
                         <img
-                            src={friend.friend_info.avatar ?? defaultAvatarUrl}
-                            alt={friend.friend_info.username}
+                            src={friend.friend.avatar ?? Logo}
+                            alt={friend.friend.username}
                             width={32}
                             height={32}
                             className="w-8 h-8 rounded-full object-cover"
                         />
                         <span className="text-sm font-medium">
-                            {friend.friend_info.first_name} {friend.friend_info.last_name}
+                            {friend.friend.username}
                         </span>
                     </div>
                     <span className="h-3 w-3 rounded-full bg-green-500"></span>

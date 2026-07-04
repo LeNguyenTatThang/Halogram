@@ -1,16 +1,16 @@
 import configAxios from "../api/axios"
 
-export const addFriend = async (friendId: number) => {
+export const addFriend = async (friendId: string) => {
     const res = await configAxios.post('/friendships/add-friend', { friend_id: friendId })
     return res.data
 }
 
-export const acceptFriend = async (friendId: number) => {
+export const acceptFriend = async (friendId: string) => {
     const res = await configAxios.post('/friendships/accept-friend', { friend_id: friendId })
     return res.data
 }
 
-export const cancelFriend = async (friendId: number) => {
+export const cancelFriend = async (friendId: string) => {
     const res = await configAxios.post('/friendships/cancel-friend', { friend_id: friendId })
     return res.data
 }
@@ -30,7 +30,7 @@ export const listResponseFriendRequests = async () => {
     return res.data
 }
 
-export const blockFriend = async (friendId: number) => {
+export const blockFriend = async (friendId: string) => {
     const res = await configAxios.post('/friendships/block-friend', { friend_id: friendId })
     return res.data
 }
@@ -40,12 +40,12 @@ export const listBlockedFriends = async () => {
     return res.data
 }
 
-export const unblockFriend = async (friendId: number) => {
+export const unblockFriend = async (friendId: string) => {
     const res = await configAxios.post('/friendships/unblock-friend', { friend_id: friendId })
     return res.data
 }
 
-export const removeFriend = async (friendId: number) => {
+export const removeFriend = async (friendId: string) => {
     const res = await configAxios.post('/friendships/remove-friend', { friend_id: friendId })
     return res.data
 }
