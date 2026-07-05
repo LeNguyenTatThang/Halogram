@@ -8,14 +8,14 @@ export const loginUser = async (email: string, password: string) => {
     return res.data
 }
 
-export const register = async (first_name: string, last_name: string, email: string, username: string, password: string, password_confirmation: string) => {
+export const register = async (firstName: string, lastName: string, email: string, username: string, password: string, passwordConfirmation: string) => {
     const res = await configAxios.post('/auth/sign-up', {
-        first_name,
-        last_name,
+        firstName,
+        lastName,
         email,
         username,
         password,
-        password_confirmation
+        passwordConfirmation
     })
     return res.data
 }

@@ -6,12 +6,12 @@ export interface LoginPayload {
 }
 
 export interface RegisterPayload {
-    first_name: string
-    last_name: string
+    firstName: string
+    lastName: string
     email: string
     username: string
     password: string
-    password_confirmation: string
+    passwordConfirmation: string
 }
 
 export const loginUser = async (
@@ -28,16 +28,16 @@ export const loginUser = async (
 }
 
 export const register = async (
-first_name: string, last_name: string, email: string, username: string, password: string, password_confirmation: string) => {
+firstName: string, lastName: string, email: string, username: string, password: string, passwordConfirmation: string) => {
     return await configAxios.post(
         '/auth/sign-up',
         {
-            first_name,
-            last_name,
+            firstName,
+            lastName,
             email,
             username,
             password,
-            password_confirmation,
+            passwordConfirmation,
         }
     )
 }

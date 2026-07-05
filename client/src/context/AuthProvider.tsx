@@ -73,20 +73,20 @@ export const AuthProvider = ({
     }
 
     const signup = async (
-        first_name: string,
-        last_name: string,
-        username: string,
+        firstName: string,
+        lastName: string,
         email: string,
+        username: string,
         password: string,
-        password_confirmation: string
+        passwordConfirmation: string
     ) => {
         await register(
-            first_name,
-            last_name,
+            firstName,
+            lastName,
             email,
             username,
             password,
-            password_confirmation
+            passwordConfirmation
         )
     }
 

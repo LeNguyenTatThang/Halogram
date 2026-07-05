@@ -1,107 +1,119 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { searchUsers } from '../../utils/search'
+import SearchBar from './components/SearchBar'
+import SearchSkeletonList from './components/SearchSkeletonList'
+import SearchUserItem from './components/SearchUserItem'
+import type { SearchUser } from '../../types/Search'
 
-import Feed from '../../pages/post/Feed'
+const Search = () => {
+    const [keyword, setKeyword] = useState('')
+    const [users, setUsers] = useState<SearchUser[]>([])
+    const [loading, setLoading] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [nextCursor, setNextCursor] = useState<string | null>(null)
+    const [hasMore, setHasMore] = useState(false)
 
-import { mockStories, currentUser } from '../../store/mockData'
-import { getAllPost } from '../../utils/post'
+    const resultsContainerRef = useRef<HTMLDivElement>(null)
 
-import type { Post } from '../../types/Post'
-import type { Story } from '../../types/Story'
+    const loadUsers = useCallback(
+        async (
+            keyword: string,
+            cursor: string | null = null,
+            append = false
+        ) => {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                append ? setLoadingMore(true) : setLoading(true)
 
-const Home = () => {
-    const navigate = useNavigate()
-    const { isAuthenticated } = useAuth()
+                const res = await searchUsers(keyword, cursor)
 
-    const [posts, setPosts] = useState<Post[]>([])
-    const [stories] = useState<Story[]>(mockStories)
-    const [activeTab] = useState('home')
+                const newUsers: SearchUser[] = res.data.users
 
+                if (append) {
+                    setUsers((prev) => [...prev, ...newUsers])
+                } else {
+                    setUsers(newUsers)
+                }
+
+                setNextCursor(res.data.nextCursor)
+                setHasMore(!!res.data.nextCursor)
+            } catch (err) {
+                console.error(err)
+            } finally {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                append ? setLoadingMore(false) : setLoading(false)
+            }
+        },
+        []
+    )
+
+    // Search với debounce
     useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login', { replace: true })
+        const q = keyword.trim()
+
+        if (!q) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setUsers([])
+            setNextCursor(null)
+            setHasMore(false)
             return
         }
 
-        const fetchPosts = async () => {
-            try {
-                const res = await getAllPost()
-                setPosts(res.data)
-            } catch (err) {
-                console.error('Lỗi load posts:', err)
-            }
+        const timer = setTimeout(() => {
+            loadUsers(q)
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [keyword, loadUsers])
+
+    const handleScroll = useCallback(() => {
+        const node = resultsContainerRef.current
+
+        if (!node || !hasMore || loading || loadingMore || !nextCursor) {
+            return
         }
 
-        fetchPosts()
-    }, [isAuthenticated, navigate])
+        const distanceToBottom =
+            node.scrollHeight - (node.scrollTop + node.clientHeight)
 
-    if (!isAuthenticated) {
-        return <div>Loading...</div>
-    }
+        if (distanceToBottom <= 120) {
+            loadUsers(keyword.trim(), nextCursor, true)
+        }
+    }, [hasMore, keyword, loading, loadingMore, nextCursor, loadUsers])
 
-    const handleLike = (postId: string) => {
-        setPosts(prev =>
-            prev.map(post =>
-                post.id === postId
-                    ? {
-                          ...post,
-                          isLiked: !post.isLiked,
-                          likes: post.isLiked
-                              ? post.likes - 1
-                              : post.likes + 1,
-                      }
-                    : post
-            )
-        )
-    }
+    useEffect(() => {
+        if (!keyword.trim()) return
 
-    const handleComment = (
-        postId: string,
-        commentText: string
-    ) => {
-        setPosts(prev =>
-            prev.map(post =>
-                post.id === postId
-                    ? {
-                          ...post,
-                          comments: [
-                              ...post.comments,
-                              {
-                                  id: Date.now().toString(),
-                                  user: currentUser,
-                                  text: commentText,
-                                  timestamp: 'now',
-                                  likes: 0,
-                              },
-                          ],
-                      }
-                    : post
-            )
-        )
-    }
-
-    const handleStoryClick = (story: Story) => {
-        console.log('Story clicked:', story)
-    }
+        resultsContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [keyword])
 
     return (
-        <>
-            {activeTab === 'home' && (
-                <div className="md:pl-64 md:pr-64">
-                    <main className="pb-16 md:pb-0">
-                        <Feed
-                            posts={posts}
-                            stories={stories}
-                            onLike={handleLike}
-                            onComment={handleComment}
-                            onStoryClick={handleStoryClick}
-                        />
-                    </main>
+        <div className="w-full flex flex-col">
+            <SearchBar keyword={keyword} onChange={setKeyword} />
+
+            {loading && <SearchSkeletonList />}
+
+            {!loading && keyword && users.length === 0 && (
+                <p className="text-center text-gray-500">No users found.</p>
+            )}
+
+            <div
+                ref={resultsContainerRef}
+                onScroll={handleScroll}
+                className="flex max-h-[80vh] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[85vh]"
+            >
+                {users.map((user) => (
+                    <SearchUserItem key={user.id} user={user} />
+                ))}
+            </div>
+
+            {loadingMore && (
+                <div className="py-3 text-center text-sm text-gray-500">
+                    Loading more...
                 </div>
             )}
-        </>
+        </div>
     )
 }
 
-export default Home
+export default Search

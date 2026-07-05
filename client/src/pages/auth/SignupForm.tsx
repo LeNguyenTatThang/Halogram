@@ -29,7 +29,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
         }
         setIsLoading(true)
         try {
-            await signup(firstName, lastName, email, password, confirmPassword, username)
+            await signup(firstName, lastName, email, username, password, confirmPassword)
             setEmail('')
             setUsername('')
             setPassword('')

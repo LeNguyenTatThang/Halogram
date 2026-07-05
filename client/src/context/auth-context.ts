@@ -14,12 +14,12 @@ export interface AuthContextType {
     logout: () => void
 
     signup: (
-        first_name: string,
-        last_name: string,
-        username: string,
+        firstName: string,
+        lastName: string,
         email: string,
+        username: string,
         password: string,
-        password_confirmation: string
+        passwordConfirmation: string
     ) => Promise<void>
 }
 
