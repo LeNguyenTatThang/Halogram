@@ -291,6 +291,65 @@ pnpm exec prisma db seed
 
 ---
 
-## 📄 License
+## � Mermaid: các luồng xử lý chính trong project
+
+### 1. Luồng đăng nhập và xác thực
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as Client
+    participant A as Auth API
+    participant DB as Prisma/MySQL
+
+    U->>C: Nhập email và mật khẩu
+    C->>A: Gửi request đăng nhập
+    A->>DB: Xác thực tài khoản
+    DB-->>A: Trả về thông tin user
+    A-->>C: Trả về access token + refresh token
+    C-->>U: Đăng nhập thành công
+```
+
+### 2. Luồng tạo bài viết và hiển thị feed
+
+```mermaid
+flowchart LR
+    U[User] --> UI[Frontend Post Form]
+    UI --> API[Post API]
+    API --> DB[(Prisma Database)]
+    DB --> FEED[Feed / Friend Feed]
+    FEED --> UI2[Render bài viết]
+```
+
+### 3. Luồng tìm kiếm người dùng và kết bạn
+
+```mermaid
+flowchart TD
+    U[User] --> S[Search Page]
+    S --> API[Users Search API]
+    API --> DB[(Prisma Database)]
+    DB --> R[Danh sách kết quả]
+    R --> F[Gửi / chấp nhận kết bạn]
+    F --> FS[Friendship Service]
+    FS --> DB
+```
+
+### 4. Luồng tương tác trên bài viết
+
+```mermaid
+flowchart TD
+    U[User] --> P[Open bài viết]
+    P --> L[Like / Unlike]
+    P --> Cmt[Bình luận]
+    L --> API[Post Like API]
+    Cmt --> API2[Comment API]
+    API --> DB[(Prisma Database)]
+    API2 --> DB
+    DB --> UI[Update UI]
+```
+
+---
+
+## �📄 License
 
 Dự án sử dụng license `ISC` theo cấu hình `package.json`.
