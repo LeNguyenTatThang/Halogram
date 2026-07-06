@@ -4,6 +4,7 @@ import SearchBar from './components/SearchBar'
 import SearchSkeletonList from './components/SearchSkeletonList'
 import SearchUserItem from './components/SearchUserItem'
 import type { SearchUser } from '../../types/Search'
+import {  addFriend, cancelFriend, removeFriend } from '../../utils/friend'
 
 const Search = () => {
     const [keyword, setKeyword] = useState('')
@@ -46,6 +47,48 @@ const Search = () => {
         },
         []
     )
+
+    const handleSendRequest = async (userId: string) => {
+        try {
+            await addFriend(userId)
+            setUsers(prev => {
+                return prev.map(user =>
+                    user.id === userId
+                        ? { ...user, friendshipStatus: 'PENDING'}: user
+                )
+            })
+        } catch (err){
+            console.log(err)
+        }
+    }
+
+    const handleCancelRequest = async (userId: string) => {
+        try {
+            await cancelFriend(userId)
+            setUsers(prev => {
+                return prev.map(user =>
+                    user.id === userId
+                    ? { ...user, friendshipStatus: 'NONE'} : user
+                )
+            })
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const handleRemoveFriend = async (userId: string) => {
+        try {
+            await removeFriend(userId)
+            setUsers(prev => {
+                return prev.map(user =>
+                    user.id === userId
+                    ? { ...user, friendshipStatus: 'NONE'} : user
+                )
+            })
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     // Search với debounce
     useEffect(() => {
@@ -103,7 +146,14 @@ const Search = () => {
                 className="flex max-h-[80vh] flex-col gap-2 overflow-y-auto pr-1 sm:max-h-[85vh]"
             >
                 {users.map((user) => (
-                    <SearchUserItem key={user.id} user={user} />
+                    <SearchUserItem 
+                        key={user.id} 
+                        user={user} 
+                        onSendRequest={handleSendRequest}
+                        onCancelRequest={handleCancelRequest}
+                        onRemoveFriend={handleRemoveFriend}
+                        loading={loading}
+                    />
                 ))}
             </div>
 
