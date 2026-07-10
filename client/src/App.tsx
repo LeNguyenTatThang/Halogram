@@ -13,6 +13,7 @@ import { getAllPost } from './utils/post'
 import type { Post } from './types/Post'
 import NotFound from './pages/not-found/NotFound'
 import { likePost } from './utils/like'
+import { playSound } from './utils/sound'
 
 function App() {
     const { isAuthenticated, loading  } = useAuth()
@@ -21,6 +22,7 @@ function App() {
     const [loadingMore, setLoadingMore] = useState(false)
 
     const handleLike = async (postId: string) => {
+        playSound("like")
         setPosts(prev => 
             prev.map(post => {
                 if(post.id !== postId) return post
