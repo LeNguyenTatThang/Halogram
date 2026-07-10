@@ -12,12 +12,83 @@ import { currentUser, mockPosts, mockStories } from './store/mockData'
 import { getAllPost } from './utils/post'
 import type { Post } from './types/Post'
 import NotFound from './pages/not-found/NotFound'
+import { likePost } from './utils/like'
 
 function App() {
     const { isAuthenticated, loading  } = useAuth()
     const [posts, setPosts] = useState<Post[]>([])
     const [nextCursor, setNextCursor] = useState<string | undefined>()
     const [loadingMore, setLoadingMore] = useState(false)
+
+    const handleLike = async (postId: string) => {
+        setPosts(prev => 
+            prev.map(post => {
+                if(post.id !== postId) return post
+
+                const count = post._count ?? {
+                    likes: 0,
+                    comments: 0
+                }
+
+                return {
+                    ...post,
+                    isLiked: !post.isLiked,
+                    _count: {
+                        ...count,
+                        likes: count.likes + (post.isLiked ? -1 : 1),
+                        comments: count.comments
+                    }
+                }
+            })
+        )
+
+        try {
+            const res = await likePost(postId)
+
+            setPosts(prev => 
+                prev.map(post => {
+                    if(post.id !== postId) return post
+
+                    const count = post._count ?? {
+                        likes: 0,
+                        comments: 0
+                    }
+
+                    return {
+                        ...post,
+                        isLiked: res.liked,
+                        _count: {
+                            ...count,
+                            likes: res.count,
+                            comments: count.comments
+                        }
+                    }
+                })
+            )
+        } catch (err) {
+            setPosts(prev => 
+                prev.map(post => {
+                    if(post.id !== postId) return post
+
+                    const count = post._count ?? {
+                        likes: 0,
+                        comments: 0
+                    }
+
+                    return {
+                        ...post,
+                        isLiked: !post.isLiked,
+                        _count: {
+                            ...count,
+                            likes: count.likes + (post.isLiked ? -1 : 1),
+                            comments: count.comments
+                        }
+                    }
+                })
+            )
+            console.log(err)
+        }
+    }
 
     useEffect(() => {
         if (!isAuthenticated) return
@@ -85,7 +156,7 @@ function App() {
                             <Feed
                                 posts={posts}
                                 stories={mockStories}
-                                onLike={() => {}}
+                                onLike={handleLike}
                                 onComment={() => {}}
                                 onStoryClick={() => {}}
                                 nextCursor={nextCursor}

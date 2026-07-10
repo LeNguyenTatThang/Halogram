@@ -22,7 +22,7 @@ const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[90vh] overflow-hidden dark:bg-gray-900">
+            <div className="bg-white rounded-lg w-full max-w-md mx-2 max-h-[90vh] overflow-hidden dark:bg-gray-900">
                 <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                     <h2 className="text-lg font-semibold">{t('friend_requests')}</h2>
                     <button
@@ -43,7 +43,7 @@ const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
                         </svg>
                     </button>
                 </div>
-                <div className="flex-1 overflow-y-auto px-4 py-2">
+                <div className="flex-1 overflow-y-auto px-2 py-2">
                     {requests.length === 0 && (
                         <p className="text-center text-gray-500">{t('no_friend_requests')}</p>
                     )}

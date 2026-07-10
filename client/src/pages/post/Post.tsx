@@ -15,7 +15,7 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
     const [activeImageIndex, setActiveImageIndex] = useState(0)
     const touchStartX = useRef<number | null>(null)
     const touchEndX = useRef<number | null>(null)
-
+    const [showHeart, setShowHeart] = useState(false)
     const handleSubmitComment = (e: React.FormEvent) => {
         e.preventDefault()
         if (comment.trim()) {
@@ -53,6 +53,16 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
 
         touchStartX.current = null
         touchEndX.current = null
+    }
+
+    const handleDoubleClick = () => {
+        setShowHeart(true)
+
+        if (!post.isLiked) {
+            onLike(post.id)
+        }
+
+        setTimeout(() => setShowHeart(false), 600)
     }
 
     return (
@@ -99,7 +109,16 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                     className="relative overflow-hidden bg-black"
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
+                    onDoubleClick={handleDoubleClick}
                 >
+                    {showHeart && (
+                        <Heart
+                            className="absolute left-1/2 top-1/2 h-24 w-24
+                                    -translate-x-1/2 -translate-y-1/2
+                                    fill-white text-white
+                                    pointer-events-none"
+                        />
+                    )}
                     <div className="relative w-full aspect-square overflow-hidden">
                         <img
                             key={images[activeImageIndex]?.id}
@@ -150,17 +169,17 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                     <div className="flex items-center space-x-4">
                         <button onClick={() => onLike(post.id)}>
                             <Heart
-                                className={`w-6 h-6 ${
+                                className={`w-6 h-6 cursor-pointer ${
                                     post.isLiked ? 'fill-red-500 text-red-500' : ''
                                 }`}
                             />
                         </button>
 
-                        <MessageCircle className="w-6 h-6" />
-                        <Send className="w-6 h-6" />
+                        <MessageCircle className="w-6 h-6 cursor-pointer" />
+                        <Send className="w-6 h-6 cursor-pointer" />
                     </div>
 
-                    <Bookmark className="w-6 h-6" />
+                    <Bookmark className="w-6 h-6 cursor-pointer" />
                 </div>
 
                 {/* LIKES */}

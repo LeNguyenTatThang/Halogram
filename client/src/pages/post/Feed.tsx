@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { Post as PostType } from '../../types/Post'
 import type { Story } from '../../types/Story'
 import  Post from './Post'
 import Stories from '../user/Stories'
 import SuggestedUsers from './SuggestedUsers'
+import StoryViewer from '../../components/common/StoryViewer'
 
 interface FeedProps {
     posts: PostType[]
@@ -19,6 +20,13 @@ interface FeedProps {
 
 const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryClick, nextCursor, fetchMorePosts }) => {
     const loadMoreRef = useRef<HTMLDivElement | null>(null)
+    const [selectedStory, setSelectedStory] = useState<Story | null>(null)
+
+    const handleStoryClick = (story: Story) => {
+        setSelectedStory(story)
+        onStoryClick(story)
+    }
+    
 
     useEffect(() =>{
         if (!loadMoreRef.current) return
@@ -30,13 +38,9 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
                 }
             },
             {
-                threshold: 1,
+                threshold: 0.1,
             }
         )
-
-        if (!loadMoreRef.current) {
-            observer.disconnect()
-        }
 
         observer.observe(loadMoreRef.current)
         return () => observer.disconnect()
@@ -51,7 +55,7 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
             <div className="w-full max-w-xl ">
                 <Stories
                     stories={stories}
-                    onStoryClick={onStoryClick}
+                    onStoryClick={handleStoryClick}
                 />
 
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -70,6 +74,15 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
                         {nextCursor ? 'Loading more posts...' : 'No more posts'}
                 </div>
             </div>
+
+            {/* Story Viewer */}
+            {selectedStory && (
+                <StoryViewer
+                    story={selectedStory}
+                    stories={stories}
+                    onClose={() => setSelectedStory(null)}
+                />
+            )}
         </div>
     )
 }

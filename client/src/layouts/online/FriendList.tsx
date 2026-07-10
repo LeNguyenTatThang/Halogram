@@ -9,7 +9,7 @@ interface FriendListProps {
 
 const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat }) => {
     return (
-        <div className="flex-1 overflow-y-auto px-4 py-2">
+        <div className="flex-1 overflow-y-auto px-2 py-2">
             <button
                 onClick={() =>
                     onOpenChat({

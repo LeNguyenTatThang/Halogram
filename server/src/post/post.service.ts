@@ -137,7 +137,7 @@ export class PostService {
       const friendIds = friends.map((f) =>
         f.userId === userId ? f.friendId : f.userId,
       );
-      const posts = await this.prisma.post.findMany({
+      const getPosts = await this.prisma.post.findMany({
         where: {
           userId: {
             in: [userId, ...friendIds],
@@ -150,6 +150,14 @@ export class PostService {
               username: true,
               displayName: true,
               avatar: true,
+            },
+          },
+          likes: {
+            where: {
+              userId,
+            },
+            select: {
+              userId: true,
             },
           },
           images: true,
@@ -172,7 +180,12 @@ export class PostService {
         }),
       });
       const nextCursor =
-        posts.length === limit ? posts[posts.length - 1].id : null;
+        getPosts.length === limit ? getPosts[getPosts.length - 1].id : null;
+
+      const posts = getPosts.map(({ likes, ...post }) => ({
+        ...post,
+        isLiked: likes.length > 0,
+      }));
       return {
         success: true,
         posts,
