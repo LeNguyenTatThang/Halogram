@@ -1,5 +1,6 @@
 import { Check, Clock3, UserPlus } from 'lucide-react'
 import type { SearchUser } from '../../../types/Search'
+import Logo from '../../../assets/logo.png'
 
 interface SearchUserItemProps {
     user: SearchUser
@@ -16,7 +17,7 @@ const SearchUserItem = ({ user, onSendRequest, onCancelRequest, onRemoveFriend, 
         <div className="flex items-center justify-between rounded-lg p-2 hover:bg-gray-100">
             <div className="flex items-center gap-3">
                 <img
-                    src={user.avatar ?? '/default-avatar.png'}
+                    src={user.avatar ?? Logo}
                     alt={user.username}
                     className="h-10 w-10 rounded-full object-cover"
                 />
