@@ -9,7 +9,6 @@ export class FriendshipsService {
       this.prisma.user.findUnique({ where: { id: userId } }),
       this.prisma.user.findUnique({ where: { id: friendId } }),
     ]);
-
     if (!user || !friend) {
       throw new NotFoundException('User not found');
     }
@@ -18,32 +17,64 @@ export class FriendshipsService {
   }
 
   async requestFriendship(userId: string, friendId: string) {
-    try {
-      await this.getUsers(userId, friendId);
+    await this.getUsers(userId, friendId);
 
-      const friendship = await this.prisma.friendship.create({
-        data: {
-          user: {
-            connect: {
-              id: userId,
-            },
-          },
-          friend: {
-            connect: {
-              id: friendId,
-            },
-          },
-        },
-      });
-
+    if (userId === friendId) {
       return {
-        success: true,
-        message: 'Friendship request sent successfully',
-        data: friendship,
+        success: false,
+        message: 'You cannot send a friend request to yourself',
       };
-    } catch (error) {
-      console.log(error);
     }
+
+    const existing = await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          {
+            userId,
+            friendId,
+          },
+          {
+            userId: friendId,
+            friendId: userId,
+          },
+        ],
+      },
+    });
+
+    if (existing) {
+      switch (existing.status) {
+        case 'PENDING':
+          return {
+            success: false,
+            message: 'Friend request already exists',
+          };
+
+        case 'ACCEPTED':
+          return {
+            success: false,
+            message: 'Already friends',
+          };
+
+        case 'BLOCKED':
+          return {
+            success: false,
+            message: 'Cannot send request',
+          };
+      }
+    }
+
+    const friendship = await this.prisma.friendship.create({
+      data: {
+        userId,
+        friendId,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Friend request sent successfully',
+      data: friendship,
+    };
   }
 
   async acceptFriendship(userId: string, friendId: string) {

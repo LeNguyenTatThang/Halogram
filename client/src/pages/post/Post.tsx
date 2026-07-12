@@ -199,12 +199,12 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                 {comments.length > 0 && (
                     <div className="mb-3">
 
-                        {!showAllComments && comments.length > 2 && (
+                        {!showAllComments && comments.length > 1 && (
                             <button
                                 onClick={() => setShowAllComments(true)}
                                 className="text-sm text-gray-500 mb-2 hover:underline"
                             >
-                                View all {comments.length} comments
+                                View all comments
                             </button>
                         )}
 

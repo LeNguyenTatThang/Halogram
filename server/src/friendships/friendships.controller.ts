@@ -12,54 +12,54 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   async requestFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body('friend_id') friendId: string,
+    @Body() dto: { friendId: string },
   ) {
-    return this.friendshipsService.requestFriendship(userId, friendId);
+    return this.friendshipsService.requestFriendship(userId, dto.friendId);
   }
 
   @Post('accept-friend')
   @UseGuards(JwtAuthGuard)
   async acceptFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body('friend_id') friendId: string,
+    @Body() dto: { friendId: string },
   ) {
-    return this.friendshipsService.acceptFriendship(userId, friendId);
+    return this.friendshipsService.acceptFriendship(userId, dto.friendId);
   }
 
   @Delete('remove-friend')
   @UseGuards(JwtAuthGuard)
   async removeFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body('friend_id') friendId: string,
+    @Body() dto: { friendId: string },
   ) {
-    return this.friendshipsService.removeFriendship(userId, friendId);
+    return this.friendshipsService.removeFriendship(userId, dto.friendId);
   }
 
   @Delete('cancel-friend')
   @UseGuards(JwtAuthGuard)
   async cancelFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body('friend_id') friendId: string,
+    @Body() dto: { friendId: string },
   ) {
-    return this.friendshipsService.cancelFriendship(userId, friendId);
+    return this.friendshipsService.cancelFriendship(userId, dto.friendId);
   }
 
   @Post('block-friend')
   @UseGuards(JwtAuthGuard)
   async blockFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body('friend_id') friendId: string,
+    @Body() dto: { friendId: string },
   ) {
-    return this.friendshipsService.blockFriendship(userId, friendId);
+    return this.friendshipsService.blockFriendship(userId, dto.friendId);
   }
 
   @Delete('unblock-friend')
   @UseGuards(JwtAuthGuard)
   unblockFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body('friend_id') friendId: string,
+    @Body() dto: { friendId: string },
   ) {
-    return this.friendshipsService.unblockFriendship(userId, friendId);
+    return this.friendshipsService.unblockFriendship(userId, dto.friendId);
   }
 
   @Get('friendship-requests')

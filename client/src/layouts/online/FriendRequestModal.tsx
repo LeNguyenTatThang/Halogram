@@ -67,7 +67,7 @@ const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => onAcceptFriend(friend.id)}
+                                    onClick={() => onAcceptFriend(friend.user.id)}
                                     className="px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 transition dark:bg-blue-600 dark:hover:bg-blue-700"
                                 >
                                     {t('accept')}
