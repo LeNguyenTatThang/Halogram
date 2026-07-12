@@ -14,12 +14,17 @@ import type { Post } from './types/Post'
 import NotFound from './pages/not-found/NotFound'
 import { likePost } from './utils/like'
 import { playSound } from './utils/sound'
+import { createComment } from './utils/comment'
+import StoryViewer from './components/common/StoryViewer'
+import type { Story } from './types/Story'
 
 function App() {
     const { isAuthenticated, loading  } = useAuth()
     const [posts, setPosts] = useState<Post[]>([])
     const [nextCursor, setNextCursor] = useState<string | undefined>()
     const [loadingMore, setLoadingMore] = useState(false)
+    const [loadingPosts, setLoadingPosts] = useState(true)
+    const [selectedStory, setSelectedStory] = useState<Story | null>(null)
 
     const handleLike = async (postId: string) => {
         playSound("like")
@@ -92,16 +97,51 @@ function App() {
         }
     }
 
+    const handleComment = async (postId: string, comment: string) => {
+        try {
+            const res = await createComment(postId, comment)
+            if(!res.success) return
+
+            setPosts(prev =>
+                prev.map(post => {
+                    if (post.id !== postId) return post
+
+                    const comments = [res.data, ...(post.comments ?? [])].slice(0, 2)
+                    const count = post._count ?? {
+                        likes: 0,
+                        comments: 0
+                    }
+
+                    return {
+                        ...post,
+                        comments,
+                        _count: {
+                            ...count,
+                            likes: count.likes,
+                            comments: count.comments + 1,
+                        },
+                    }
+                })
+            )
+        } catch (err) {
+            console.log(err)
+        }
+    } 
+
     useEffect(() => {
         if (!isAuthenticated) return
 
         const getPost = async () => {
+            setLoadingPosts(true)
+
             try {
                 const res = await getAllPost()
                 setPosts(res.posts)
                 setNextCursor(res.nextCursor)
             } catch (err) {
                 console.error('Lỗi load posts:', err)
+            } finally {
+                setLoadingPosts(false)
             }
         }
 
@@ -133,6 +173,14 @@ function App() {
 
     return (
         <Router>
+            {selectedStory && (
+                <StoryViewer
+                    story={selectedStory}
+                    stories={mockStories}
+                    onClose={() => setSelectedStory(null)}
+                />
+            )}
+
             <Routes>
                 {/* Login */}
                 <Route
@@ -159,8 +207,9 @@ function App() {
                                 posts={posts}
                                 stories={mockStories}
                                 onLike={handleLike}
-                                onComment={() => {}}
-                                onStoryClick={() => {}}
+                                onComment={handleComment}
+                                onStoryClick={(story) => setSelectedStory(story)}
+                                isLoading={loadingPosts}
                                 nextCursor={nextCursor}
                                 fetchMorePosts={fetchMorePosts}
                             />

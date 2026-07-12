@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { Post as PostType } from '../../types/Post'
 import type { Story } from '../../types/Story'
 import  Post from './Post'
 import Stories from '../user/Stories'
 import SuggestedUsers from './SuggestedUsers'
-import StoryViewer from '../../components/common/StoryViewer'
 
 interface FeedProps {
     posts: PostType[]
     stories: Story[]
+    isLoading?: boolean
 
     nextCursor?: string
     fetchMorePosts?: () => void
@@ -18,12 +18,10 @@ interface FeedProps {
     onStoryClick: (story: Story) => void
 }
 
-const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryClick, nextCursor, fetchMorePosts }) => {
+const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, onComment, onStoryClick, nextCursor, fetchMorePosts }) => {
     const loadMoreRef = useRef<HTMLDivElement | null>(null)
-    const [selectedStory, setSelectedStory] = useState<Story | null>(null)
 
     const handleStoryClick = (story: Story) => {
-        setSelectedStory(story)
         onStoryClick(story)
     }
     
@@ -52,37 +50,47 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, onLike, onComment, onStoryC
                 <SuggestedUsers />
             </aside>
             {/* Feed */}
-            <div className="w-full max-w-xl ">
+            <div className="w-full max-w-xl min-h-[320px]">
                 <Stories
                     stories={stories}
                     onStoryClick={handleStoryClick}
                 />
 
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {posts.map(post => (
-                        <Post
-                            key={post.id}
-                            post={post}
-                            onLike={onLike}
-                            onComment={onComment}
-                        />
-                    ))}
-                </div>
+                {isLoading && posts.length === 0 ? (
+                    <div className="space-y-4 py-4" role="status" aria-live="polite">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <div key={index} className="animate-pulse rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-black">
+                                <div className="mb-3 flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-3 w-24 rounded bg-gray-200 dark:bg-gray-700" />
+                                        <div className="h-2.5 w-16 rounded bg-gray-100 dark:bg-gray-800" />
+                                    </div>
+                                </div>
+                                <div className="mb-3 h-72 rounded-xl bg-gray-200 dark:bg-gray-700" />
+                                <div className="h-3 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                        {posts.map(post => (
+                            <Post
+                                key={post.id}
+                                post={post}
+                                onLike={onLike}
+                                onComment={onComment}
+                            />
+                        ))}
+                    </div>
+                )}
+
                 <div 
                     ref={loadMoreRef}
-                    className='h-16 flex items-center justify-center text-gray-500 dark:text-gray-400'>
+                    className='mt-4 flex min-h-16 items-center justify-center text-sm text-gray-500 dark:text-gray-400'>
                         {nextCursor ? 'Loading more posts...' : 'No more posts'}
                 </div>
             </div>
-
-            {/* Story Viewer */}
-            {selectedStory && (
-                <StoryViewer
-                    story={selectedStory}
-                    stories={stories}
-                    onClose={() => setSelectedStory(null)}
-                />
-            )}
         </div>
     )
 }

@@ -167,6 +167,22 @@ export class PostService {
               comments: true,
             },
           },
+          comments: {
+            take: 2,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',

@@ -18,11 +18,13 @@ export interface Post {
     id: string
     text: string
     user: {
+      id: string
+      avatar: string
       username: string
     }
   }[] | null
 
-  _count?: {
+  _count: {
     likes: number
     comments: number
   }

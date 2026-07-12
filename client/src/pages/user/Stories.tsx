@@ -21,6 +21,10 @@ const Stories: React.FC<StoriesProps> = ({ stories, onStoryClick }) => {
                                 <img
                                     src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400"
                                     alt="Your Story"
+                                    width={64}
+                                    height={64}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full rounded-full object-cover"
                                 />
                             </div>
@@ -46,6 +50,10 @@ const Stories: React.FC<StoriesProps> = ({ stories, onStoryClick }) => {
                                 <img
                                     src={story.user.avatar}
                                     alt={story.user.username}
+                                    width={64}
+                                    height={64}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full rounded-full object-cover"
                                 />
                             </div>

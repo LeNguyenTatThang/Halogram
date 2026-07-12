@@ -1,38 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CommentsService {
   constructor(private readonly prisma: PrismaService) {}
-  async createComment(postId: string, userId: string, comment: string) {
-    try {
-      const post = await this.prisma.post.findUnique({
-        where: { id: postId },
-      });
+  async createComment(userId: string, postId: string, comment: string) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
 
-      if (!post) {
-        throw new Error('Post not found');
-      }
-      if (!comment) {
-        throw new Error('Comment cannot be empty');
-      }
-
-      const newComment = await this.prisma.comment.create({
-        data: {
-          userId,
-          postId,
-          text: comment,
-        },
-      });
-
-      return {
-        success: true,
-        message: 'Comment created successfully',
-        data: newComment,
-      };
-    } catch (error) {
-      console.log(error);
+    if (!post) {
+      throw new NotFoundException('Post not found');
     }
+    if (!comment.trim()) {
+      throw new BadRequestException('Comment cannot be empty');
+    }
+
+    const newComment = await this.prisma.comment.create({
+      data: {
+        userId,
+        postId,
+        text: comment,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+            isVerified: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Comment created successfully',
+      data: newComment,
+    };
   }
 
   async updateComment(commentId: string, userId: string, text: string) {

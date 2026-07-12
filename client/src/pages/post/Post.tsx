@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react'
 import type { Post as PostType } from '../../types/Post'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { timeAgo } from '../../hooks/useTimeAgo'
-
+import defaultAvatarUrl from '../../assets/Logo.png'
+import LazyImage from '../../components/common/LazyImage'
 interface PostProps {
     post: PostType
     onLike: (postId: string) => void
@@ -65,6 +66,8 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
         setTimeout(() => setShowHeart(false), 600)
     }
 
+    const currentImage = images[activeImageIndex]
+
     return (
         <div className="bg-white border-b border-gray-200 pb-4 dark:bg-black dark:border-gray-700 dark:text-white">
 
@@ -120,12 +123,15 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                         />
                     )}
                     <div className="relative w-full aspect-square overflow-hidden">
-                        <img
-                            key={images[activeImageIndex]?.id}
-                            src={images[activeImageIndex]?.url}
-                            alt="Post"
-                            className="h-full w-full object-cover transition-all duration-300"
-                        />
+                        {currentImage && (
+                            <LazyImage
+                                key={currentImage.id}
+                                src={currentImage.url}
+                                alt={`Post image ${activeImageIndex + 1}`}
+                                wrapperClassName="h-full w-full"
+                                className="h-full w-full object-cover"
+                            />
+                        )}
 
                         {hasMultipleImages && (
                             <>
@@ -202,9 +208,16 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                             </button>
                         )}
 
-                        {(showAllComments ? comments : comments.slice(0, 2)).map((c) => (
-                            <div key={c.id} className="mb-1">
-                                <span className="font-semibold text-sm mr-2">
+                        {(showAllComments ? comments : [...comments].reverse()).map((c) => (
+                            <div key={c.id} className="mb-1 flex">
+                                <div className="space-x-2 mb-1">
+                                    <img
+                                        src={c.user?.avatar ? c.user.avatar : defaultAvatarUrl}
+                                        alt={c.user?.username}
+                                        className="w-5 h-5 rounded-full"
+                                    />
+                                </div>
+                                <span className="font-semibold text-sm mx-2">
                                     {c.user?.username}
                                 </span>
                                 <span className="text-sm">{c.text}</span>
