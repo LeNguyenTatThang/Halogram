@@ -8,37 +8,30 @@ datasource db {
 }
 
 model User {
-  id          String @id @default(cuid())
-  username    String @unique @db.VarChar(50)
-  displayName String
-  email       String @unique @db.VarChar(255)
-  password    String @db.VarChar(255)
-
-  firstName String
-  lastName  String
-
-  avatar String?
-  bio    String? @db.Text
-
-  isVerified Boolean @default(false)
-
-  refreshToken String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  followers Follow[] @relation("followers")
-  following Follow[] @relation("following")
-
-  stories  Story[]
-  posts    Post[]
-  comments Comment[]
-
-  postLikes  PostLike[]
-  storyViews StoryView[]
-
-  sentRequests Friendship[] @relation("FriendRequests")
-  received    Friendship[]  @relation("FriendOf")
+  id            String               @id @default(cuid())
+  username      String               @unique @db.VarChar(50)
+  displayName   String
+  email         String               @unique @db.VarChar(255)
+  password      String               @db.VarChar(255)
+  firstName     String
+  lastName      String
+  avatar        String?
+  bio           String?              @db.Text
+  isVerified    Boolean              @default(false)
+  refreshToken  String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  posts         Post[]
+  comments      Comment[]
+  following     Follow[]             @relation("following")
+  followers     Follow[]             @relation("followers")
+  received      Friendship[]         @relation("FriendOf")
+  sentRequests  Friendship[]         @relation("FriendRequests")
+  postLikes     PostLike[]
+  stories       Story[]
+  storyViews    StoryView[]
+  conversations ConversationMember[]
+  messages      Message[]
 
   @@map("users")
 }
@@ -46,12 +39,9 @@ model User {
 model Follow {
   followerId  String
   followingId String
-
-  follower User @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
-
-  following User @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
   @@index([followerId])
@@ -60,15 +50,12 @@ model Follow {
 }
 
 model Story {
-  id    String @id @default(cuid())
-  image String
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id         String      @id @default(cuid())
+  image      String
+  userId     String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   storyViews StoryView[]
 
   @@index([userId])
@@ -76,47 +63,43 @@ model Story {
 }
 
 model Post {
-  id      String  @id @default(cuid())
-  caption String? @db.Text
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  images PostImage[]
-  comments Comment[]
-  likes    PostLike[]
+  id        String      @id @default(cuid())
+  caption   String?     @db.Text
+  userId    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  comments  Comment[]
+  images    PostImage[]
+  likes     PostLike[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([createdAt(sort: Desc)])
-  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@index([userId, createdAt])
   @@map("posts")
 }
 
 model PostImage {
-  id String @id @default(cuid())
-  url String @db.Text
-  postId String
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(cuid())
+  url       String   @db.Text
+  postId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@map("post_images")
 }
 
 model Comment {
-  id   String @id @default(cuid())
-  text String @db.Text
-
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  postId    String
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([postId])
   @@index([userId])
@@ -124,14 +107,11 @@ model Comment {
 }
 
 model PostLike {
-  userId String
-  postId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
+  userId    String
+  postId    String
   createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, postId])
   @@index([postId])
@@ -139,37 +119,75 @@ model PostLike {
 }
 
 model StoryView {
-  userId  String
-  storyId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
-
+  userId   String
+  storyId  String
   viewedAt DateTime @default(now())
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, storyId])
   @@index([storyId])
   @@map("story_views")
 }
 
-enum FriendshipStatus {
-  PENDING
-  ACCEPTED
-  BLOCKED
-}
-
 model Friendship {
-  id        String   @id @default(uuid())
-
+  id        String           @id @default(uuid())
   userId    String
   friendId  String
-
   status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  friend    User             @relation("FriendOf", fields: [friendId], references: [id], map: "Friendship_friendId_fkey")
+  user      User             @relation("FriendRequests", fields: [userId], references: [id], map: "Friendship_userId_fkey")
+
+  @@index([friendId], map: "Friendship_friendId_fkey")
+  @@index([userId], map: "Friendship_userId_fkey")
+  @@map("friendship")
+}
+
+model Conversation {
+  id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation("FriendRequests", fields: [userId], references: [id])
-  friend    User     @relation("FriendOf", fields: [friendId], references: [id])
+  members  ConversationMember[]
+  messages Message[]
+
+  @@map("conversations")
+}
+
+model ConversationMember {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_members")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String?      @db.Text
+  image          String?      @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  BLOCKED
 }
