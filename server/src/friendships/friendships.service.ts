@@ -370,18 +370,11 @@ export class FriendshipsService {
           message: 'User not found',
         };
       }
+
       const friendships = await this.prisma.friendship.findMany({
         where: {
-          OR: [
-            {
-              userId: userId,
-              status: 'ACCEPTED',
-            },
-            {
-              friendId: userId,
-              status: 'ACCEPTED',
-            },
-          ],
+          status: 'ACCEPTED',
+          OR: [{ userId }, { friendId: userId }],
         },
         include: {
           user: {
@@ -395,19 +388,37 @@ export class FriendshipsService {
             select: {
               id: true,
               username: true,
+              email: true,
               avatar: true,
             },
           },
         },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      });
+
+      const data = friendships.map((friendship) => {
+        const otherUser =
+          friendship.userId === userId ? friendship.friend : friendship.user;
+
+        return {
+          id: friendship.id,
+          status: friendship.status,
+          createdAt: friendship.createdAt,
+          updatedAt: friendship.updatedAt,
+          friend: otherUser,
+        };
       });
 
       return {
         success: true,
         message: 'Friendships fetched successfully',
-        data: friendships,
+        data,
       };
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      throw error;
     }
   }
 }
