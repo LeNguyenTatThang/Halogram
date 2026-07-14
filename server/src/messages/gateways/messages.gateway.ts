@@ -13,7 +13,7 @@ import { Server, Socket } from 'socket.io';
 @WebSocketGateway({
   namespace: 'messages',
   cors: {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     credentials: true,
   },
 })
@@ -60,7 +60,7 @@ export class MessagesGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { conversationId: string; userId: string },
   ) {
-    client.to(payload.conversationId).emit('typing', payload);
+    this.server.to(payload.conversationId).emit('typing', payload);
   }
 
   @SubscribeMessage('stopTyping')
@@ -68,14 +68,14 @@ export class MessagesGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { conversationId: string; userId: string },
   ) {
-    client.to(payload.conversationId).emit('stopTyping', payload);
+    this.server.to(payload.conversationId).emit('stopTyping', payload);
   }
 
   @SubscribeMessage('sendMessage')
   handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() message: any,
+    @MessageBody() payload: { conversationId: string; message: string },
   ) {
-    client.to(message.conversationId).emit('receiveMessage', message);
+    this.server.to(payload.conversationId).emit('receiveMessage', payload);
   }
 }

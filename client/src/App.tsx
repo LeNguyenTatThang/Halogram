@@ -17,6 +17,7 @@ import { playSound } from './utils/sound'
 import { createComment } from './utils/comment'
 import StoryViewer from './components/common/StoryViewer'
 import type { Story } from './types/Story'
+import { socket } from './lib/socket'
 
 function App() {
     const { isAuthenticated, loading  } = useAuth()
@@ -127,6 +128,35 @@ function App() {
             console.log(err)
         }
     } 
+    useEffect(() => {
+        if (!isAuthenticated) {
+            socket.disconnect()
+            return
+        }
+
+        const token = localStorage.getItem('accessToken')
+        if (!token) {
+            socket.disconnect()
+            return
+        }
+
+        socket.auth = { token }
+        socket.connect()
+
+        socket.on('connect', () => {
+            socket.emit('ping')
+        })
+
+        socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error.message)
+        })
+
+        return () => {
+            socket.off('connect')
+            socket.off('connect_error')
+            socket.disconnect()
+        }
+    }, [isAuthenticated])
 
     useEffect(() => {
         if (!isAuthenticated) return

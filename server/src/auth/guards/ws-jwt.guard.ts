@@ -14,14 +14,21 @@ export class WsJwtGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const client: Socket = context.switchToWs().getClient();
 
-    const token = client.handshake.auth?.token;
+    const authHeader = client.handshake.headers.authorization;
+    const tokenFromAuth = client.handshake.auth?.token;
+    const token =
+      typeof tokenFromAuth === 'string'
+        ? tokenFromAuth
+        : typeof authHeader === 'string'
+          ? authHeader.replace(/^Bearer\s+/i, '')
+          : undefined;
 
     if (!token) {
       throw new UnauthorizedException('Missing token');
     }
 
     try {
-      const payload = this.jwtService.verify(token as string);
+      const payload = this.jwtService.verify(token);
 
       client.data.user = payload;
 

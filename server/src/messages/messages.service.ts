@@ -142,7 +142,7 @@ export class MessagesService {
   }
 
   async createMessage(userId: string, dto: CreateMessageDto) {
-    await this.checkMember(userId, dto.conversationId);
+    await this.checkMember(dto.conversationId, userId);
 
     const message = await this.prisma.message.create({
       data: {
@@ -181,9 +181,9 @@ export class MessagesService {
     limit: number,
     cursor?: string,
   ) {
-    await this.checkMember(userId, conversationId);
+    await this.checkMember(conversationId, userId);
     return await this.prisma.message.findMany({
-      take: limit,
+      take: Number(limit),
       ...(cursor && { cursor: { id: cursor }, skip: 1 }),
 
       where: {
