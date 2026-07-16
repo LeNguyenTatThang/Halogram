@@ -1,4 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
+import {
+    setBrowserTitle,
+    updateFaviconBadge,
+    showDesktopNotification,
+} from '../../utils/browserNotification'
 import type { FriendUser } from '../../types/Friend'
 import { motion } from 'framer-motion'
 import { Send, Phone, Video, X } from 'lucide-react'
@@ -34,6 +39,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
     const typingTimerRef = useRef<number | null>(null)
     const messageEndRef = useRef<HTMLDivElement | null>(null)
     const conversationIdRef = useRef<string | null>(null)
+    const unreadCountRef = useRef(0)
 
     const appendMessage = (message: ChatMessage) => {
         setMessages(prev => {
@@ -77,7 +83,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     content: item.content,
                     senderId: item.senderId,
                     createdAt: item.createdAt,
-                    conversationId: nextConversationId,
+                    conversationId: nextConversationId
                 }))
                 setMessages(history)
             } catch (error) {
@@ -90,6 +96,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
         const handleReceiveMessage = (message: ChatMessage) => {
             if (message.conversationId !== conversationIdRef.current) return
             appendMessage(message)
+
+            if (message.senderId === currentUser?.id) return
+
+            if (document.hidden) {
+                unreadCountRef.current++
+
+                setBrowserTitle(unreadCountRef.current)
+                updateFaviconBadge(unreadCountRef.current)
+            }
+
+            showDesktopNotification(
+                user.username,
+                message.content,
+                user.avatar || defaultAvatarUrl
+            )
         }
 
         const handleTyping = (payload: { conversationId: string; userId: string }) => {
@@ -114,7 +135,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                 socket.emit('leaveConversation', conversationIdRef.current)
             }
         }
-    }, [currentUser?.id, user.id])
+    }, [currentUser?.id, user.id, user.avatar, user.username])
 
     const emitTyping = (typing: boolean) => {
         if (!conversationId || !currentUser?.id) return
@@ -167,6 +188,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
             console.error('Failed to persist message', error)
         }
     }
+
+    useEffect(() => {
+        const handleFocus = () => {
+            unreadCountRef.current = 0
+
+            setBrowserTitle(0)
+            updateFaviconBadge(0)
+        }
+
+        window.addEventListener("focus", handleFocus)
+
+        return () => {
+            window.removeEventListener("focus", handleFocus)
+        }
+    }, [])
 
     const isOwnMessage = (senderId: string) => senderId === currentUser?.id
 
@@ -251,12 +287,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     <Send size={20} />
                 </button>
             </div>
-            <VideoCall
-                open={openVideoCall}
-                username={user.username}
-                avatar={user.avatar}
-                onClose={() => setOpenVideoCall(false)}
-            />
+            {openVideoCall && (
+                <VideoCall
+                    open
+                    username={user.username}
+                    avatar={user.avatar}
+                    onClose={() => setOpenVideoCall(false)}
+                />
+            )}
         </motion.div>
     )
 }

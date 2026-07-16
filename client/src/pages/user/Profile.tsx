@@ -11,7 +11,7 @@ interface ProfileProps {
     onFollow?: () => void
 }
 
-const Profile: React.FC<ProfileProps> = ({ user, posts, isOwnProfile, onFollow }) => {
+const Profile: React.FC<ProfileProps> = ({ user, posts, isOwnProfile }) => {
     const [activeTab, setActiveTab] = useState('posts')
     const {t} = useTranslation('profile')
     const tabs = [
@@ -24,52 +24,40 @@ const Profile: React.FC<ProfileProps> = ({ user, posts, isOwnProfile, onFollow }
 
     return (
         <div className="px-18 mx-auto bg-white min-h-screen dark:bg-black">
-            <div className="px-4 py-6">
+            <div className="max-w-2xl mx-auto py-6">
                 <div className="flex items-center space-x-6 mb-6">
                     <img
                         src={user.avatar}
                         alt={user.username}
-                        className="w-20 h-20 rounded-full object-cover"
+                        className="w-48 h-48 rounded-full object-cover"
                     />
                     <div className="flex-1">
                         <div className="flex items-center space-x-4 mb-2">
                             <h1 className="text-xl font-semibold">{user.username}</h1>
-                            {isOwnProfile ? (
-                                <button className="px-4 py-1 border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                                    {t('editProfile')}
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={onFollow}
-                                    className={`px-4 py-1 rounded text-sm font-medium ${user.isFollowing
-                                        ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                                        : 'bg-blue-500 text-white hover:bg-blue-600'
-                                        }`}
-                                >
-                                    {user.isFollowing ? `${t('unfollow')}` : `${t('follow')}`}
-                                </button>
-                            )}
-                            {isOwnProfile && (
-                                <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded cursor-pointer">
-                                    <Settings className="w-5 h-5" />
-                                </button>
-                            )}
+                            <Settings className="w-5 h-5 cursor-pointer" />
                         </div>
                         <div className="flex space-x-6 text-sm">
                             <span><strong>{user.posts}</strong> {t('posts')}</span>
                             <span><strong>{user.followers.toLocaleString()}</strong> {t('followers')}</span>
                             <span><strong>{user.following.toLocaleString()}</strong> {t('following')}</span>
                         </div>
+                        <div className="flex space-x-6 mt-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{user.bio}</p>
+                        </div>
                     </div>
                 </div>
+                <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:justify-center">
+                    <button className="h-10 w-full sm:w-auto sm:px-8 md:px-16 rounded-md bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-semibold transition">
+                        Chỉnh sửa trang cá nhân
+                    </button>
 
-                <div className="space-y-1">
-                    <h2 className="font-semibold">{user.email}</h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{user.bio}</p>
+                    <button className="h-10 w-full sm:w-auto sm:px-8 md:px-16 rounded-md bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-semibold transition">
+                        Xem kho lưu trữ
+                    </button>
                 </div>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-600">
+            <div className="max-w-[950px] mx-auto border-t border-gray-200 dark:border-gray-600">
                 <div className="flex justify-center">
                     {tabs.map((tab) => (
                         <button

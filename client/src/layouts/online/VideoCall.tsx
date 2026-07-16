@@ -1,20 +1,20 @@
-import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react';
-import { useRTC } from '../../hooks/useWebRTC';
-import defaultAvatar from '../../assets/Logo.png';
-import { useEffect, useState } from 'react';
+import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react'
+import { useRTC } from '../../hooks/useWebRTC'
+import defaultAvatar from '../../assets/Logo.png'
+import { useEffect, useState } from 'react'
 
 interface VideoCallProps {
-    open: boolean;
-    username: string;
-    avatar?: string | null;
-    onClose: () => void;
+    open: boolean
+    username: string
+    avatar?: string | null
+    onClose: () => void
 }
 
 const VideoCall = ({
     open,
     username,
     avatar,
-    onClose,
+    onClose
 }: VideoCallProps) => {
     const {
         localVideoRef,
@@ -25,58 +25,50 @@ const VideoCall = ({
         isMuted,
         cameraOff,
         startLocalStream
-    } = useRTC();
+    } = useRTC()
 
-    const [permissionError, setPermissionError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [permissionError, setPermissionError] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
 
-    // Request media permissions when VideoCall opens
     useEffect(() => {
         if (!open) {
-            stopCall();
-            return;
+            stopCall()
+            return
         }
 
         const requestPermissions = async () => {
-            setIsLoading(true);
-            setPermissionError(null);
+            setIsLoading(true)
+            setPermissionError(null)
             try {
-                await startLocalStream(true);
+                await startLocalStream(true)
             } catch (error) {
-                const err = error instanceof Error ? error : new Error(String(error));
-                console.error('Permission error:', err);
+                const err = error instanceof Error ? error : new Error(String(error))
                 if (err.name === 'NotAllowedError') {
-                    setPermissionError('Permission denied. Please allow access to camera and microphone.');
+                    setPermissionError('Permission denied. Please allow access to camera and microphone.')
                 } else if (err.name === 'NotFoundError') {
-                    setPermissionError('No camera or microphone found.');
+                    setPermissionError('No camera or microphone found.')
                 } else {
-                    setPermissionError('Failed to access camera and microphone.');
+                    setPermissionError('Failed to access camera and microphone.')
                 }
             } finally {
-                setIsLoading(false);
+                setIsLoading(false)
             }
-        };
+        }
 
-        requestPermissions();
+        requestPermissions()
+    }, [open, startLocalStream, stopCall])
 
-        // Cleanup when component unmounts or dialog closes
-        return () => {
-            console.log('VideoCall unmounting, stopping stream');
-        };
-    }, [open, startLocalStream, stopCall]);
-
-    if (!open) return null;
+    if (!open) return null
 
     const handleEndCall = () => {
-        stopCall();
-        onClose();
-    };
+        stopCall()
+        onClose()
+    }
 
     return (
         <div className="fixed inset-0 z-[999] bg-black flex items-center justify-center">
             <div className="relative w-full h-full">
 
-                {/* Remote Video */}
                 <video
                     ref={remoteVideoRef}
                     autoPlay
@@ -84,7 +76,6 @@ const VideoCall = ({
                     className="w-full h-full object-cover bg-neutral-900"
                 />
 
-                {/* Nếu chưa có remote video hoặc đang loading */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
                     <img
                         src={avatar ?? defaultAvatar}
@@ -117,7 +108,6 @@ const VideoCall = ({
                     )}
                 </div>
 
-                {/* Local Video */}
                 <video
                     ref={localVideoRef}
                     autoPlay
@@ -126,7 +116,6 @@ const VideoCall = ({
                     className="absolute bottom-24 right-6 w-72 rounded-xl border-2 border-white object-cover bg-black"
                 />
 
-                {/* Controls */}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-5">
 
                     <button
@@ -164,7 +153,7 @@ const VideoCall = ({
 
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default VideoCall;
+export default VideoCall

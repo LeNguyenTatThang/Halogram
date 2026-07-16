@@ -159,6 +159,12 @@ function App() {
     }, [isAuthenticated])
 
     useEffect(() => {
+        if ("Notification" in window) {
+            Notification.requestPermission()
+        }
+    }, [])
+
+    useEffect(() => {
         if (!isAuthenticated) return
 
         const getPost = async () => {
