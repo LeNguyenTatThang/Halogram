@@ -12,6 +12,7 @@ import { FollowsModule } from './follows/follows.module';
 import { FriendshipsModule } from './friendships/friendships.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MessagesModule } from './messages/messages.module';
+import { CallModule } from './call/call.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MessagesModule } from './messages/messages.module';
     FriendshipsModule,
     NotificationsModule,
     MessagesModule,
+    CallModule,
   ],
   controllers: [AppController],
   providers: [AppService],

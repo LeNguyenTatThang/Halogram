@@ -5,6 +5,7 @@ import { Send, Phone, Video, X } from 'lucide-react'
 import { connectSocket, socket } from '../../lib/socket'
 import { createConversation, getConversationMessages, sendConversationMessage } from '../../utils/messages'
 import { useAuth } from '../../hooks/useAuth'
+import VideoCall from './VideoCall'
 
 const defaultAvatarUrl =
     'https://ui-avatars.com/api/?name=User&background=random'
@@ -28,6 +29,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [draft, setDraft] = useState('')
     const [conversationId, setConversationId] = useState<string | null>(null)
+    const [openVideoCall, setOpenVideoCall] = useState(false)
     const [peerTyping, setPeerTyping] = useState(false)
     const typingTimerRef = useRef<number | null>(null)
     const messageEndRef = useRef<HTMLDivElement | null>(null)
@@ -190,7 +192,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     <button className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi thoại">
                         <Phone size={16} />
                     </button>
-                    <button className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi video">
+                    <button
+                    onClick= {() => setOpenVideoCall(true)}
+                    className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi video">
                         <Video size={16} />
                     </button>
                     <button
@@ -247,6 +251,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     <Send size={20} />
                 </button>
             </div>
+            <VideoCall
+                open={openVideoCall}
+                username={user.username}
+                avatar={user.avatar}
+                onClose={() => setOpenVideoCall(false)}
+            />
         </motion.div>
     )
 }
