@@ -28,9 +28,15 @@ export class WsJwtGuard implements CanActivate {
     }
 
     try {
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
 
-      client.data.user = payload;
+      client.data.user = {
+        id: payload.sub || payload.id,
+        email: payload.email,
+        username: payload.username,
+      };
 
       return true;
     } catch {

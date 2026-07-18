@@ -32,6 +32,8 @@ model User {
   storyViews    StoryView[]
   conversations ConversationMember[]
   messages      Message[]
+  callsMade     Call[]               @relation("CallerCalls")
+  callsReceived Call[]               @relation("ReceiverCalls")
 
   @@map("users")
 }
@@ -153,6 +155,7 @@ model Conversation {
 
   members  ConversationMember[]
   messages Message[]
+  calls    Call[]
 
   @@map("conversations")
 }
@@ -190,4 +193,45 @@ enum FriendshipStatus {
   PENDING
   ACCEPTED
   BLOCKED
+}
+
+enum CallType {
+  AUDIO
+  VIDEO
+}
+
+enum CallStatus {
+  RINGING
+  ONGOING
+  ENDED
+  REJECTED
+  MISSED
+  CANCELED
+}
+
+model Call {
+  id String @id @default(cuid())
+
+  conversationId String
+  callerId       String
+  receiverId     String
+
+  type   CallType
+  status CallStatus
+
+  startedAt  DateTime?
+  answeredAt DateTime?
+  endedAt    DateTime?
+
+  duration Int?
+
+  createdAt DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  caller       User         @relation("CallerCalls", fields: [callerId], references: [id], onDelete: Cascade)
+  receiver     User         @relation("ReceiverCalls", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([callerId])
+  @@index([receiverId])
 }

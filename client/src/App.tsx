@@ -18,9 +18,13 @@ import { createComment } from './utils/comment'
 import StoryViewer from './components/common/StoryViewer'
 import type { Story } from './types/Story'
 import { socket } from './lib/socket'
+import IncomingCallModal from './components/call/IncomingCallModal'
+import { useCall } from './context/useCall'
+import VideoCall from './layouts/online/VideoCall'
 
 function App() {
-    const { isAuthenticated, loading  } = useAuth()
+    const { isAuthenticated, loading, user } = useAuth()
+    const { inCall, calling, activeCall, endCall } = useCall()
     const [posts, setPosts] = useState<Post[]>([])
     const [nextCursor, setNextCursor] = useState<string | undefined>()
     const [loadingMore, setLoadingMore] = useState(false)
@@ -209,6 +213,19 @@ function App() {
 
     return (
         <Router>
+            <IncomingCallModal />
+
+            {(inCall || calling) && activeCall && (
+                <VideoCall
+                    open={true}
+                    username={activeCall.callerId === user?.id ? (activeCall.receiverName || 'User') : (activeCall.callerName || 'User')}
+                    avatar={activeCall.callerId === user?.id ? activeCall.receiverAvatar : activeCall.callerAvatar}
+                    onClose={() => {
+                        if (activeCall) endCall(activeCall)
+                    }}
+                />
+            )}
+            
             {selectedStory && (
                 <StoryViewer
                     story={selectedStory}

@@ -10,17 +10,46 @@ export function useRTC() {
     const audioTrack = useRef<MediaStreamTrack | null>(null)
     const videoTrack = useRef<MediaStreamTrack | null>(null)
     const blackCanvasStream = useRef<MediaStream | null>(null)
+    const pendingCandidates = useRef<RTCIceCandidateInit[]>([])
 
     const [isCalling, setIsCalling] = useState(false)
     const [isMuted, setIsMuted] = useState(false)
     const [cameraOff, setCameraOff] = useState(false)
 
-    const createPeer = () => {
+    const createPeer = (onIceCandidate?: (candidate: RTCIceCandidate) => void) => {
         const peer = new RTCPeerConnection({
             iceServers: [
                 { urls: 'stun:stun.1.google.com:19302'}
             ]
         })
+
+        if (localStream.current) {
+            localStream.current.getTracks().forEach(track => {
+                peer.addTrack(track, localStream.current!)
+            })
+        }
+
+        peer.ontrack = (event) => {
+            if (!remoteStream.current) {
+                remoteStream.current = new MediaStream()
+
+                if (remoteVideoRef.current) {
+                    remoteVideoRef.current.srcObject = remoteStream.current
+                }
+            }
+
+            event.streams[0].getTracks().forEach(track => {
+                remoteStream.current?.addTrack(track)
+            })
+        }
+
+        peer.onicecandidate = (event) => {
+            if (!event.candidate) return
+            console.log('ICE Candidate:', event.candidate)
+            if (onIceCandidate) {
+                onIceCandidate(event.candidate)
+            }
+        }
 
         peerConnection.current = peer
 
@@ -39,6 +68,12 @@ export function useRTC() {
             })
 
             localStream.current = stream
+
+            if (peerConnection.current) {
+                stream.getTracks().forEach(track => {
+                    peerConnection.current?.addTrack(track, stream)
+                })
+            }
             
             const audioTracks = stream.getAudioTracks()
             const videoTracks = stream.getVideoTracks()
@@ -67,6 +102,7 @@ export function useRTC() {
         
         peerConnection.current?.close()
         peerConnection.current = null
+        pendingCandidates.current = []
 
         if (localStream.current) {
             localStream.current.getTracks().forEach(track => {
@@ -172,6 +208,87 @@ export function useRTC() {
         }
     }, [])
 
+    const createOffer = async () => {
+        if (!peerConnection.current) {
+            throw new Error('PeerConnection not initialized')
+        }
+
+        const offer = await peerConnection.current.createOffer()
+
+        await peerConnection.current.setLocalDescription(offer)
+
+        return offer
+    }
+
+    const handleOffer = async (offer: RTCSessionDescriptionInit) => {
+        if (!peerConnection.current) {
+            throw new Error('PeerConnection not initialized')
+        }
+
+        await peerConnection.current.setRemoteDescription(
+            new RTCSessionDescription(offer)
+        )
+
+        for (const candidate of pendingCandidates.current) {
+            try {
+                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate))
+            } catch (error) {
+                console.error('Error processing queued ICE candidate:', error)
+            }
+        }
+        pendingCandidates.current = []
+    }
+
+    const createAnswer = async () => {
+        if (!peerConnection.current) {
+            throw new Error('PeerConnection not initialized')
+        }
+
+        const answer = await peerConnection.current.createAnswer()
+
+        await peerConnection.current.setLocalDescription(answer)
+
+        return answer
+    }
+
+    const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
+        if (!peerConnection.current) {
+            throw new Error('PeerConnection not initialized')
+        }
+
+        await peerConnection.current.setRemoteDescription(
+            new RTCSessionDescription(answer)
+        )
+
+        for (const candidate of pendingCandidates.current) {
+            try {
+                await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate))
+            } catch (error) {
+                console.error('Error processing queued ICE candidate:', error)
+            }
+        }
+        pendingCandidates.current = []
+    }
+
+    const addIceCandidate = async (
+        candidate: RTCIceCandidateInit
+    ) => {
+        if (!peerConnection.current) return
+
+        if (!peerConnection.current.remoteDescription) {
+            pendingCandidates.current.push(candidate)
+            return
+        }
+
+        try {
+            await peerConnection.current.addIceCandidate(
+                new RTCIceCandidate(candidate)
+            )
+        } catch (error) {
+            console.error('Error adding ICE candidate:', error)
+        }
+    }
+
     useEffect(() => {
         return () => {
             if (localStream.current || peerConnection.current){
@@ -197,6 +314,12 @@ export function useRTC() {
         startLocalStream,
         stopCall,
         toggleMic,
-        toggleCamera
+        toggleCamera,
+
+        createOffer,
+        handleOffer,
+        createAnswer,
+        handleAnswer,
+        addIceCandidate
     }
 }

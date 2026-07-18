@@ -10,7 +10,7 @@ import { Send, Phone, Video, X } from 'lucide-react'
 import { connectSocket, socket } from '../../lib/socket'
 import { createConversation, getConversationMessages, sendConversationMessage } from '../../utils/messages'
 import { useAuth } from '../../hooks/useAuth'
-import VideoCall from './VideoCall'
+import { useCall } from '../../context/useCall'
 
 const defaultAvatarUrl =
     'https://ui-avatars.com/api/?name=User&background=random'
@@ -31,15 +31,47 @@ interface ChatMessage {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
     const { user: currentUser } = useAuth()
+    const { joinCall, leaveCall } = useCall()
+    const { callUser } = useCall()
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [draft, setDraft] = useState('')
     const [conversationId, setConversationId] = useState<string | null>(null)
-    const [openVideoCall, setOpenVideoCall] = useState(false)
     const [peerTyping, setPeerTyping] = useState(false)
     const typingTimerRef = useRef<number | null>(null)
     const messageEndRef = useRef<HTMLDivElement | null>(null)
     const conversationIdRef = useRef<string | null>(null)
     const unreadCountRef = useRef(0)
+
+    const handleVoiceCall = () => {
+        if (!conversationId || !currentUser) return
+
+        callUser({
+            roomId: conversationId,
+            callerId: currentUser.id,
+            callerName: currentUser.username,
+            callerAvatar: currentUser.avatar,
+            receiverId: user.id,
+            receiverName: user.username,
+            receiverAvatar: user.avatar,
+            type: 'AUDIO',
+        })
+    }
+    
+
+    const handleVideoCall = () => {
+        if (!conversationId || !currentUser) return
+
+        callUser({
+            roomId: conversationId,
+            callerId: currentUser.id,
+            callerName: currentUser.username,
+            callerAvatar: currentUser.avatar,
+            receiverId: user.id,
+            receiverName: user.username,
+            receiverAvatar: user.avatar,
+            type: 'VIDEO',
+        })
+    }
 
     const appendMessage = (message: ChatMessage) => {
         setMessages(prev => {
@@ -74,6 +106,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
 
                 conversationIdRef.current = nextConversationId
                 setConversationId(nextConversationId)
+                joinCall(nextConversationId)
                 connectSocket()
                 socket.emit('joinConversation', nextConversationId)
 
@@ -133,9 +166,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
             socket.off('stopTyping', handleStopTyping)
             if (conversationIdRef.current) {
                 socket.emit('leaveConversation', conversationIdRef.current)
+                leaveCall(conversationIdRef.current)
             }
         }
-    }, [currentUser?.id, user.id, user.avatar, user.username])
+    }, [currentUser?.id, user.id, user.avatar, user.username, joinCall, leaveCall])
 
     const emitTyping = (typing: boolean) => {
         if (!conversationId || !currentUser?.id) return
@@ -225,13 +259,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     </div>
                 </div>
                 <div className="flex items-center gap-1">
-                    <button className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi thoại">
-                        <Phone size={16} />
+                    <button
+                        onClick= {handleVoiceCall}
+                        className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi thoại"
+                    >
+                            <Phone size={16} />
                     </button>
                     <button
-                    onClick= {() => setOpenVideoCall(true)}
-                    className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi video">
-                        <Video size={16} />
+                        onClick= {handleVideoCall}
+                        className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi video"
+                    >
+                            <Video size={16} />
                     </button>
                     <button
                         onClick={() => onClose(user.id)}
@@ -287,14 +325,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                     <Send size={20} />
                 </button>
             </div>
-            {openVideoCall && (
-                <VideoCall
-                    open
-                    username={user.username}
-                    avatar={user.avatar}
-                    onClose={() => setOpenVideoCall(false)}
-                />
-            )}
         </motion.div>
     )
 }

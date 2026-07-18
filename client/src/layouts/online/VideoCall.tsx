@@ -1,5 +1,5 @@
 import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react'
-import { useRTC } from '../../hooks/useWebRTC'
+import { useCall } from '../../context/useCall'
 import defaultAvatar from '../../assets/Logo.png'
 import { useEffect, useState } from 'react'
 
@@ -19,49 +19,60 @@ const VideoCall = ({
     const {
         localVideoRef,
         remoteVideoRef,
+        localStream,
+        remoteStream,
         toggleMic,
         toggleCamera,
-        stopCall,
         isMuted,
         cameraOff,
-        startLocalStream
-    } = useRTC()
+        startLocalStream,
+        activeCall,
+        endCall
+    } = useCall()
 
     const [permissionError, setPermissionError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-        if (!open) {
-            stopCall()
-            return
-        }
-
-        const requestPermissions = async () => {
-            setIsLoading(true)
-            setPermissionError(null)
-            try {
-                await startLocalStream(true)
-            } catch (error) {
-                const err = error instanceof Error ? error : new Error(String(error))
-                if (err.name === 'NotAllowedError') {
-                    setPermissionError('Permission denied. Please allow access to camera and microphone.')
-                } else if (err.name === 'NotFoundError') {
-                    setPermissionError('No camera or microphone found.')
-                } else {
-                    setPermissionError('Failed to access camera and microphone.')
+        const init = async () => {
+            if (!localStream.current && open) {
+                setIsLoading(true)
+                setPermissionError(null)
+                try {
+                    await startLocalStream(activeCall?.type === 'VIDEO')
+                } catch (error) {
+                    const err = error instanceof Error ? error : new Error(String(error))
+                    if (err.name === 'NotAllowedError') {
+                        setPermissionError('Permission denied. Please allow access to camera and microphone.')
+                    } else if (err.name === 'NotFoundError') {
+                        setPermissionError('No camera or microphone found.')
+                    } else {
+                        setPermissionError('Failed to access camera and microphone.')
+                    }
+                } finally {
+                    setIsLoading(false)
                 }
-            } finally {
-                setIsLoading(false)
+            }
+
+            if (localVideoRef.current && localStream.current) {
+                localVideoRef.current.srcObject = localStream.current
             }
         }
+        init()
+    }, [open, localVideoRef, localStream, startLocalStream, activeCall?.type])
 
-        requestPermissions()
-    }, [open, startLocalStream, stopCall])
+    useEffect(() => {
+        if (remoteVideoRef.current && remoteStream.current) {
+            remoteVideoRef.current.srcObject = remoteStream.current
+        }
+    }, [remoteVideoRef, remoteStream, remoteStream.current])
 
     if (!open) return null
 
     const handleEndCall = () => {
-        stopCall()
+        if (activeCall) {
+            endCall(activeCall)
+        }
         onClose()
     }
 
@@ -79,7 +90,7 @@ const VideoCall = ({
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
                     <img
                         src={avatar ?? defaultAvatar}
-                        className="w-24 h-24 rounded-full mb-4"
+                        className="w-24 h-24 rounded-full mb-4 object-cover"
                     />
                     <h2 className="text-xl font-semibold">
                         {username}
@@ -95,7 +106,7 @@ const VideoCall = ({
                                 {permissionError}
                             </p>
                             <button
-                                onClick={onClose}
+                                onClick={handleEndCall}
                                 className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm"
                             >
                                 Close

@@ -2,7 +2,7 @@ import { io } from 'socket.io-client'
 
 const getSocketToken = () => localStorage.getItem('accessToken') ?? ''
 
-export const socket = io('http://localhost:3000/messages', {
+export const socket = io('http://localhost:3000/haloggram', {
     autoConnect: false,
     withCredentials: true,
     transports: ['websocket', 'polling'],
