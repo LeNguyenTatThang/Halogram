@@ -68,148 +68,140 @@ export class PostService {
     userId: string;
     files?: Express.Multer.File[];
   }) {
-    try {
-      const post = await this.prisma.post.findFirst({
-        where: { id: data.postId },
-        include: { images: true },
-      });
-      if (!post) {
-        throw new NotFoundException('Post not found');
-      }
-
-      if (post.userId !== data.userId) {
-        throw new ForbiddenException(
-          'You are not authorized to update this post',
-        );
-      }
-
-      const imageURLs = data.files?.length
-        ? await this.cloudinaryService.uploadImages(
-            data.files,
-            'halogram/posts',
-          )
-        : [];
-
-      const updatePost = await this.prisma.post.update({
-        where: { id: data.postId },
-        data: {
-          caption: data.caption,
-          images: {
-            create: imageURLs.map((url) => ({
-              url,
-            })),
-          },
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-            },
-          },
-          images: true,
-        },
-      });
-
-      return {
-        success: true,
-        post: updatePost,
-      };
-    } catch (error) {
-      console.log(error);
+    const post = await this.prisma.post.findFirst({
+      where: { id: data.postId },
+      include: { images: true },
+    });
+    if (!post) {
+      throw new NotFoundException('Post not found');
     }
+
+    if (post.userId !== data.userId) {
+      throw new ForbiddenException(
+        'You are not authorized to update this post',
+      );
+    }
+
+    const imageURLs = data.files?.length
+      ? await this.cloudinaryService.uploadImages(
+          data.files,
+          'halogram/posts',
+        )
+      : [];
+
+    const updatePost = await this.prisma.post.update({
+      where: { id: data.postId },
+      data: {
+        caption: data.caption,
+        images: {
+          create: imageURLs.map((url) => ({
+            url,
+          })),
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+          },
+        },
+        images: true,
+      },
+    });
+
+    return {
+      success: true,
+      post: updatePost,
+    };
   }
 
   async listPost(userId: string, cursor?: string, limit = 10) {
-    try {
-      const friends = await this.prisma.friendship.findMany({
-        where: {
-          status: 'ACCEPTED',
-          OR: [{ userId }, { friendId: userId }],
+    const friends = await this.prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [{ userId }, { friendId: userId }],
+      },
+      select: {
+        userId: true,
+        friendId: true,
+      },
+    });
+    const friendIds = friends.map((f) =>
+      f.userId === userId ? f.friendId : f.userId,
+    );
+    const getPosts = await this.prisma.post.findMany({
+      where: {
+        userId: {
+          in: [userId, ...friendIds],
         },
-        select: {
-          userId: true,
-          friendId: true,
-        },
-      });
-      const friendIds = friends.map((f) =>
-        f.userId === userId ? f.friendId : f.userId,
-      );
-      const getPosts = await this.prisma.post.findMany({
-        where: {
-          userId: {
-            in: [userId, ...friendIds],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
           },
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-            },
+        likes: {
+          where: {
+            userId,
           },
-          likes: {
-            where: {
-              userId,
-            },
-            select: {
-              userId: true,
-            },
+          select: {
+            userId: true,
           },
-          images: true,
-          _count: {
-            select: {
-              likes: true,
-              comments: true,
-            },
+        },
+        images: true,
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
           },
-          comments: {
-            take: 2,
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  username: true,
-                  displayName: true,
-                  avatar: true,
-                },
+        },
+        comments: {
+          take: 2,
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
               },
             },
-            orderBy: {
-              createdAt: 'desc',
-            },
+          },
+          orderBy: {
+            createdAt: 'desc',
           },
         },
-        orderBy: {
-          createdAt: 'desc',
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+      ...(cursor && {
+        cursor: {
+          id: cursor,
         },
-        take: limit,
-        ...(cursor && {
-          cursor: {
-            id: cursor,
-          },
-          skip: 1,
-        }),
-      });
-      const nextCursor =
-        getPosts.length === limit ? getPosts[getPosts.length - 1].id : null;
+        skip: 1,
+      }),
+    });
+    const nextCursor =
+      getPosts.length === limit ? getPosts[getPosts.length - 1].id : null;
 
-      const posts = getPosts.map(({ likes, ...post }) => ({
-        ...post,
-        isLiked: likes.length > 0,
-      }));
-      return {
-        success: true,
-        posts,
-        nextCursor,
-      };
-    } catch (error) {
-      console.log(error);
-    }
+    const posts = getPosts.map(({ likes, ...post }) => ({
+      ...post,
+      isLiked: likes.length > 0,
+    }));
+    return {
+      success: true,
+      posts,
+      nextCursor,
+    };
   }
 
   async detailPost(viewerId: string, postId: string) {
@@ -224,33 +216,29 @@ export class PostService {
   }
 
   async deletePost(userId: string, postId: string) {
-    try {
-      const user = await this.prisma.post.findFirst({
-        where: {
-          userId,
-          id: postId,
-        },
-      });
+    const user = await this.prisma.post.findFirst({
+      where: {
+        userId,
+        id: postId,
+      },
+    });
 
-      if (!user) {
-        return {
-          success: false,
-          message: 'Post not found',
-        };
-      }
-
-      await this.prisma.post.delete({
-        where: {
-          id: postId,
-        },
-      });
-
+    if (!user) {
       return {
-        success: true,
-        message: 'Post deleted successfully',
+        success: false,
+        message: 'Post not found',
       };
-    } catch (error) {
-      console.log(error);
     }
+
+    await this.prisma.post.delete({
+      where: {
+        id: postId,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Post deleted successfully',
+    };
   }
 }

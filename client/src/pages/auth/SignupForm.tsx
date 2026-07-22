@@ -17,14 +17,16 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
 
     const { signup } = useAuth()
     const {t} = useTranslation('auth')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setError('')
         if (password !== confirmPassword) {
-            alert(t('passwordMismatch') || 'Passwords do not match')
+            setError(t('passwordMismatch') || 'Passwords do not match')
             return
         }
         setIsLoading(true)
@@ -36,8 +38,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
             setFirstName('')
             setLastName('')
             setConfirmPassword('')
-        } catch (error) {
-            console.error('Signup failed:', error)
+        } catch {
+            setError(t('signupFailed') || 'Signup failed')
         } finally {
             setIsLoading(false)
         }
@@ -126,6 +128,9 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
                     </button>
                 </div>
 
+                {error && (
+                    <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
                 <button
                     type="submit"
                     disabled={isLoading}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 export function useRTC() {
     const localVideoRef = useRef<HTMLVideoElement | null>(null)
@@ -16,7 +16,7 @@ export function useRTC() {
     const [isMuted, setIsMuted] = useState(false)
     const [cameraOff, setCameraOff] = useState(false)
 
-    const createPeer = (onIceCandidate?: (candidate: RTCIceCandidate) => void) => {
+    const createPeer = useCallback((onIceCandidate?: (candidate: RTCIceCandidate) => void) => {
         const peer = new RTCPeerConnection({
             iceServers: [
                 { urls: 'stun:stun.1.google.com:19302'}
@@ -54,7 +54,7 @@ export function useRTC() {
         peerConnection.current = peer
 
         return peer
-    }
+    }, [])
 
     const startLocalStream = useCallback(async (video = true) => {
         try {
@@ -208,7 +208,7 @@ export function useRTC() {
         }
     }, [])
 
-    const createOffer = async () => {
+    const createOffer = useCallback(async () => {
         if (!peerConnection.current) {
             throw new Error('PeerConnection not initialized')
         }
@@ -218,9 +218,9 @@ export function useRTC() {
         await peerConnection.current.setLocalDescription(offer)
 
         return offer
-    }
+    }, [])
 
-    const handleOffer = async (offer: RTCSessionDescriptionInit) => {
+    const handleOffer = useCallback(async (offer: RTCSessionDescriptionInit) => {
         if (!peerConnection.current) {
             throw new Error('PeerConnection not initialized')
         }
@@ -237,9 +237,9 @@ export function useRTC() {
             }
         }
         pendingCandidates.current = []
-    }
+    }, [])
 
-    const createAnswer = async () => {
+    const createAnswer = useCallback(async () => {
         if (!peerConnection.current) {
             throw new Error('PeerConnection not initialized')
         }
@@ -249,9 +249,9 @@ export function useRTC() {
         await peerConnection.current.setLocalDescription(answer)
 
         return answer
-    }
+    }, [])
 
-    const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
+    const handleAnswer = useCallback(async (answer: RTCSessionDescriptionInit) => {
         if (!peerConnection.current) {
             throw new Error('PeerConnection not initialized')
         }
@@ -268,9 +268,9 @@ export function useRTC() {
             }
         }
         pendingCandidates.current = []
-    }
+    }, [])
 
-    const addIceCandidate = async (
+    const addIceCandidate = useCallback(async (
         candidate: RTCIceCandidateInit
     ) => {
         if (!peerConnection.current) return
@@ -287,7 +287,7 @@ export function useRTC() {
         } catch (error) {
             console.error('Error adding ICE candidate:', error)
         }
-    }
+    }, [])
 
     useEffect(() => {
         return () => {
@@ -297,7 +297,7 @@ export function useRTC() {
         }
     }, [stopCall])
 
-    return {
+    return useMemo(() => ({
         peerConnection,
 
         localVideoRef,
@@ -321,5 +321,6 @@ export function useRTC() {
         createAnswer,
         handleAnswer,
         addIceCandidate
-    }
+    }), [isCalling, isMuted, cameraOff, createPeer, startLocalStream, stopCall, toggleMic, toggleCamera,
+        createOffer, handleOffer, createAnswer, handleAnswer, addIceCandidate])
 }

@@ -22,7 +22,9 @@ export class AuthService {
   ) {}
   async login(dto: SignInDto) {
     const user = await this.prisma.user.findFirst({
-      where: { email: dto.email, username: dto.username },
+      where: {
+        OR: [{ email: dto.email }, { username: dto.email }],
+      },
     });
 
     if (!user) {

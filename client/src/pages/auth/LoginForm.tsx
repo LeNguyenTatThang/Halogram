@@ -12,16 +12,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
     const {t} = useTranslation('auth')
     const { login } = useAuth()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError('')
         try {
             await login(email, password)
-        } catch (error) {
-            console.error('Login failed:', error)
+        } catch {
+            setError(t('loginFailed'))
         } finally {
             setIsLoading(false)
         }
@@ -70,6 +72,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToSignup }) => {
                     </button>
                 </div>
 
+                {error && (
+                    <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
                 <button
                     type="submit"
                     disabled={isLoading}

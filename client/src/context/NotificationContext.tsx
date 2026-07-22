@@ -109,7 +109,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     try {
       await markAllAsReadApi()
     } catch {
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: n.isRead })))
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: false })))
       setUnreadCount(prevUnread)
     }
   }, [unreadCount])

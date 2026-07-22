@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   namespace: 'haloggram',
@@ -25,7 +26,37 @@ export class MessagesGateway
 
   private readonly logger = new Logger(MessagesGateway.name);
 
-  handleConnection(client: Socket) {
+  constructor(private readonly jwtService: JwtService) {}
+
+  async handleConnection(client: Socket) {
+    try {
+      const tokenFromAuth = client.handshake.auth?.token;
+      const authHeader = client.handshake.headers.authorization;
+      const token =
+        typeof tokenFromAuth === 'string'
+          ? tokenFromAuth
+          : typeof authHeader === 'string'
+            ? authHeader.replace(/^Bearer\s+/i, '')
+            : undefined;
+
+      if (token) {
+        const payload = this.jwtService.verify(token, {
+          secret: process.env.JWT_SECRET,
+        });
+        const userId = payload.sub || payload.id;
+        if (userId) {
+          client.data.user = {
+            id: userId,
+            email: payload.email,
+            username: payload.username,
+          };
+          await client.join(userId);
+        }
+      }
+    } catch {
+      // Ignore connection errors for unauthenticated users
+    }
+
     this.logger.log(`Client connected: ${client.id}`);
   }
 

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -61,104 +62,88 @@ export class CommentsService {
   }
 
   async updateComment(commentId: string, userId: string, text: string) {
-    try {
-      const comment = await this.prisma.comment.findUnique({
-        where: { id: commentId },
-      });
+    const comment = await this.prisma.comment.findUnique({
+      where: { id: commentId },
+    });
 
-      if (!comment) {
-        throw new Error('Comment not found');
-      }
-
-      if (comment.userId !== userId) {
-        throw new Error('You are not authorized to update this comment');
-      }
-
-      const updatedComment = await this.prisma.comment.update({
-        where: { id: commentId },
-        data: {
-          text: text,
-        },
-      });
-
-      return {
-        success: true,
-        message: 'Comment updated successfully',
-        data: updatedComment,
-      };
-    } catch (error) {
-      console.log(error);
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
     }
+
+    if (comment.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to update this comment');
+    }
+
+    const updatedComment = await this.prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        text: text,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Comment updated successfully',
+      data: updatedComment,
+    };
   }
 
   async deleteComment(commentId: string, userId: string) {
-    try {
-      const comment = await this.prisma.comment.findUnique({
-        where: { id: commentId },
-      });
+    const comment = await this.prisma.comment.findUnique({
+      where: { id: commentId },
+    });
 
-      if (!comment) {
-        throw new Error('Comment not found');
-      }
-
-      if (comment.userId !== userId) {
-        throw new Error(' You are not authorized to delete this comment');
-      }
-
-      await this.prisma.comment.delete({
-        where: { id: commentId },
-      });
-
-      return {
-        success: true,
-        message: 'Comment deleted successfully',
-      };
-    } catch (error) {
-      console.log(error);
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
     }
+
+    if (comment.userId !== userId) {
+      throw new ForbiddenException('You are not authorized to delete this comment');
+    }
+
+    await this.prisma.comment.delete({
+      where: { id: commentId },
+    });
+
+    return {
+      success: true,
+      message: 'Comment deleted successfully',
+    };
   }
 
   async deleteCommentByAuthor(postId: string, userId: string) {
-    try {
-      const comments = await this.prisma.comment.findMany({
-        where: { postId, userId },
-      });
+    const comments = await this.prisma.comment.findMany({
+      where: { postId, userId },
+    });
 
-      if (!comments) {
-        throw new Error('Comments not found');
-      }
-
-      await this.prisma.comment.deleteMany({
-        where: { postId, userId },
-      });
-
-      return {
-        success: true,
-        message: 'Comments deleted successfully',
-      };
-    } catch (error) {
-      console.log(error);
+    if (!comments) {
+      throw new NotFoundException('Comments not found');
     }
+
+    await this.prisma.comment.deleteMany({
+      where: { postId, userId },
+    });
+
+    return {
+      success: true,
+      message: 'Comments deleted successfully',
+    };
   }
 
   async listComment(postId: string) {
-    try {
-      const comments = await this.prisma.comment.findMany({
-        where: { postId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-            },
+    const comments = await this.prisma.comment.findMany({
+      where: { postId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
           },
         },
-      });
-      return comments;
-    } catch (error) {
-      console.log(error);
-    }
+      },
+    });
+    return comments;
   }
 }
