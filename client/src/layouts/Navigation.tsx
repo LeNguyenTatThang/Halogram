@@ -61,6 +61,10 @@ const Navigation: React.FC<NavigationProps> = () => {
     const { logout } = useAuth()
 
     const [activeTab, setActiveTab] = useState('')
+    const [isSidebarHovered, setIsSidebarHovered] = useState(false)
+
+    const isPanelOpen = ['search', 'create', 'notifications', 'settings'].includes(activeTab)
+    const isSidebarExpanded = isSidebarHovered && !isPanelOpen
 
     const { t } = useTranslation('navigation')
     const { unreadCount } = useNotifications()
@@ -75,10 +79,15 @@ const Navigation: React.FC<NavigationProps> = () => {
     }
 
     return (
-        <nav className="group">
+        <nav>
             {/* Desktop Sidebar */}
-            <div className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-16 md:group-hover:w-64 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg transition-all duration-300 overflow-hidden
-            dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none">
+            <div
+                className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg transition-all duration-300 overflow-hidden
+            dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none"
+                style={{ width: isSidebarExpanded ? 256 : 64 }}
+                onMouseEnter={() => { if (!isPanelOpen) setIsSidebarHovered(true) }}
+                onMouseLeave={() => setIsSidebarHovered(false)}
+            >
                 <div className="flex items-center px-4 py-4 border-b overflow-hidden">
                     <div className="flex items-center whitespace-nowrap">
                         <img
@@ -88,9 +97,10 @@ const Navigation: React.FC<NavigationProps> = () => {
                         />
 
                         <span
-                            className="ml-3 text-xl opacity-0 md:group-hover:opacity-100 transition-all duration-300 whitespace-nowrap overflow-hidden"
+                            className="ml-3 text-xl transition-all duration-300 whitespace-nowrap overflow-hidden"
                             style={{
-                                fontFamily: "'Monoton', cursive"
+                                fontFamily: "'Monoton', cursive",
+                                opacity: isSidebarExpanded ? 1 : 0,
                             }}
                         >
                             HALOGRAM
@@ -120,7 +130,12 @@ const Navigation: React.FC<NavigationProps> = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <span className="text-sm font-medium whitespace-nowrap max-w-0 opacity-0 md:group-hover:max-w-40 md:group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+                                    <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 overflow-hidden"
+                                        style={{
+                                            maxWidth: isSidebarExpanded ? 160 : 0,
+                                            opacity: isSidebarExpanded ? 1 : 0,
+                                        }}
+                                    >
                                         {t(item.id)}
                                     </span>
                                 </div>
@@ -151,7 +166,12 @@ const Navigation: React.FC<NavigationProps> = () => {
                     >
                         <div className="flex items-center gap-3 min-w-0">
                             <LogOut className="w-6 h-6 flex-shrink-0" />
-                            <span className="text-sm font-medium whitespace-nowrap max-w-0 opacity-0 md:group-hover:max-w-40 md:group-hover:opacity-100 transition-all duration-300 overflow-hidden">
+                            <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 overflow-hidden"
+                                style={{
+                                    maxWidth: isSidebarExpanded ? 160 : 0,
+                                    opacity: isSidebarExpanded ? 1 : 0,
+                                }}
+                            >
                                 {t('logout')}
                             </span>
                         </div>
@@ -160,8 +180,8 @@ const Navigation: React.FC<NavigationProps> = () => {
             </div>
 
             {/* Sidebar Panel */}
-            {['search', 'create', 'notifications', 'settings'].includes(activeTab) && (
-                <div className="hidden md:block fixed left-20 md:group-hover:left-64 w-80 h-full z-50 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300
+            {isPanelOpen && (
+                <div className="hidden md:block fixed left-20 w-80 h-full z-50 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden flex flex-col transition-all duration-300
                 dark:bg-black dark:border-gray-700 dark:bg-opacity-900">
                     <div className="flex items-center justify-between px-4 py-2 border-b">
                         <span className="font-semibold text-sm capitalize">
