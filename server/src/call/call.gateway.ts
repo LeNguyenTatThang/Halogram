@@ -39,7 +39,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const payload = this.jwtService.verify(token, {
           secret: process.env.JWT_SECRET,
         });
-        const userId = payload.sub || payload.id;
+        const userId = (payload.sub || payload.id) as string;
         if (userId) {
           client.data.user = {
             id: userId,
@@ -55,7 +55,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
         console.log(`📞 Call Connected: ${client.id} (no token)`);
       }
     } catch (err) {
-      console.error(`📞 Call connection auth error: ${err.message}`);
+      console.error(`📞 Call connection auth error: ${(err as Error).message}`);
     }
   }
 
