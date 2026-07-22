@@ -10,7 +10,7 @@ i18n
   .init({
     fallbackLng: 'en',
     load: 'languageOnly',
-    ns: ['translation', 'navigation', 'profile', 'auth', 'settings', 'chat'],
+    ns: ['translation', 'navigation', 'profile', 'auth', 'settings', 'chat', 'notifications'],
     defaultNS: 'translation',
 
     interpolation: {

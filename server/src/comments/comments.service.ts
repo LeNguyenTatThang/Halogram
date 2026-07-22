@@ -4,10 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
   async createComment(userId: string, postId: string, comment: string) {
     const post = await this.prisma.post.findUnique({
       where: { id: postId },
@@ -38,6 +42,16 @@ export class CommentsService {
         },
       },
     });
+
+    if (post.userId !== userId) {
+      await this.notificationsService.createNotification({
+        type: 'POST_COMMENT',
+        recipientId: post.userId,
+        actorId: userId,
+        postId,
+        commentId: newComment.id,
+      });
+    }
 
     return {
       success: true,

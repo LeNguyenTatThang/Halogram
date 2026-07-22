@@ -5,13 +5,16 @@ import './lib/i18n.ts'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthProvider.tsx'
 import { CallProvider } from './context/CallContext.tsx'
+import { NotificationProvider } from './context/NotificationContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <CallProvider>
-        <App />
-      </CallProvider>
+      <NotificationProvider>
+        <CallProvider>
+          <App />
+        </CallProvider>
+      </NotificationProvider>
     </AuthProvider>
   </StrictMode>,
 )

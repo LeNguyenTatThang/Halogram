@@ -1,8 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 @Injectable()
 export class FriendshipsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private async getUsers(userId: string, friendId: string) {
     const [user, friend] = await Promise.all([
@@ -70,6 +74,12 @@ export class FriendshipsService {
       },
     });
 
+    await this.notificationsService.createNotification({
+      type: 'FRIEND_REQUEST',
+      recipientId: friendId,
+      actorId: userId,
+    });
+
     return {
       success: true,
       message: 'Friend request sent successfully',
@@ -112,6 +122,15 @@ export class FriendshipsService {
         data: {
           status: 'ACCEPTED',
         },
+      });
+
+      const originalRequesterId =
+        friendship.userId === userId ? friendship.friendId : friendship.userId;
+
+      await this.notificationsService.createNotification({
+        type: 'FRIEND_ACCEPTED',
+        recipientId: originalRequesterId,
+        actorId: userId,
       });
 
       return {

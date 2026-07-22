@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Logo from '../assets/logo.png'
 import { useAuth } from '../hooks/useAuth'
+import { useNotifications } from '../context/useNotifications'
 import Search from '../pages/search/Search'
 import CreatePost from '../pages/post/CreatePost'
 import Notifications from '../pages/notifications/Notifications'
@@ -62,6 +63,7 @@ const Navigation: React.FC<NavigationProps> = () => {
     const [activeTab, setActiveTab] = useState('')
 
     const { t } = useTranslation('navigation')
+    const { unreadCount } = useNotifications()
 
     const openTab = (id: string) => {
         setActiveTab(prev => (prev === id ? '' : id))
@@ -110,7 +112,14 @@ const Navigation: React.FC<NavigationProps> = () => {
                                 }
                             >
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <Icon className="w-6 h-6 flex-shrink-0" />
+                                    <div className="relative">
+                                        <Icon className="w-6 h-6 flex-shrink-0" />
+                                        {item.id === 'notifications' && unreadCount > 0 && (
+                                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                                {unreadCount > 9 ? '9+' : unreadCount}
+                                            </span>
+                                        )}
+                                    </div>
                                     <span className="text-sm font-medium whitespace-nowrap max-w-0 opacity-0 md:group-hover:max-w-40 md:group-hover:opacity-100 transition-all duration-300 overflow-hidden">
                                         {t(item.id)}
                                     </span>
@@ -209,7 +218,14 @@ const Navigation: React.FC<NavigationProps> = () => {
                                         : 'text-gray-500'
                                 }`}
                             >
-                                <Icon className="w-6 h-6" />
+                                <div className="relative">
+                                    <Icon className="w-6 h-6" />
+                                    {item.id === 'notifications' && unreadCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                        </span>
+                                    )}
+                                </div>
                             </button>
                         )
                     })}

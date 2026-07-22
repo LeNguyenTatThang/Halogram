@@ -32,8 +32,10 @@ model User {
   storyViews    StoryView[]
   conversations ConversationMember[]
   messages      Message[]
-  callsMade     Call[]               @relation("CallerCalls")
-  callsReceived Call[]               @relation("ReceiverCalls")
+  callsMade              Call[]               @relation("CallerCalls")
+  callsReceived          Call[]               @relation("ReceiverCalls")
+  notificationsReceived  Notification[]       @relation("NotificationRecipient")
+  notificationsSent      Notification[]       @relation("NotificationActor")
 
   @@map("users")
 }
@@ -70,9 +72,10 @@ model Post {
   userId    String
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  comments  Comment[]
-  images    PostImage[]
-  likes     PostLike[]
+  comments      Comment[]
+  images        PostImage[]
+  likes         PostLike[]
+  notifications Notification[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -100,8 +103,9 @@ model Comment {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post          Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
 
   @@index([postId])
   @@index([userId])
@@ -187,6 +191,35 @@ model Message {
   @@index([conversationId, createdAt])
   @@index([senderId])
   @@map("messages")
+}
+
+enum NotificationType {
+  POST_LIKE
+  POST_COMMENT
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+  FOLLOW
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  recipientId String
+  actorId     String
+  postId      String?
+  commentId   String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor       User             @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  post        Post?            @relation(fields: [postId], references: [id], onDelete: SetNull)
+  comment     Comment?         @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  @@index([recipientId, createdAt])
+  @@index([actorId])
+  @@index([recipientId, isRead])
+  @@map("notifications")
 }
 
 enum FriendshipStatus {

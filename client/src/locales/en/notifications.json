@@ -1,0 +1,11 @@
+{
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "markAllAsRead": "Mark all as read",
+    "loadMore": "Load more",
+    "post_like": "liked your post.",
+    "post_comment": "commented on your post.",
+    "friend_request": "sent you a friend request.",
+    "friend_accepted": "accepted your friend request.",
+    "follow": "started following you."
+}
