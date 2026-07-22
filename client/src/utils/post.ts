@@ -3,9 +3,14 @@ import configAxios from "../api/axios"
 
 export const createPost = async (data: FormData) => {
     const res = await configAxios.post('/post/create-post', data, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return res.data
+}
+
+export const updatePost = async (postId: string, data: FormData) => {
+    const res = await configAxios.put(`/post/update-post/${postId}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     })
     return res.data
 }

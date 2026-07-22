@@ -1,9 +1,21 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { SearchDto } from './dto/search.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,6 +25,17 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async getMyProfile(@CurrentUser() user: JwtUser) {
     return this.usersService.getProfileById(user.id);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('avatar'))
+  async updateProfile(
+    @CurrentUser() user: JwtUser,
+    @Body() body: UpdateProfileDto,
+    @UploadedFile() avatar?: Express.Multer.File,
+  ) {
+    return this.usersService.updateProfile(user.id, body, avatar);
   }
 
   @Get(':username')

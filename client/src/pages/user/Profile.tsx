@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { User } from '../../types/User'
 import type { Post } from '../../types/Post'
-import { Settings, Grid, Tag, Bookmark } from 'lucide-react'
+import { Settings, Grid, Tag, Bookmark, Edit3 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { getProfile } from '../../utils/profile'
 import { getUserPosts, getSavedPosts, getTaggedPosts } from '../../utils/post'
+import EditProfileModal from '../../components/profile/EditProfileModal'
+import EditPostModal from '../../components/profile/EditPostModal'
 
 const LOADING = 'loading'
 const ERROR = 'error'
@@ -21,6 +23,10 @@ const Profile: React.FC = () => {
     const [taggedPosts, setTaggedPosts] = useState<Post[]>([])
     const [profileStatus, setProfileStatus] = useState(LOADING)
     const [postsStatus, setPostsStatus] = useState(LOADING)
+    const [showEditProfile, setShowEditProfile] = useState(false)
+    const [editingPost, setEditingPost] = useState<Post | null>(null)
+
+    const isOwnProfile = username === 'me'
 
     const tabs = [
         { id: 'posts', icon: Grid, label: t('posts') },
@@ -117,9 +123,12 @@ const Profile: React.FC = () => {
                     </div>
                 </div>
                 <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:justify-center">
-                    <button className="h-10 w-full sm:w-auto sm:px-8 md:px-16 rounded-md bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-semibold transition">
-                        {t('editProfile')}
-                    </button>
+                    {isOwnProfile && (
+                        <button onClick={() => setShowEditProfile(true)}
+                            className="h-10 w-full sm:w-auto sm:px-8 md:px-16 rounded-md bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-semibold transition">
+                            {t('editProfile')}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -153,14 +162,22 @@ const Profile: React.FC = () => {
                         {displayPosts.map((post) => (
                             <div
                                 key={post.id}
-                                className="aspect-square bg-gray-100 dark:bg-gray-800"
+                                className="aspect-square bg-gray-100 dark:bg-gray-800 relative group"
+                                onClick={() => isOwnProfile && activeTab === 'posts' && setEditingPost(post)}
                             >
                                 {post.images?.[0] ? (
-                                    <img
-                                        src={post.images[0].url}
-                                        alt={post.caption ?? 'Post'}
-                                        className="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                    />
+                                    <>
+                                        <img
+                                            src={post.images[0].url}
+                                            alt={post.caption ?? 'Post'}
+                                            className="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                                        />
+                                        {isOwnProfile && activeTab === 'posts' && (
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                                                <Edit3 className="w-6 h-6 text-white" />
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <div className="flex items-center justify-center h-full text-gray-400">
                                         No image
@@ -177,6 +194,25 @@ const Profile: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {showEditProfile && profile && (
+                <EditProfileModal
+                    user={profile}
+                    onClose={() => setShowEditProfile(false)}
+                    onSaved={(updated) => setProfile({ ...profile, ...updated })}
+                />
+            )}
+
+            {editingPost && (
+                <EditPostModal
+                    post={editingPost}
+                    onClose={() => setEditingPost(null)}
+                    onSaved={(updated) => {
+                        setUserPosts((prev) => prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)))
+                        setEditingPost(null)
+                    }}
+                />
+            )}
         </div>
     )
 }

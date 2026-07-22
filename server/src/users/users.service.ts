@@ -1,10 +1,42 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UserTransformer } from '../common/transformers/user.transformer';
+import type { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
+
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+    avatarFile?: Express.Multer.File,
+  ) {
+    const updateData: Record<string, unknown> = {};
+    if (dto.displayName !== undefined) updateData.displayName = dto.displayName;
+    if (dto.firstName !== undefined) updateData.firstName = dto.firstName;
+    if (dto.lastName !== undefined) updateData.lastName = dto.lastName;
+    if (dto.bio !== undefined) updateData.bio = dto.bio;
+
+    if (avatarFile) {
+      const url = await this.cloudinaryService.uploadImage(
+        avatarFile.buffer,
+        'halogram/avatars',
+      );
+      updateData.avatar = url;
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    return UserTransformer.transform(user);
+  }
 
   async getProfileById(userId: string) {
     const user = await this.prisma.user.findUnique({
