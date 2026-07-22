@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -147,11 +147,11 @@ model Friendship {
   status    FriendshipStatus @default(PENDING)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-  friend    User             @relation("FriendOf", fields: [friendId], references: [id], map: "FK_Friendship_friendId")
-  user      User             @relation("FriendRequests", fields: [userId], references: [id], map: "FK_Friendship_userId")
+  friend    User             @relation("FriendOf", fields: [friendId], references: [id], map: "Friendship_friendId_fkey")
+  user      User             @relation("FriendRequests", fields: [userId], references: [id], map: "Friendship_userId_fkey")
 
-  @@index([friendId], map: "IX_Friendship_friendId")
-  @@index([userId], map: "IX_Friendship_userId")
+  @@index([friendId], map: "Friendship_friendId_fkey")
+  @@index([userId], map: "Friendship_userId_fkey")
   @@map("friendship")
 }
 
