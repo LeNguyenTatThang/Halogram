@@ -1,8 +1,10 @@
 import { io } from 'socket.io-client'
 
+const SERVER_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+
 const getSocketToken = () => localStorage.getItem('accessToken') ?? ''
 
-export const socket = io('http://localhost:3000/haloggram', {
+export const socket = io(`${SERVER_URL}/haloggram`, {
     autoConnect: false,
     withCredentials: true,
     transports: ['websocket', 'polling'],
