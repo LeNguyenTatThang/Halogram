@@ -26,6 +26,7 @@ const Profile: React.FC = () => {
     const [showEditProfile, setShowEditProfile] = useState(false)
     const [editingPost, setEditingPost] = useState<Post | null>(null)
 
+    const username = paramUsername || 'me'
     const isOwnProfile = username === 'me'
 
     const tabs = [
@@ -33,8 +34,6 @@ const Profile: React.FC = () => {
         { id: 'tagged', icon: Tag, label: t('tagged') },
         { id: 'saved', icon: Bookmark, label: t('saved') },
     ]
-
-    const username = paramUsername || 'me'
 
     useEffect(() => {
         let cancelled = false

@@ -1,16 +1,19 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getUserPosts(
@@ -35,6 +38,18 @@ export class PostService {
           select: { userId: true },
         },
         images: true,
+        tags: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
         _count: {
           select: { likes: true, comments: true },
         },
@@ -88,6 +103,18 @@ export class PostService {
               select: { userId: true },
             },
             images: true,
+            tags: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                  },
+                },
+              },
+            },
             _count: {
               select: { likes: true, comments: true },
             },
@@ -166,6 +193,18 @@ export class PostService {
               select: { userId: true },
             },
             images: true,
+            tags: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                  },
+                },
+              },
+            },
             _count: {
               select: { likes: true, comments: true },
             },
@@ -193,15 +232,65 @@ export class PostService {
     };
   }
 
+  private async validateTagUsers(userId: string, tagUserIds: string[]) {
+    if (tagUserIds.includes(userId)) {
+      throw new BadRequestException('Cannot tag yourself');
+    }
+
+    const uniqueIds = [...new Set(tagUserIds)];
+    if (uniqueIds.length !== tagUserIds.length) {
+      throw new BadRequestException('Duplicate tag user IDs');
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true },
+    });
+
+    if (users.length !== uniqueIds.length) {
+      throw new BadRequestException('One or more tagged users not found');
+    }
+
+    const friendships = await this.prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: uniqueIds.map((id) => ({
+          OR: [
+            { userId, friendId: id },
+            { userId: id, friendId: userId },
+          ],
+        })),
+      },
+      select: { userId: true, friendId: true },
+    });
+
+    const friendIds = new Set(
+      friendships.map((f) => (f.userId === userId ? f.friendId : f.userId)),
+    );
+
+    const nonFriends = uniqueIds.filter((id) => !friendIds.has(id));
+    if (nonFriends.length > 0) {
+      throw new BadRequestException(
+        `Not friends with user(s): ${nonFriends.join(', ')}`,
+      );
+    }
+  }
+
   async createPost(data: {
     caption?: string;
     userId: string;
     files?: Express.Multer.File[];
+    tagUserIds?: string[];
   }) {
     try {
       if (!data.caption?.trim() && (!data.files || data.files.length === 0)) {
         throw new Error('Post must have a caption or an image');
       }
+
+      if (data.tagUserIds?.length) {
+        await this.validateTagUsers(data.userId, data.tagUserIds);
+      }
+
       const imageUrls = data.files?.length
         ? await this.cloudinaryService.uploadImages(
             data.files,
@@ -218,6 +307,13 @@ export class PostService {
               url,
             })),
           },
+          tags: data.tagUserIds?.length
+            ? {
+                create: data.tagUserIds.map((tagUserId) => ({
+                  userId: tagUserId,
+                })),
+              }
+            : undefined,
         },
         include: {
           user: {
@@ -229,8 +325,33 @@ export class PostService {
             },
           },
           images: true,
+          tags: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
         },
       });
+
+      if (data.tagUserIds?.length) {
+        await Promise.all(
+          data.tagUserIds.map(async (tagUserId) => {
+            await this.notificationsService.createNotification({
+              type: 'POST_TAGGED',
+              recipientId: tagUserId,
+              actorId: data.userId,
+              postId: post.id,
+            });
+          }),
+        );
+      }
 
       return {
         success: true,
@@ -247,10 +368,11 @@ export class PostService {
     caption?: string;
     userId: string;
     files?: Express.Multer.File[];
+    tagUserIds?: string[];
   }) {
     const post = await this.prisma.post.findFirst({
       where: { id: data.postId },
-      include: { images: true },
+      include: { images: true, tags: true },
     });
     if (!post) {
       throw new NotFoundException('Post not found');
@@ -265,6 +387,52 @@ export class PostService {
     const imageURLs = data.files?.length
       ? await this.cloudinaryService.uploadImages(data.files, 'halogram/posts')
       : [];
+
+    if (data.tagUserIds) {
+      await this.validateTagUsers(data.userId, data.tagUserIds);
+
+      const existingTagUserIds: string[] = (post.tags ?? []).map(
+        (t: { userId: string }) => t.userId,
+      );
+      const newTagUserIds = data.tagUserIds.filter(
+        (id: string) => !existingTagUserIds.includes(id),
+      );
+      const removedTagUserIds = existingTagUserIds.filter(
+        (id: string) => !(data.tagUserIds as string[]).includes(id),
+      );
+
+      await Promise.all([
+        removedTagUserIds.length > 0
+          ? this.prisma.postTag.deleteMany({
+              where: {
+                postId: data.postId,
+                userId: { in: removedTagUserIds },
+              },
+            })
+          : Promise.resolve(),
+        newTagUserIds.length > 0
+          ? this.prisma.postTag.createMany({
+              data: newTagUserIds.map((id) => ({
+                postId: data.postId,
+                userId: id,
+              })),
+            })
+          : Promise.resolve(),
+      ]);
+
+      if (newTagUserIds.length > 0) {
+        await Promise.all(
+          newTagUserIds.map(async (tagUserId) => {
+            await this.notificationsService.createNotification({
+              type: 'POST_TAGGED',
+              recipientId: tagUserId,
+              actorId: data.userId,
+              postId: data.postId,
+            });
+          }),
+        );
+      }
+    }
 
     const updatePost = await this.prisma.post.update({
       where: { id: data.postId },
@@ -286,6 +454,18 @@ export class PostService {
           },
         },
         images: true,
+        tags: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -333,6 +513,18 @@ export class PostService {
           },
         },
         images: true,
+        tags: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             likes: true,

@@ -38,13 +38,10 @@ export class UsersController {
     return this.usersService.updateProfile(user.id, body, avatar);
   }
 
-  @Get(':username')
+  @Get('suggestions')
   @UseGuards(JwtAuthGuard)
-  async getProfile(
-    @Param('username') username: string,
-    @CurrentUser() user: JwtUser,
-  ) {
-    return this.usersService.getProfile(username, user.id);
+  async getSuggestions(@CurrentUser() user: JwtUser) {
+    return this.usersService.getSuggestions(user.id);
   }
 
   @Get('search')
@@ -63,5 +60,14 @@ export class UsersController {
       message: 'Users fetched successfully',
       data: users,
     };
+  }
+
+  @Get(':username')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(
+    @Param('username') username: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    return this.usersService.getProfile(username, user.id);
   }
 }

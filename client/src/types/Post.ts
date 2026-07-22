@@ -1,3 +1,10 @@
+export interface TaggedUser {
+  id: string
+  username: string
+  displayName: string
+  avatar: string | null
+}
+
 export interface Post {
   id: string
   caption: string | null
@@ -23,6 +30,10 @@ export interface Post {
       username: string
     }
   }[] | null
+
+  tags?: {
+    user: TaggedUser
+  }[]
 
   _count: {
     likes: number

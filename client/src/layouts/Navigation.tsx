@@ -192,7 +192,7 @@ const Navigation: React.FC<NavigationProps> = () => {
                         )}
 
                         {activeTab === 'notifications' && (
-                            <Notifications />
+                            <Notifications onClose={() => setActiveTab('')} />
                         )}
 
                         {activeTab === 'settings' && (
@@ -207,11 +207,21 @@ const Navigation: React.FC<NavigationProps> = () => {
                 <div className="flex justify-around items-center py-2">
                     {navItems.map(item => {
                         const Icon = item.icon
+                        const isLink = item.type === 'link'
 
-                        return (
+                        const handleMobileClick = () => {
+                            if (isLink) return
+                            if (item.id === 'notifications') {
+                                window.location.href = '/notifications'
+                            } else {
+                                openTab(item.id)
+                            }
+                        }
+
+                        const content = (
                             <button
                                 key={item.id}
-                                onClick={() => openTab(item.id)}
+                                onClick={handleMobileClick}
                                 className={`flex flex-col items-center p-2 transition-colors ${
                                     activeTab === item.id
                                         ? 'text-black'
@@ -228,6 +238,16 @@ const Navigation: React.FC<NavigationProps> = () => {
                                 </div>
                             </button>
                         )
+
+                        if (isLink) {
+                            return (
+                                <Link key={item.id} to={item.href}>
+                                    {content}
+                                </Link>
+                            )
+                        }
+
+                        return content
                     })}
                 </div>
             </div>

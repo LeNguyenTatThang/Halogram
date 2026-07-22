@@ -1,8 +1,10 @@
 import { createContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import toast from 'react-hot-toast'
 import { socket } from '../lib/socket'
 import { getNotifications, getUnreadCount, markAsRead as markAsReadApi, markAllAsRead as markAllAsReadApi } from '../utils/notification'
 import type { Notification } from '../types/Notification'
 import { useAuth } from '../hooks/useAuth'
+import i18n from '../lib/i18n'
 
 export interface NotificationContextType {
   notifications: Notification[]
@@ -42,11 +44,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           getNotifications(),
           getUnreadCount(),
         ])
-        const data = notifRes.data ?? notifRes
-        setNotifications(data.data ?? [])
-        setNextCursor(data.nextCursor ?? null)
-        setHasMore(!!data.nextCursor)
-        notificationIdsRef.current = new Set((data.data ?? []).map((n: Notification) => n.id))
+        setNotifications(notifRes.data ?? [])
+        setNextCursor(notifRes.nextCursor ?? null)
+        setHasMore(!!notifRes.nextCursor)
+        notificationIdsRef.current = new Set((notifRes.data ?? []).map((n: Notification) => n.id))
         setUnreadCount(countRes.count ?? countRes.data?.count ?? 0)
       } catch {
         // silently fail
@@ -67,6 +68,24 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       notificationIdsRef.current.add(notification.id)
       setNotifications((prev) => [notification, ...prev])
       setUnreadCount((prev) => prev + 1)
+
+      const actionText = i18n.t(`notifications:${notification.type.toLowerCase()}`, '')
+      toast(
+        () => (
+          <div className="flex items-center gap-3">
+            <img
+              src={notification.actor.avatar || `https://ui-avatars.com/api/?name=${notification.actor.username}&background=random`}
+              alt={notification.actor.username}
+              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+            />
+            <div className="min-w-0">
+              <span className="font-semibold text-sm">{notification.actor.displayName}</span>{' '}
+              <span className="text-sm text-gray-600">{actionText}</span>
+            </div>
+          </div>
+        ),
+        { duration: 4000 },
+      )
     }
 
     socket.on('notification:new', handleNewNotification)
@@ -118,14 +137,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (!nextCursor) return
     try {
       const res = await getNotifications(nextCursor)
-      const data = res.data ?? res
-      const newItems = (data.data ?? []).filter(
+      const newItems = (res.data ?? []).filter(
         (n: Notification) => !notificationIdsRef.current.has(n.id),
       )
       newItems.forEach((n: Notification) => notificationIdsRef.current.add(n.id))
       setNotifications((prev) => [...prev, ...newItems])
-      setNextCursor(data.nextCursor ?? null)
-      setHasMore(!!data.nextCursor)
+      setNextCursor(res.nextCursor ?? null)
+      setHasMore(!!res.nextCursor)
     } catch {
       // silently fail
     }

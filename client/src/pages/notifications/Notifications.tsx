@@ -3,26 +3,39 @@ import { useTranslation } from 'react-i18next'
 import { useNotifications } from '../../context/useNotifications'
 import { timeAgo } from '../../hooks/useTimeAgo'
 import { Bell } from 'lucide-react'
+import type { Notification } from '../../types/Notification'
 
 const defaultAvatarUrl =
   'https://ui-avatars.com/api/?name=User&background=random'
 
-const Notifications = () => {
+interface NotificationsProps {
+  onClose?: () => void
+}
+
+const Notifications = ({ onClose }: NotificationsProps) => {
   const { t } = useTranslation('notifications')
   const { notifications, unreadCount, markAsRead, markAllAsRead, loadMore, hasMore } =
     useNotifications()
   const navigate = useNavigate()
 
-  const handleClick = (notification: {
-    id: string
-    postId: string | null
-    isRead: boolean
-  }) => {
+  const handleClick = (notification: Notification) => {
     if (!notification.isRead) {
       markAsRead(notification.id)
     }
-    if (notification.postId) {
-      navigate('/')
+
+    onClose?.()
+
+    switch (notification.type) {
+      case 'POST_LIKE':
+      case 'POST_COMMENT':
+      case 'POST_TAGGED':
+        navigate('/')
+        break
+      case 'FRIEND_REQUEST':
+      case 'FRIEND_ACCEPTED':
+      case 'FOLLOW':
+        navigate(`/profile/${notification.actor.username}`)
+        break
     }
   }
 

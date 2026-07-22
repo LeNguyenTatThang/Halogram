@@ -28,13 +28,18 @@ export class PostController {
   @UseInterceptors(FilesInterceptor('images', 10))
   async createPost(
     @CurrentUser() user: JwtUser,
-    @Body() body: { caption: string; status: string },
+    @Body() body: { caption: string; status: string; tagUserIds?: string },
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    const tagUserIds = body.tagUserIds
+      ? (JSON.parse(body.tagUserIds) as string[])
+      : undefined;
+
     return this.postService.createPost({
       caption: body.caption,
       userId: user.id,
       files,
+      tagUserIds,
     });
   }
 
@@ -43,15 +48,20 @@ export class PostController {
   @UseInterceptors(FilesInterceptor('images', 10))
   async updatePost(
     @CurrentUser() user: JwtUser,
-    @Body() body: { caption: string; status: string },
+    @Body() body: { caption: string; status: string; tagUserIds?: string },
     @Param('id') id: string,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
+    const tagUserIds = body.tagUserIds
+      ? (JSON.parse(body.tagUserIds) as string[])
+      : undefined;
+
     return this.postService.updatePost({
       postId: id,
       caption: body.caption,
       userId: user.id,
       files,
+      tagUserIds,
     });
   }
 

@@ -88,6 +88,49 @@ export class UsersService {
     };
   }
 
+  async getSuggestions(currentUserId: string) {
+    const following = await this.prisma.follow.findMany({
+      where: { followerId: currentUserId },
+      select: { followingId: true },
+    });
+    const followingIds = following.map((f) => f.followingId);
+
+    const friendships = await this.prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [{ userId: currentUserId }, { friendId: currentUserId }],
+      },
+      select: { userId: true, friendId: true },
+    });
+    const friendIds = friendships.map((f) =>
+      f.userId === currentUserId ? f.friendId : f.userId,
+    );
+
+    const excludeIds = new Set([
+      currentUserId,
+      ...followingIds,
+      ...friendIds,
+    ]);
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: { notIn: [...excludeIds] },
+      },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatar: true,
+      },
+      take: 5,
+    });
+
+    return {
+      success: true,
+      data: users,
+    };
+  }
+
   async searchUsers(
     keyword: string | undefined,
     userId: string,

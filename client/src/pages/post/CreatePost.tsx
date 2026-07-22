@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
-import { Upload, X, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import { Upload, X, ArrowLeft, UserPlus } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { createPost } from '../../utils/post'
+import TagFriendsModal from '../../components/post/TagFriendsModal'
 
 interface CreatePostProps {
     onClose: () => void;
@@ -9,10 +12,13 @@ interface CreatePostProps {
 }
 
 const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
+    const navigate = useNavigate()
     const [step, setStep] = useState<'upload' | 'caption'>('upload')
     const [selectedImages, setSelectedImages] = useState<string[]>([])
     const [imageFiles, setImageFiles] = useState<File[]>([])
     const [caption, setCaption] = useState('')
+    const [tagUserIds, setTagUserIds] = useState<string[]>([])
+    const [showTagModal, setShowTagModal] = useState(false)
     const { user } = useAuth()
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,25 +44,35 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
         })
     }
 
-    const handlePost = async () => {
-        try {
-            const formData = new FormData()
-            formData.append('caption', caption)
-            formData.append('status', '1')
+    const handlePost = () => {
+        const formData = new FormData()
+        formData.append('caption', caption)
+        formData.append('status', '1')
 
-            if(imageFiles.length > 0){
-                imageFiles.forEach((file) => {
-                formData.append('images', file)})
-            }
-            
-            const response = await createPost(formData)
-
-            console.log(response)
-            onPost(selectedImages, caption)
-            onClose()
-        } catch (error) {
-            console.error(error)
+        if(imageFiles.length > 0){
+            imageFiles.forEach((file) => {
+            formData.append('images', file)})
         }
+
+        if (tagUserIds.length > 0) {
+            formData.append('tagUserIds', JSON.stringify(tagUserIds))
+        }
+
+        toast.loading('Đang đăng bài...')
+
+        onPost(selectedImages, caption)
+        onClose()
+        navigate('/')
+
+        createPost(formData)
+            .then(() => {
+                toast.dismiss()
+                toast.success('Đăng bài thành công')
+            })
+            .catch(() => {
+                toast.dismiss()
+                toast.error('Đăng bài thất bại')
+            })
     }
 
     const mockImages = [
@@ -147,6 +163,16 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                                             className="w-full mt-2 text-sm border-none outline-none resize-none"
                                             rows={3}
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowTagModal(true)}
+                                            className="flex items-center gap-1 mt-2 text-sm text-blue-500 hover:text-blue-600"
+                                        >
+                                            <UserPlus className="w-4 h-4" />
+                                            {tagUserIds.length > 0
+                                                ? `Tag ${tagUserIds.length} friend${tagUserIds.length > 1 ? 's' : ''}`
+                                                : 'Tag friends'}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -184,6 +210,17 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                     </div>
                 )}
             </div>
+
+            {showTagModal && (
+                <TagFriendsModal
+                    selectedIds={tagUserIds}
+                    onConfirm={(ids) => {
+                        setTagUserIds(ids)
+                        setShowTagModal(false)
+                    }}
+                    onClose={() => setShowTagModal(false)}
+                />
+            )}
         </div>
     )
 }

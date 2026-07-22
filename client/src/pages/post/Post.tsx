@@ -1,7 +1,10 @@
 import React, { useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { Post as PostType } from '../../types/Post'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { timeAgo } from '../../hooks/useTimeAgo'
+import { useAuth } from '../../hooks/useAuth'
 import defaultAvatarUrl from '../../assets/Logo.png'
 import LazyImage from '../../components/common/LazyImage'
 interface PostProps {
@@ -10,7 +13,84 @@ interface PostProps {
     onComment: (postId: string, comment: string) => void
 }
 
+function renderTagNames(
+    tags: NonNullable<PostType['tags']>,
+    currentUserId: string,
+    navigate: ReturnType<typeof useNavigate>,
+    t: (key: string, options?: Record<string, unknown>) => string,
+) {
+    const maxVisible = 2
+    const names = tags.map((tag) => {
+        const isYou = tag.user.id === currentUserId
+        return {
+            id: tag.user.id,
+            username: tag.user.username,
+            display: isYou ? t('post.tag_you') : (tag.user.displayName || tag.user.username),
+            isYou,
+        }
+    })
+
+    if (names.length === 1) {
+        const n = names[0]
+        return (
+            <button
+                onClick={() => navigate(`/profile/${n.username}`)}
+                className="font-semibold text-blue-500 hover:text-blue-700"
+            >
+                {n.display}
+            </button>
+        )
+    }
+
+    if (names.length === 2) {
+        return (
+            <span>
+                <button
+                    onClick={() => navigate(`/profile/${names[0].username}`)}
+                    className="font-semibold text-blue-500 hover:text-blue-700"
+                >
+                    {names[0].display}
+                </button>
+                <span>{t('post.tag_and')}</span>
+                <button
+                    onClick={() => navigate(`/profile/${names[1].username}`)}
+                    className="font-semibold text-blue-500 hover:text-blue-700"
+                >
+                    {names[1].display}
+                </button>
+            </span>
+        )
+    }
+
+    const visible = names.slice(0, maxVisible)
+    const remaining = names.length - maxVisible
+    return (
+        <span>
+            {visible.map((n, i) => (
+                <span key={n.id}>
+                    <button
+                        onClick={() => navigate(`/profile/${n.username}`)}
+                        className="font-semibold text-blue-500 hover:text-blue-700"
+                    >
+                        {n.display}
+                    </button>
+                    {i < visible.length - 1 && <span>, </span>}
+                </span>
+            ))}
+            <span>
+                {' '}{t('post.tag_and')}{' '}
+                <span className="text-gray-500">
+                    {t('post.tag_others', { count: remaining })}
+                </span>
+            </span>
+        </span>
+    )
+}
+
 const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
+    const navigate = useNavigate()
+    const { t } = useTranslation()
+    const { user: currentUser } = useAuth()
     const [comment, setComment] = useState('')
     const [showAllComments, setShowAllComments] = useState(false)
     const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -100,6 +180,16 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment }) => {
                     <MoreHorizontal className="w-5 h-5" />
                 </button>
             </div>
+
+            {/* TAGGED USERS */}
+            {post.tags && post.tags.length > 0 && (
+                <div className="mb-1 px-4">
+                    <span className="text-sm text-gray-500">
+                        {t('post.tag_with')}{' '}
+                        {renderTagNames(post.tags, currentUser?.id ?? '', navigate, t)}
+                    </span>
+                </div>
+            )}
 
             {/* CAPTION */}
             <div className="mb-2 px-4">

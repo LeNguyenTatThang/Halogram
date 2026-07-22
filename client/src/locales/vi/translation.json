@@ -5,5 +5,11 @@
     "logout": "Đăng xuất",
     "username": "Tài khoản",
     "password": "Mật khẩu",
-    "email": "Email"
+    "email": "Email",
+    "post": {
+        "tag_with": "cùng với",
+        "tag_and": " và ",
+        "tag_you": "bạn",
+        "tag_others": "{{count}} người khác"
+    }
 }

@@ -9,7 +9,7 @@ export const configAxios = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    timeout: 5000,
+    timeout: 30000,
     withCredentials: true
 })
 

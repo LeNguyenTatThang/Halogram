@@ -5,5 +5,11 @@
     "logout": "Logout",
     "username": "Username",
     "password": "Password",
-    "email": "Email"
+    "email": "Email",
+    "post": {
+        "tag_with": "with",
+        "tag_and": " and ",
+        "tag_you": "you",
+        "tag_others": "{{count}} others"
+    }
 }

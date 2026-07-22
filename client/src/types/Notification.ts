@@ -8,6 +8,7 @@ export interface NotificationActor {
 export type NotificationType =
   | 'POST_LIKE'
   | 'POST_COMMENT'
+  | 'POST_TAGGED'
   | 'FRIEND_REQUEST'
   | 'FRIEND_ACCEPTED'
   | 'FOLLOW'
