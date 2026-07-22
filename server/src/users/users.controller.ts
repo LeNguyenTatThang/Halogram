@@ -9,6 +9,12 @@ import { SearchDto } from './dto/search.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMyProfile(@CurrentUser() user: JwtUser) {
+    return this.usersService.getProfileById(user.id);
+  }
+
   @Get(':username')
   @UseGuards(JwtAuthGuard)
   async getProfile(

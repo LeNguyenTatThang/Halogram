@@ -6,6 +6,27 @@ import { UserTransformer } from '../common/transformers/user.transformer';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getProfileById(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        _count: {
+          select: { posts: true, followers: true, following: true },
+        },
+      },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return {
+      ...UserTransformer.transform(user),
+      posts: user._count.posts,
+      followers: user._count.followers,
+      following: user._count.following,
+      isFollowing: false,
+    };
+  }
+
   async getProfile(username: string, currentUserId: string) {
     const user = await this.prisma.user.findUnique({
       where: { username },

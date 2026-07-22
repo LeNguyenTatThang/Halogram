@@ -104,8 +104,9 @@ export class PostService {
         ? `${savedPosts[savedPosts.length - 1].userId}_${savedPosts[savedPosts.length - 1].postId}`
         : null;
 
-    const mappedSaved = savedPosts.map(({ post }) => {
+    const mappedSaved = savedPosts.map(({ post }): Record<string, unknown> => {
       const { likes, savedBy, ...rest } = post;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return {
         ...rest,
         isLiked: likes.length > 0,
@@ -179,8 +180,9 @@ export class PostService {
     const nextCursor =
       tagRecords.length === limit ? tagRecords[tagRecords.length - 1].id : null;
 
-    const taggedPosts = tagRecords.map(({ post }) => {
+    const taggedPosts = tagRecords.map(({ post }): Record<string, unknown> => {
       const { likes, ...rest } = post;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return { ...rest, isLiked: likes.length > 0 };
     });
 
