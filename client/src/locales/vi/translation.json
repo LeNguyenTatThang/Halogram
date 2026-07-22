@@ -10,6 +10,15 @@
         "tag_with": "cùng với",
         "tag_and": " và ",
         "tag_you": "bạn",
-        "tag_others": "{{count}} người khác"
+        "tag_others": "{{count}} người khác",
+        "delete_confirm": "Bạn có chắc muốn xóa bài viết này?",
+        "delete": "Xóa",
+        "delete_loading": "Đang xóa...",
+        "delete_success": "Xóa bài viết thành công",
+        "cancel": "Hủy",
+        "remove_tag": "Xóa thẻ của tôi",
+        "remove_tag_confirm": "Bạn có muốn xóa thẻ của mình khỏi bài viết này không?",
+        "remove_tag_loading": "Đang xóa thẻ...",
+        "remove_tag_success": "Đã xóa thẻ thành công"
     }
 }

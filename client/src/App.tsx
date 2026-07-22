@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import toast from 'react-hot-toast'
 import AuthPage from './pages/auth/AuthPage'
 import Feed from './pages/post/Feed'
 import Profile from './pages/user/Profile'
@@ -9,7 +11,7 @@ import Notifications from './pages/notifications/Notifications'
 import MainLayout from './layouts/MainLayout'
 import { useAuth } from './hooks/useAuth'
 import { currentUser, mockPosts, mockStories } from './store/mockData'
-import { getAllPost } from './utils/post'
+import { getAllPost, deletePost, removeMyTag } from './utils/post'
 import type { Post } from './types/Post'
 import NotFound from './pages/not-found/NotFound'
 import { likePost } from './utils/like'
@@ -23,6 +25,7 @@ import { useCall } from './context/useCall'
 import VideoCall from './layouts/online/VideoCall'
 
 function App() {
+    const { t } = useTranslation()
     const { isAuthenticated, loading, user } = useAuth()
     const { inCall, calling, activeCall, endCall } = useCall()
     const [posts, setPosts] = useState<Post[]>([])
@@ -132,6 +135,34 @@ function App() {
             console.log(err)
         }
     } 
+    const handleDeletePost = async (postId: string) => {
+        try {
+            await deletePost(postId)
+            setPosts((prev) => prev.filter((p) => p.id !== postId))
+            toast.success(t('post.delete_success'))
+        } catch (err) {
+            toast.error(t('post.delete') + ' failed')
+            console.log(err)
+        }
+    }
+
+    const handleRemoveTag = async (postId: string) => {
+        try {
+            await removeMyTag(postId)
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === postId
+                        ? { ...p, tags: p.tags?.filter((tag) => tag.user.id !== user?.id) }
+                        : p,
+                ),
+            )
+            toast.success(t('post.remove_tag_success'))
+        } catch (err) {
+            toast.error(t('post.remove_tag') + ' failed')
+            console.log(err)
+        }
+    }
+
     useEffect(() => {
         if (!isAuthenticated) {
             socket.disconnect()
@@ -265,6 +296,8 @@ function App() {
                                 isLoading={loadingPosts}
                                 nextCursor={nextCursor}
                                 fetchMorePosts={fetchMorePosts}
+                                onDeletePost={handleDeletePost}
+                                onRemoveTag={handleRemoveTag}
                             />
                         }
                     />

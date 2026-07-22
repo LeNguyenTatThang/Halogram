@@ -6,6 +6,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
 @Module({
   imports: [NotificationsModule],
   controllers: [LikesController],
-  providers: [LikesService]
+  providers: [LikesService],
 })
 export class LikesModule {}

@@ -10,6 +10,15 @@
         "tag_with": "with",
         "tag_and": " and ",
         "tag_you": "you",
-        "tag_others": "{{count}} others"
+        "tag_others": "{{count}} others",
+        "delete_confirm": "Are you sure you want to delete this post?",
+        "delete": "Delete",
+        "delete_loading": "Deleting...",
+        "delete_success": "Post deleted successfully",
+        "cancel": "Cancel",
+        "remove_tag": "Remove my tag",
+        "remove_tag_confirm": "Do you want to remove your tag from this post?",
+        "remove_tag_loading": "Removing tag...",
+        "remove_tag_success": "Tag removed successfully"
     }
 }

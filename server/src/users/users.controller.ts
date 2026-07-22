@@ -46,13 +46,10 @@ export class UsersController {
 
   @Get('search')
   @UseGuards(JwtAuthGuard)
-  async searchUsers(
-    @Query() query: SearchDto,
-    @Query('userId') userId: string,
-  ) {
+  async searchUsers(@CurrentUser() user: JwtUser, @Query() query: SearchDto) {
     const users = await this.usersService.searchUsers(
       query.keyword,
-      userId,
+      user.id,
       query.cursor,
     );
     return {

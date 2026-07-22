@@ -71,7 +71,9 @@ export class CommentsService {
     }
 
     if (comment.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to update this comment');
+      throw new ForbiddenException(
+        'You are not authorized to update this comment',
+      );
     }
 
     const updatedComment = await this.prisma.comment.update({
@@ -98,7 +100,9 @@ export class CommentsService {
     }
 
     if (comment.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to delete this comment');
+      throw new ForbiddenException(
+        'You are not authorized to delete this comment',
+      );
     }
 
     await this.prisma.comment.delete({

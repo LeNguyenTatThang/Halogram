@@ -120,10 +120,16 @@ export class PostController {
 
   @Delete('delete-post/:id')
   @UseGuards(JwtAuthGuard)
-  async deletePost(
+  async deletePost(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.postService.deletePost(user.id, id);
+  }
+
+  @Delete(':postId/tag/me')
+  @UseGuards(JwtAuthGuard)
+  async removeMyTag(
     @CurrentUser() user: JwtUser,
-    @Body() body: { postId: string },
+    @Param('postId') postId: string,
   ) {
-    return this.postService.deletePost(user.id, body.postId);
+    return this.postService.removeMyTag(user.id, postId);
   }
 }

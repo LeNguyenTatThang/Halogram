@@ -133,7 +133,7 @@ export class PostService {
 
     const mappedSaved = savedPosts.map(({ post }): Record<string, unknown> => {
       const { likes, savedBy, ...rest } = post;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
       return {
         ...rest,
         isLiked: likes.length > 0,
@@ -221,7 +221,7 @@ export class PostService {
 
     const taggedPosts = tagRecords.map(({ post }): Record<string, unknown> => {
       const { likes, ...rest } = post;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
       return { ...rest, isLiked: likes.length > 0 };
     });
 
@@ -585,29 +585,52 @@ export class PostService {
   }
 
   async deletePost(userId: string, postId: string) {
-    const user = await this.prisma.post.findFirst({
-      where: {
-        userId,
-        id: postId,
-      },
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      include: { images: true },
     });
 
-    if (!user) {
-      return {
-        success: false,
-        message: 'Post not found',
-      };
+    if (!post) {
+      throw new NotFoundException('Post not found');
     }
 
-    await this.prisma.post.delete({
-      where: {
-        id: postId,
-      },
+    if (post.userId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this post',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.postLike.deleteMany({ where: { postId } });
+      await tx.comment.deleteMany({ where: { postId } });
+      await tx.postTag.deleteMany({ where: { postId } });
+      await tx.savedPost.deleteMany({ where: { postId } });
+      await tx.postImage.deleteMany({ where: { postId } });
+      await tx.post.delete({ where: { id: postId } });
     });
 
     return {
       success: true,
       message: 'Post deleted successfully',
+    };
+  }
+
+  async removeMyTag(userId: string, postId: string) {
+    const tag = await this.prisma.postTag.findUnique({
+      where: { postId_userId: { postId, userId } },
+    });
+
+    if (!tag) {
+      throw new NotFoundException('Tag not found');
+    }
+
+    await this.prisma.postTag.delete({
+      where: { id: tag.id },
+    });
+
+    return {
+      success: true,
+      message: 'Tag removed successfully',
     };
   }
 }

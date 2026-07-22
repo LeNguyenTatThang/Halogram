@@ -47,3 +47,13 @@ export const getTaggedPosts = async (userId: string, cursor?: string) => {
     })
     return res.data
 }
+
+export const deletePost = async (postId: string) => {
+    const res = await configAxios.delete(`/post/delete-post/${postId}`)
+    return res.data
+}
+
+export const removeMyTag = async (postId: string) => {
+    const res = await configAxios.delete(`/post/${postId}/tag/me`)
+    return res.data
+}

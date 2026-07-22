@@ -16,9 +16,11 @@ interface FeedProps {
     onLike: (postId: string) => void
     onComment: (postId: string, comment: string) => void
     onStoryClick: (story: Story) => void
+    onDeletePost?: (postId: string) => Promise<void>
+    onRemoveTag?: (postId: string) => Promise<void>
 }
 
-const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, onComment, onStoryClick, nextCursor, fetchMorePosts }) => {
+const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, onComment, onStoryClick, nextCursor, fetchMorePosts, onDeletePost, onRemoveTag }) => {
     const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
     const handleStoryClick = (story: Story) => {
@@ -80,6 +82,8 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, 
                                 post={post}
                                 onLike={onLike}
                                 onComment={onComment}
+                                onDelete={onDeletePost}
+                                onRemoveTag={onRemoveTag}
                             />
                         ))}
                     </div>

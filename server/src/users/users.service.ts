@@ -79,12 +79,36 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('User not found');
 
+    const friendship = await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { userId: currentUserId, friendId: user.id },
+          { userId: user.id, friendId: currentUserId },
+        ],
+      },
+      select: { status: true, userId: true },
+    });
+
+    let friendshipStatus: 'NONE' | 'PENDING' | 'FRIENDS' = 'NONE';
+    let hasPendingFriendRequest = false;
+    if (friendship) {
+      if (friendship.status === 'ACCEPTED') {
+        friendshipStatus = 'FRIENDS';
+      } else if (friendship.status === 'PENDING') {
+        friendshipStatus = 'PENDING';
+        hasPendingFriendRequest = friendship.userId !== currentUserId;
+      }
+    }
+
     return {
       ...UserTransformer.transform(user),
       posts: user._count.posts,
       followers: user._count.followers,
       following: user._count.following,
       isFollowing: user.followers.length > 0,
+      isFriend: friendshipStatus === 'FRIENDS',
+      friendshipStatus,
+      hasPendingFriendRequest,
     };
   }
 
@@ -106,11 +130,7 @@ export class UsersService {
       f.userId === currentUserId ? f.friendId : f.userId,
     );
 
-    const excludeIds = new Set([
-      currentUserId,
-      ...followingIds,
-      ...friendIds,
-    ]);
+    const excludeIds = new Set([currentUserId, ...followingIds, ...friendIds]);
 
     const users = await this.prisma.user.findMany({
       where: {
