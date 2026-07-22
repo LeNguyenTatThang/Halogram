@@ -271,14 +271,11 @@ function App() {
 
                     <Route
                         path="/profile"
-                        element={
-                            <Profile
-                                user={currentUser}
-                                posts={mockPosts}
-                                isOwnProfile={true}
-                                onFollow={() => {}}
-                            />
-                        }
+                        element={<Profile />}
+                    />
+                    <Route
+                        path="/profile/:username"
+                        element={<Profile />}
                     />
 
                     <Route

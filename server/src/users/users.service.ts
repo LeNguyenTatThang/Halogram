@@ -1,9 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserTransformer } from '../common/transformers/user.transformer';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getProfile(username: string, currentUserId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+            followers: true,
+            following: true,
+          },
+        },
+        followers: {
+          where: { followerId: currentUserId },
+          select: { followerId: true },
+        },
+      },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return {
+      ...UserTransformer.transform(user),
+      posts: user._count.posts,
+      followers: user._count.followers,
+      following: user._count.following,
+      isFollowing: user.followers.length > 0,
+    };
+  }
 
   async searchUsers(
     keyword: string | undefined,

@@ -33,4 +33,6 @@ export interface Post {
   updatedAt: string
 
   isLiked?: boolean
+  isSaved?: boolean
+  isTagged?: boolean
 }

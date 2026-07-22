@@ -8,34 +8,36 @@ datasource db {
 }
 
 model User {
-  id            String               @id @default(cuid())
-  username      String               @unique @db.VarChar(50)
-  displayName   String
-  email         String               @unique @db.VarChar(255)
-  password      String               @db.VarChar(255)
-  firstName     String
-  lastName      String
-  avatar        String?
-  bio           String?              @db.Text
-  isVerified    Boolean              @default(false)
-  refreshToken  String?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  posts         Post[]
-  comments      Comment[]
-  following     Follow[]             @relation("following")
-  followers     Follow[]             @relation("followers")
-  received      Friendship[]         @relation("FriendOf")
-  sentRequests  Friendship[]         @relation("FriendRequests")
-  postLikes     PostLike[]
-  stories       Story[]
-  storyViews    StoryView[]
-  conversations ConversationMember[]
-  messages      Message[]
-  callsMade              Call[]               @relation("CallerCalls")
-  callsReceived          Call[]               @relation("ReceiverCalls")
-  notificationsReceived  Notification[]       @relation("NotificationRecipient")
-  notificationsSent      Notification[]       @relation("NotificationActor")
+  id                    String               @id @default(cuid())
+  username              String               @unique @db.VarChar(50)
+  displayName           String
+  email                 String               @unique @db.VarChar(255)
+  password              String               @db.VarChar(255)
+  firstName             String
+  lastName              String
+  avatar                String?
+  bio                   String?              @db.Text
+  isVerified            Boolean              @default(false)
+  refreshToken          String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  posts                 Post[]
+  comments              Comment[]
+  following             Follow[]             @relation("following")
+  followers             Follow[]             @relation("followers")
+  received              Friendship[]         @relation("FriendOf")
+  sentRequests          Friendship[]         @relation("FriendRequests")
+  postLikes             PostLike[]
+  stories               Story[]
+  storyViews            StoryView[]
+  conversations         ConversationMember[]
+  messages              Message[]
+  callsMade             Call[]               @relation("CallerCalls")
+  callsReceived         Call[]               @relation("ReceiverCalls")
+  notificationsReceived Notification[]       @relation("NotificationRecipient")
+  notificationsSent     Notification[]       @relation("NotificationActor")
+  savedPosts            SavedPost[]
+  postTags              PostTag[]
 
   @@map("users")
 }
@@ -67,15 +69,17 @@ model Story {
 }
 
 model Post {
-  id        String      @id @default(cuid())
-  caption   String?     @db.Text
-  userId    String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id            String         @id @default(cuid())
+  caption       String?        @db.Text
+  userId        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   comments      Comment[]
   images        PostImage[]
   likes         PostLike[]
   notifications Notification[]
+  savedBy       SavedPost[]
+  tags          PostTag[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -97,12 +101,12 @@ model PostImage {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  text      String   @db.Text
-  postId    String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(cuid())
+  text          String         @db.Text
+  postId        String
+  userId        String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   post          Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications Notification[]
@@ -211,10 +215,10 @@ model Notification {
   isRead      Boolean          @default(false)
   createdAt   DateTime         @default(now())
 
-  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  actor       User             @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
-  post        Post?            @relation(fields: [postId], references: [id], onDelete: SetNull)
-  comment     Comment?         @relation(fields: [commentId], references: [id], onDelete: SetNull)
+  recipient User     @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User     @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
 
   @@index([recipientId, createdAt])
   @@index([actorId])
@@ -240,6 +244,33 @@ enum CallStatus {
   REJECTED
   MISSED
   CANCELED
+}
+
+model SavedPost {
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@map("saved_posts")
+}
+
+model PostTag {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@index([postId])
+  @@map("post_tags")
 }
 
 model Call {

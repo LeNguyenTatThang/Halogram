@@ -72,6 +72,42 @@ export class PostController {
   ) {
     return this.postService.detailPost(user.id, body.postId);
   }
+
+  @Get('user/:userId')
+  @UseGuards(JwtAuthGuard)
+  getUserPosts(
+    @CurrentUser() user: JwtUser,
+    @Param('userId') userId: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.postService.getUserPosts(user.id, userId, cursor);
+  }
+
+  @Get('saved')
+  @UseGuards(JwtAuthGuard)
+  getSavedPosts(
+    @CurrentUser() user: JwtUser,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.postService.getSavedPosts(user.id, cursor);
+  }
+
+  @Post(':id/save')
+  @UseGuards(JwtAuthGuard)
+  toggleSavePost(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.postService.toggleSavePost(user.id, id);
+  }
+
+  @Get('tagged/:userId')
+  @UseGuards(JwtAuthGuard)
+  getTaggedPosts(
+    @CurrentUser() user: JwtUser,
+    @Param('userId') userId: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.postService.getTaggedPosts(user.id, userId, cursor);
+  }
+
   @Delete('delete-post/:id')
   @UseGuards(JwtAuthGuard)
   async deletePost(
