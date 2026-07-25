@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState, useRef, type ReactNode } from "react"
+import { createContext, useCallback, useEffect, useMemo, useState, useRef, type ReactNode } from "react"
 import { socket } from "../lib/socket"
 import type { CallPayload } from "../types/call"
 import { useRTC } from "../hooks/useWebRTC"
@@ -43,6 +43,7 @@ export function CallProvider({
     children: ReactNode
 }) {
     const rtc = useRTC()
+    const { startLocalStream, createPeer, stopCall, toggleMic, toggleCamera, localVideoRef, remoteVideoRef, localStream, remoteStream, isMuted, cameraOff } = rtc
     const [incomingCall, setIncomingCall] = useState<CallPayload | null>(null)
     const [outgoingCall, setOutgoingCall] = useState<CallPayload | null>(null)
     const [activeCall, setActiveCall] = useState<CallPayload | null>(null)
@@ -132,21 +133,21 @@ export function CallProvider({
         }
     }, [rtc])
 
-    const joinCall = (roomId: string) => {
+    const joinCall = useCallback((roomId: string) => {
         socket.emit('joinCall', roomId)
-    }
+    }, [])
 
-    const leaveCall = (roomId: string) => {
+    const leaveCall = useCallback((roomId: string) => {
         socket.emit('leaveCall', roomId)
-    }
+    }, [])
 
-    const callUser = async (payload: CallPayload) => {
+    const callUser = useCallback(async (payload: CallPayload) => {
         setOutgoingCall(payload)
         setActiveCall(payload)
         setCalling(true)
 
-        await rtc.startLocalStream(payload.type === 'VIDEO')
-        rtc.createPeer((candidate) => {
+        await startLocalStream(payload.type === 'VIDEO')
+        createPeer((candidate) => {
             socket.emit('iceCandidate', {
                 roomId: payload.roomId,
                 candidate
@@ -154,11 +155,11 @@ export function CallProvider({
         })
 
         socket.emit('callUser', payload)
-    }
+    }, [startLocalStream, createPeer])
 
-    const acceptCall = async (payload: CallPayload) => {
-        await rtc.startLocalStream(payload.type === 'VIDEO')
-        rtc.createPeer((candidate) => {
+    const acceptCall = useCallback(async (payload: CallPayload) => {
+        await startLocalStream(payload.type === 'VIDEO')
+        createPeer((candidate) => {
             socket.emit('iceCandidate', {
                 roomId: payload.roomId,
                 candidate
@@ -170,17 +171,17 @@ export function CallProvider({
         setIncomingCall(null)
         setActiveCall(payload)
         setInCall(true)
-    }
+    }, [startLocalStream, createPeer])
 
-    const rejectCall = (payload: CallPayload) => {
+    const rejectCall = useCallback((payload: CallPayload) => {
         socket.emit('rejectCall', payload)
 
         setIncomingCall(null)
         setActiveCall(null)
-        rtc.stopCall()
-    }
+        stopCall()
+    }, [stopCall])
 
-    const endCall = (payload: CallPayload) => {
+    const endCall = useCallback((payload: CallPayload) => {
         socket.emit('endCall', payload)
 
         setCalling(false)
@@ -189,13 +190,13 @@ export function CallProvider({
         setIncomingCall(null)
         setOutgoingCall(null)
         setActiveCall(null)
-        rtc.stopCall()
-    }
+        stopCall()
+    }, [stopCall])
 
-    const clearIncomingCall = () => {
+    const clearIncomingCall = useCallback(() => {
         setIncomingCall(null)
         setActiveCall(null)
-    }
+    }, [])
 
     const value = useMemo(
         () => ({
@@ -216,16 +217,16 @@ export function CallProvider({
 
             clearIncomingCall,
 
-            localVideoRef: rtc.localVideoRef,
-            remoteVideoRef: rtc.remoteVideoRef,
-            localStream: rtc.localStream,
-            remoteStream: rtc.remoteStream,
-            isMuted: rtc.isMuted,
-            cameraOff: rtc.cameraOff,
-            toggleMic: rtc.toggleMic,
-            toggleCamera: rtc.toggleCamera,
-            startLocalStream: rtc.startLocalStream,
-            stopCall: rtc.stopCall
+            localVideoRef,
+            remoteVideoRef,
+            localStream,
+            remoteStream,
+            isMuted,
+            cameraOff,
+            toggleMic,
+            toggleCamera,
+            startLocalStream,
+            stopCall
         }),
         [
             incomingCall,
@@ -233,8 +234,23 @@ export function CallProvider({
             activeCall,
             calling,
             inCall,
-            rtc.isMuted,
-            rtc.cameraOff
+            joinCall,
+            leaveCall,
+            callUser,
+            acceptCall,
+            rejectCall,
+            endCall,
+            clearIncomingCall,
+            localVideoRef,
+            remoteVideoRef,
+            localStream,
+            remoteStream,
+            isMuted,
+            cameraOff,
+            toggleMic,
+            toggleCamera,
+            startLocalStream,
+            stopCall
         ]
     )
     return (
