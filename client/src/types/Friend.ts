@@ -1,6 +1,7 @@
 export interface FriendUser {
   id: string;
   username: string;
+  displayName: string;
   avatar: string | null;
 }
 

@@ -5,10 +5,10 @@ import Online from './Online'
 const MainLayout = () => {
     return (
         <>
-            <Navigation locale="en" />
+            <Navigation />
             <Online />
 
-            <div className="mx-auto">
+            <div className="md:ml-16">
                 <Outlet />
             </div>
         </>

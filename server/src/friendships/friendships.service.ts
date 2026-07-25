@@ -332,15 +332,17 @@ export class FriendshipsService {
         user: {
           select: {
             id: true,
-            username: true,
-            avatar: true,
+              username: true,
+              displayName: true,
+              avatar: true,
           },
         },
         friend: {
           select: {
             id: true,
-            username: true,
-            avatar: true,
+              username: true,
+              displayName: true,
+              avatar: true,
           },
         },
       },
@@ -376,6 +378,7 @@ export class FriendshipsService {
             select: {
               id: true,
               username: true,
+              displayName: true,
               avatar: true,
             },
           },
@@ -383,6 +386,7 @@ export class FriendshipsService {
             select: {
               id: true,
               username: true,
+              displayName: true,
               avatar: true,
             },
           },

@@ -61,9 +61,14 @@ const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
                                     height={32}
                                     className="w-8 h-8 rounded-full object-cover"
                                 />
-                                <span className="text-sm font-medium">
-                                    {friend.friend.username}
-                                </span>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-medium truncate">
+                                        {friend.friend.displayName}
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                        @{friend.friend.username}
+                                    </p>
+                                </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button

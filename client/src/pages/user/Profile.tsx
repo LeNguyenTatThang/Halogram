@@ -166,34 +166,36 @@ const Profile: React.FC = () => {
             : taggedPosts
 
     return (
-        <div className="px-18 mx-auto bg-white min-h-screen dark:bg-black">
-            <div className="max-w-2xl mx-auto py-6">
-                <div className="flex items-center space-x-6 mb-6">
+        <div className="min-h-screen bg-white dark:bg-black">
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                {/* Profile Header */}
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                     <img
                         src={profile.avatar}
                         alt={profile.username}
-                        className="w-48 h-48 rounded-full object-cover"
+                        className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-full object-cover flex-shrink-0"
                     />
-                    <div className="flex-1">
-                        <div className="flex items-center space-x-4 mb-2">
-                            <h1 className="text-xl font-semibold">{profile.username}</h1>
-                            {isOwnProfile && <Settings className="w-5 h-5 cursor-pointer" />}
+                    <div className="flex-1 min-w-0 text-center sm:text-left">
+                        <div className="flex items-center justify-center sm:justify-start gap-4 mb-2">
+                            <h1 className="text-xl font-semibold truncate">{profile.username}</h1>
+                            {isOwnProfile && <Settings className="w-5 h-5 cursor-pointer hover:text-gray-600 transition-colors flex-shrink-0" />}
                         </div>
-                        <div className="flex space-x-6 text-sm">
-                            <span><strong>{profile.posts}</strong> {t('posts')}</span>
-                            <span><strong>{profile.followers.toLocaleString()}</strong> {t('followers')}</span>
-                            <span><strong>{profile.following.toLocaleString()}</strong> {t('following')}</span>
+                        <div className="flex justify-center sm:justify-start gap-6 text-sm mb-3">
+                            <span><strong>{profile.posts}</strong> <span className="text-gray-500">{t('posts')}</span></span>
+                            <span><strong>{profile.followers.toLocaleString()}</strong> <span className="text-gray-500">{t('followers')}</span></span>
+                            <span><strong>{profile.following.toLocaleString()}</strong> <span className="text-gray-500">{t('following')}</span></span>
                         </div>
-                        <div className="mt-2">
+                        {profile.bio && (
                             <p className="text-sm text-gray-600 dark:text-gray-400">{profile.bio}</p>
-                        </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:justify-center">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-8">
                     {isOwnProfile ? (
                         <button onClick={() => setShowEditProfile(true)}
-                            className="h-10 w-full sm:w-auto sm:px-8 md:px-16 rounded-md bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-semibold transition">
+                            className="h-9 px-6 rounded-lg bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-medium transition-colors duration-150">
                             {t('editProfile')}
                         </button>
                     ) : (
@@ -201,7 +203,7 @@ const Profile: React.FC = () => {
                             <button
                                 onClick={handleFollow}
                                 disabled={followLoading}
-                                className={`h-10 px-6 rounded-md text-sm font-semibold transition flex items-center gap-2 justify-center ${
+                                className={`h-9 px-5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center gap-2 ${
                                     profile.isFollowing
                                         ? 'bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A]'
                                         : 'bg-blue-500 text-white hover:bg-blue-600'
@@ -213,7 +215,7 @@ const Profile: React.FC = () => {
                             <button
                                 onClick={handleFriendAction}
                                 disabled={friendLoading}
-                                className={`h-10 px-6 rounded-md text-sm font-semibold transition flex items-center gap-2 justify-center ${
+                                className={`h-9 px-5 rounded-lg text-sm font-medium transition-colors duration-150 flex items-center gap-2 ${
                                     profile.friendshipStatus === 'FRIENDS'
                                         ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                         : profile.friendshipStatus === 'PENDING'
@@ -226,63 +228,64 @@ const Profile: React.FC = () => {
 
                             <button
                                 onClick={handleMessage}
-                                className="h-10 px-6 rounded-md bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-semibold transition flex items-center gap-2 justify-center"
+                                className="h-9 px-5 rounded-lg bg-[#EFEFEF] hover:bg-[#DBDBDB] dark:bg-[#363636] dark:hover:bg-[#4A4A4A] text-sm font-medium transition-colors duration-150 flex items-center gap-2"
                             >
                                 <MessageCircle className="w-4 h-4" /> Message
                             </button>
                         </>
                     )}
                 </div>
-            </div>
 
-            <div className="max-w-[950px] mx-auto border-t border-gray-200 dark:border-gray-600">
-                <div className="flex justify-center">
-                    {tabs.map((tab) => (
-                        tab.id === 'saved' && !isOwnProfile ? null : (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 flex items-center justify-center space-x-2 py-3 text-sm font-medium ${activeTab === tab.id
-                                    ? 'text-black border-t-2 border-black dark:text-white dark:border-white'
-                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                {/* Tabs */}
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex justify-center">
+                        {tabs.map((tab) => (
+                            tab.id === 'saved' && !isOwnProfile ? null : (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors duration-150 ${
+                                        activeTab === tab.id
+                                            ? 'text-black border-t-2 border-black dark:text-white dark:border-white'
+                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
-                            >
-                                <tab.icon className="w-4 h-4" />
-                                <span className="hidden sm:inline">{tab.label}</span>
-                            </button>
-                        )
-                    ))}
-                </div>
-            </div>
-
-            <div className="p-1">
-                {postsStatus === LOADING && activeTab === 'posts' ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </button>
+                            )
+                        ))}
                     </div>
-                ) : displayPosts.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-1">
-                        {displayPosts.map((post) => (
-                            <div
-                                key={post.id}
-                                className="aspect-square bg-gray-100 dark:bg-gray-800 relative group"
-                            >
-                                {post.images?.[0] ? (
-                                    <>
-                                        <img
-                                            src={post.images[0].url}
-                                            alt={post.caption ?? 'Post'}
-                                            className="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                        />
-                                        {isOwnProfile && activeTab === 'posts' && (
-                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                                                <div className="flex gap-4">
+                </div>
+
+                {/* Post Grid */}
+                <div className="mt-1">
+                    {postsStatus === LOADING && activeTab === 'posts' ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
+                        </div>
+                    ) : displayPosts.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-1">
+                            {displayPosts.map((post) => (
+                                <div
+                                    key={post.id}
+                                    className="aspect-square bg-gray-100 dark:bg-gray-800 relative group overflow-hidden"
+                                >
+                                    {post.images?.[0] ? (
+                                        <>
+                                            <img
+                                                src={post.images[0].url}
+                                                alt={post.caption ?? 'Post'}
+                                                className="w-full h-full object-cover cursor-pointer"
+                                            />
+                                            {isOwnProfile && activeTab === 'posts' && (
+                                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation()
                                                             setShowDeleteConfirm(post)
                                                         }}
-                                                        className="p-2 bg-red-600 rounded-full hover:bg-red-700 transition"
+                                                        className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-150 hover:scale-110"
                                                     >
                                                         <Trash2 className="w-5 h-5 text-white" />
                                                     </button>
@@ -291,29 +294,29 @@ const Profile: React.FC = () => {
                                                             e.stopPropagation()
                                                             setEditingPost(post)
                                                         }}
-                                                        className="p-2 bg-blue-600 rounded-full hover:bg-blue-700 transition"
+                                                        className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-150 hover:scale-110"
                                                     >
                                                         <Edit3 className="w-5 h-5 text-white" />
                                                     </button>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-gray-400">
-                                        No image
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 dark:text-gray-400">
-                            No {activeTab === 'saved' ? 'saved' : activeTab === 'tagged' ? 'tagged' : ''} posts yet
-                        </p>
-                    </div>
-                )}
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                                            No image
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <p className="text-gray-500 dark:text-gray-400">
+                                No {activeTab === 'saved' ? 'saved' : activeTab === 'tagged' ? 'tagged' : ''} posts yet
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {showEditProfile && profile && (

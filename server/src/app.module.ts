@@ -13,6 +13,7 @@ import { FriendshipsModule } from './friendships/friendships.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MessagesModule } from './messages/messages.module';
 import { CallModule } from './call/call.module';
+import { OnlineModule } from './online/online.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CallModule } from './call/call.module';
     NotificationsModule,
     MessagesModule,
     CallModule,
+    OnlineModule,
   ],
   controllers: [AppController],
   providers: [AppService],

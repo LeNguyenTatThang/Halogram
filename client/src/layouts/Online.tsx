@@ -1,10 +1,12 @@
 import { acceptFriend, listFriendRequests, listFriends } from '../utils/friend'
 import React, { useEffect, useState } from 'react'
+import { X, Users } from 'lucide-react'
 import FriendRequestModal from './online/FriendRequestModal'
 import FriendList from './online/FriendList'
 import ChatWindow from './online/ChatWindow'
 import type {Friend, FriendUser} from '../types/Friend'
 import { useTranslation } from 'react-i18next'
+import { socket } from '../lib/socket'
 
 const Online: React.FC = () => {
     const { t } = useTranslation('chat')
@@ -13,6 +15,7 @@ const Online: React.FC = () => {
     const [friends, setFriends] = useState<Friend[]>([])
     const [friendRequests, setFriendRequests] = useState<Friend[]>([])
     const [isOpenModel, setIsOpenModel] = useState<boolean>(false)
+    const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set())
     const openChat = (user: FriendUser) => {
         const alreadyOpen = activeChats.find(u => u.id === user.id)
         if (alreadyOpen) return
@@ -90,66 +93,94 @@ const Online: React.FC = () => {
         loadData()
     }, [])
 
+    useEffect(() => {
+        const handleOnlineUsers = (data: { userIds: string[] }) => {
+            setOnlineUserIds(new Set(data.userIds))
+        }
+
+        const handleUserOnline = (data: { userId: string }) => {
+            setOnlineUserIds(prev => new Set(prev).add(data.userId))
+        }
+
+        const handleUserOffline = (data: { userId: string }) => {
+            setOnlineUserIds(prev => {
+                const next = new Set(prev)
+                next.delete(data.userId)
+                return next
+            })
+        }
+
+        socket.on('onlineUsers', handleOnlineUsers)
+        socket.on('userOnline', handleUserOnline)
+        socket.on('userOffline', handleUserOffline)
+
+        socket.emit('getOnlineUsers')
+
+        return () => {
+            socket.off('onlineUsers', handleOnlineUsers)
+            socket.off('userOnline', handleUserOnline)
+            socket.off('userOffline', handleUserOffline)
+        }
+    }, [])
+
 
     return (
         <>
-            {isOpen && (
-                <div className="hidden xl:flex xl:flex-col xl:fixed xl:inset-y-0 xl:right-0 xl:w-64 xl:bg-white xl:border-l xl:border-gray-200 z-40 shadow-lg
-                dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none">
-                    <div className="flex items-center justify-between px-4 py-4 border-b">
+            {/* Friend Sidebar */}
+            <div
+                className="hidden xl:flex xl:flex-col xl:fixed xl:inset-y-0 xl:right-0 xl:w-64 z-40 bg-white border-l border-gray-200 shadow-lg transform transition-transform duration-300 ease-in-out
+                dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none"
+                style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}
+            >
+                <div className="flex items-start justify-between px-5 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
+                    <div>
                         <span className="font-semibold text-lg">{t('friend')}</span>
-                        <button
-                            onClick={() => setIsOpen(false)}
-                            className="text-gray-500 hover:text-black text-lg font-bold cursor-pointer
-                            dark:hover:text-white transition-colors"
-                            title={t('minimize')}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fillRule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clipRule="  evenodd"
-                                />
-                            </svg>
-                        </button>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{friends.length} friends</div>
                     </div>
-
                     <button
-                        onClick={handleOpenFriendRequests}
-                        className="flex items-center justify-between gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b border-gray-200 text-sm font-medium
-                        dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
+                        onClick={() => setIsOpen(false)}
+                        className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 -mr-1"
                     >
-                        <span>{t('friend_requests')}</span>
-                        <span className="inline-flex items-center justify-center rounded-full bg-green-500 text-white text-xs font-semibold px-2 min-w-[20px] h-5">
-                            {friendRequests.length}
-                        </span>
+                        <X className="w-4 h-4 text-gray-500" />
                     </button>
-
-                    <FriendRequestModal
-                        isOpen={isOpenModel}
-                        onClose={() => setIsOpenModel(false)}
-                        requests={friendRequests}
-                        onAcceptFriend={handleAcceptFriend}
-                    />
-
-                    <FriendList friends={friends} onOpenChat={openChat} />
                 </div>
-            )}
+
+                <button
+                    onClick={handleOpenFriendRequests}
+                    className="flex items-center justify-between gap-2 px-4 py-2.5 mx-3 mt-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors duration-150 text-sm font-medium"
+                >
+                    <span>{t('friend_requests')}</span>
+                    <span className="inline-flex items-center justify-center rounded-full bg-green-500 text-white text-xs font-semibold px-2 min-w-[20px] h-5">
+                        {friendRequests.length}
+                    </span>
+                </button>
+
+                <FriendRequestModal
+                    isOpen={isOpenModel}
+                    onClose={() => setIsOpenModel(false)}
+                    requests={friendRequests}
+                    onAcceptFriend={handleAcceptFriend}
+                />
+
+                <FriendList friends={friends} onOpenChat={openChat} onlineUserIds={onlineUserIds} />
+            </div>
+
+            {/* Floating Friend Button */}
             {!isOpen && (
-                <div className="fixed bottom-4 right-4 z-50">
-                    <button
-                        onClick={() => setIsOpen(true)}
-                        className="bg-white border border-gray-300 shadow px-4 py-2 rounded-full hover:bg-gray-100 transition"
-                    >
-                        {t('friend')}
-                    </button>
-                </div>
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+                >
+                    <Users className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+                    {friendRequests.length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                            {friendRequests.length > 9 ? '9+' : friendRequests.length}
+                        </span>
+                    )}
+                </button>
             )}
+
+            {/* Chat Windows */}
             <div className="fixed bottom-1 right-64 z-50">
                 <div className="relative">
                     {activeChats.map((user, index) => (

@@ -53,11 +53,7 @@ const navItems = [
     }
 ] as const
 
-interface NavigationProps {
-    locale?: string
-}
-
-const Navigation: React.FC<NavigationProps> = () => {
+const Navigation: React.FC = () => {
     const { logout } = useAuth()
 
     const [activeTab, setActiveTab] = useState('')
@@ -82,25 +78,25 @@ const Navigation: React.FC<NavigationProps> = () => {
         <nav>
             {/* Desktop Sidebar */}
             <div
-                className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg transition-all duration-300 overflow-hidden
+                className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg transition-all duration-300
             dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none"
                 style={{ width: isSidebarExpanded ? 256 : 64 }}
                 onMouseEnter={() => { if (!isPanelOpen) setIsSidebarHovered(true) }}
                 onMouseLeave={() => setIsSidebarHovered(false)}
             >
-                <div className="flex items-center px-4 py-4 border-b overflow-hidden">
+                <div className="flex items-center px-4 py-4 border-b">
                     <div className="flex items-center whitespace-nowrap">
                         <img
                             src={Logo}
                             alt="Logo"
                             className="w-8 h-8 flex-shrink-0"
                         />
-
                         <span
                             className="ml-3 text-xl transition-all duration-300 whitespace-nowrap overflow-hidden"
                             style={{
                                 fontFamily: "'Monoton', cursive",
                                 opacity: isSidebarExpanded ? 1 : 0,
+                                maxWidth: isSidebarExpanded ? 200 : 0,
                             }}
                         >
                             HALOGRAM
@@ -108,72 +104,89 @@ const Navigation: React.FC<NavigationProps> = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-3 py-2">
-                    {navItems.map(item => {
-                        const Icon = item.icon
+                <div className="flex-1 flex flex-col overflow-y-auto px-3 py-2">
+                    <div className="flex-1 space-y-1">
+                        {navItems.map(item => {
+                            const Icon = item.icon
 
-                        const content = (
-                            <div
-                                className="flex items-center mb-3 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors overflow-hidden"
-                                onClick={
-                                    item.type === 'tab'
-                                        ? () => openTab(item.id)
-                                        : undefined
-                                }
-                            >
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className="relative">
-                                        <Icon className="w-6 h-6 flex-shrink-0" />
+                            const content = (
+                                <div
+                                    className="group relative flex items-center cursor-pointer hover:bg-gray-100 px-2 py-2 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors duration-150"
+                                    style={{ justifyContent: isSidebarExpanded ? 'flex-start' : 'center' }}
+                                    onClick={
+                                        item.type === 'tab'
+                                            ? () => openTab(item.id)
+                                            : undefined
+                                    }
+                                >
+                                    <div className="relative flex-shrink-0">
+                                        <Icon className="w-6 h-6" />
                                         {item.id === 'notifications' && unreadCount > 0 && (
                                             <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                                                 {unreadCount > 9 ? '9+' : unreadCount}
                                             </span>
                                         )}
                                     </div>
-                                    <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 overflow-hidden"
+                                    <span
+                                        className="text-sm font-medium whitespace-nowrap transition-all duration-300 overflow-hidden"
                                         style={{
                                             maxWidth: isSidebarExpanded ? 160 : 0,
                                             opacity: isSidebarExpanded ? 1 : 0,
+                                            marginLeft: isSidebarExpanded ? 12 : 0,
                                         }}
                                     >
                                         {t(item.id)}
                                     </span>
+                                    {/* Tooltip when collapsed */}
+                                    {!isSidebarExpanded && (
+                                        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+                                            {t(item.id)}
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-1.5 border-4 border-transparent border-r-gray-900" />
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        )
-
-                        if (item.type === 'link') {
-                            return (
-                                <Link
-                                    key={item.id}
-                                    to={item.href}
-                                >
-                                    {content}
-                                </Link>
                             )
-                        }
 
-                        return (
-                            <div key={item.id}>
-                                {content}
-                            </div>
-                        )
-                    })}
+                            if (item.type === 'link') {
+                                return (
+                                    <Link
+                                        key={item.id}
+                                        to={item.href}
+                                        className="block"
+                                    >
+                                        {content}
+                                    </Link>
+                                )
+                            }
 
-                    <div
-                        className="flex items-center mb-3 cursor-pointer hover:bg-gray-100 px-2 py-2 rounded text-red-600 overflow-hidden"
-                        onClick={handleLogout}
-                    >
-                        <div className="flex items-center gap-3 min-w-0">
+                            return <div key={item.id}>{content}</div>
+                        })}
+                    </div>
+
+                    {/* Logout at bottom */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+                        <div
+                            className="group relative flex items-center cursor-pointer hover:bg-gray-100 px-2 py-2 rounded text-red-500 dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors duration-150"
+                            style={{ justifyContent: isSidebarExpanded ? 'flex-start' : 'center' }}
+                            onClick={handleLogout}
+                        >
                             <LogOut className="w-6 h-6 flex-shrink-0" />
-                            <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 overflow-hidden"
+                            <span
+                                className="text-sm font-medium whitespace-nowrap transition-all duration-300 overflow-hidden"
                                 style={{
                                     maxWidth: isSidebarExpanded ? 160 : 0,
                                     opacity: isSidebarExpanded ? 1 : 0,
+                                    marginLeft: isSidebarExpanded ? 12 : 0,
                                 }}
                             >
                                 {t('logout')}
                             </span>
+                            {!isSidebarExpanded && (
+                                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
+                                    {t('logout')}
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-1.5 border-4 border-transparent border-r-gray-900" />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

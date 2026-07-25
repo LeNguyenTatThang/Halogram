@@ -5,59 +5,43 @@ import Logo from '../../assets/logo.png'
 interface FriendListProps {
     friends: Friend[]
     onOpenChat: (user: FriendUser) => void
+    onlineUserIds: Set<string>
 }
 
-const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat }) => {
+const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat, onlineUserIds }) => {
     return (
-        <div className="flex-1 overflow-y-auto px-2 py-2">
-            <button
-                onClick={() =>
-                    onOpenChat({
-                        id: 'all',
-                        username: 'AI Halogram',
-                        avatar: Logo,
-                    })
-                }
-                className="flex items-center justify-between mb-3 w-full cursor-pointer hover:bg-gray-100 px-2 py-1 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
-            >
-                <div className="flex items-center gap-3">
-                    <img
-                        src={Logo}
-                        alt="AI Halogram"
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <span className="text-sm font-medium">AI Halogram</span>
-                </div>
-                <span className="h-3 w-3 rounded-full bg-green-500"></span>
-            </button>
-
+        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
             {friends.map(friend => (
                 <button
                     key={friend.id}
                     onClick={() =>
                         onOpenChat({
                             id: friend.friend.id,
-                            username: `${friend.friend.username}`,
+                            username: friend.friend.username,
+                            displayName: friend.friend.displayName,
                             avatar: friend.friend.avatar ?? Logo,
                         })
                     }
-                    className="flex items-center justify-between mb-3 w-full cursor-pointer hover:bg-gray-100 px-2 py-1 rounded dark:hover:bg-gray-700 dark:hover:bg-opacity-50 transition-colors"
+                    className="w-full flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="relative flex-shrink-0">
                         <img
                             src={friend.friend.avatar ?? Logo}
                             alt={friend.friend.username}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8 rounded-full object-cover"
+                            className="w-10 h-10 rounded-full object-cover"
                         />
-                        <span className="text-sm font-medium">
-                            {friend.friend.username}
-                        </span>
+                        {onlineUserIds.has(friend.friend.id) && (
+                            <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-black transition-opacity duration-200" />
+                        )}
                     </div>
-                    <span className="h-3 w-3 rounded-full bg-green-500"></span>
+                    <div className="ml-3 min-w-0 flex-1 text-left">
+                        <p className="text-sm font-semibold truncate">
+                            {friend.friend.displayName}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            @{friend.friend.username}
+                        </p>
+                    </div>
                 </button>
             ))}
         </div>
