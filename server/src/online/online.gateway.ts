@@ -11,16 +11,18 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { OnlineStatusService } from './online-status.service';
 
+const gatewayOrigins = (
+  process.env.CORS_ORIGINS || 'http://localhost:5173'
+).split(',');
+
 @WebSocketGateway({
   namespace: 'haloggram',
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: gatewayOrigins,
     credentials: true,
   },
 })
-export class OnlineGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
@@ -31,7 +33,7 @@ export class OnlineGateway
     private readonly onlineStatusService: OnlineStatusService,
   ) {}
 
-  async handleConnection(client: Socket) {
+  handleConnection(client: Socket) {
     try {
       const tokenFromAuth = client.handshake.auth?.token;
       const authHeader = client.handshake.headers.authorization;
@@ -50,7 +52,7 @@ export class OnlineGateway
         if (userId) {
           client.data.user = { id: userId };
           const wasOffline = this.onlineStatusService.onUserConnected(
-            userId,
+            userId as string,
             client.id,
           );
 
@@ -78,7 +80,7 @@ export class OnlineGateway
     const userId = client.data.user?.id;
     if (userId) {
       const isNowOffline = this.onlineStatusService.onUserDisconnected(
-        userId,
+        userId as string,
         client.id,
       );
 

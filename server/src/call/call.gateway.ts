@@ -11,10 +11,14 @@ import { Server, Socket } from 'socket.io';
 import type CallPayload from './dto/call-payload.dto';
 import { JwtService } from '@nestjs/jwt';
 
+const gatewayOrigins = (
+  process.env.CORS_ORIGINS || 'http://localhost:5173'
+).split(',');
+
 @WebSocketGateway({
   namespace: 'haloggram',
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: gatewayOrigins,
     credentials: true,
   },
 })

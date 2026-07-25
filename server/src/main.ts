@@ -9,12 +9,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
-  const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-    : ['http://localhost:5173', 'http://192.168.1.6:5173'];
+
+  const allowedOrigins = (
+    process.env.CORS_ORIGINS || 'http://localhost:5173'
+  ).split(',');
 
   app.enableCors({
-    origin: corsOrigins,
+    origin: allowedOrigins,
     credentials: true,
   });
 

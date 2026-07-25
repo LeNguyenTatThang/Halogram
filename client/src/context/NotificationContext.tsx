@@ -1,22 +1,12 @@
-import { createContext, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { startTransition, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import toast from 'react-hot-toast'
 import { socket } from '../lib/socket'
 import { getNotifications, getUnreadCount, markAsRead as markAsReadApi, markAllAsRead as markAllAsReadApi } from '../utils/notification'
+import { showDesktopNotification } from '../utils/browserNotification'
 import type { Notification } from '../types/Notification'
+import { NotificationContext } from './NotificationContextType'
 import { useAuth } from '../hooks/useAuth'
 import i18n from '../lib/i18n'
-
-export interface NotificationContextType {
-  notifications: Notification[]
-  unreadCount: number
-  addNotification: (notification: Notification) => void
-  markAsRead: (id: string) => Promise<void>
-  markAllAsRead: () => Promise<void>
-  loadMore: () => Promise<void>
-  hasMore: boolean
-}
-
-export const NotificationContext = createContext<NotificationContextType | null>(null)
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -29,10 +19,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setNotifications([])
-      setUnreadCount(0)
-      setNextCursor(null)
-      setHasMore(false)
+      startTransition(() => {
+        setNotifications([])
+        setUnreadCount(0)
+        setNextCursor(null)
+        setHasMore(false)
+      })
       notificationIdsRef.current.clear()
       listenerRegistered.current = false
       return
@@ -70,6 +62,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setUnreadCount((prev) => prev + 1)
 
       const actionText = i18n.t(`notifications:${notification.type.toLowerCase()}`, '')
+      showDesktopNotification(
+        notification.actor.displayName,
+        actionText,
+        notification.actor.avatar || undefined
+      )
       toast(
         () => (
           <div className="flex items-center gap-3">

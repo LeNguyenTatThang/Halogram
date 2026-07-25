@@ -10,7 +10,7 @@ import CreatePost from './pages/post/CreatePost'
 import Notifications from './pages/notifications/Notifications'
 import MainLayout from './layouts/MainLayout'
 import { useAuth } from './hooks/useAuth'
-import { currentUser, mockPosts, mockStories } from './store/mockData'
+import { mockStories } from './store/mockData'
 import { getAllPost, deletePost, removeMyTag } from './utils/post'
 import type { Post } from './types/Post'
 import NotFound from './pages/not-found/NotFound'
@@ -192,12 +192,6 @@ function App() {
             socket.disconnect()
         }
     }, [isAuthenticated])
-
-    useEffect(() => {
-        if ("Notification" in window) {
-            Notification.requestPermission()
-        }
-    }, [])
 
     useEffect(() => {
         if (!isAuthenticated) return

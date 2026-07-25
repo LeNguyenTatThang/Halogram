@@ -11,10 +11,14 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 
+const gatewayOrigins = (
+  process.env.CORS_ORIGINS || 'http://localhost:5173'
+).split(',');
+
 @WebSocketGateway({
   namespace: 'haloggram',
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: gatewayOrigins,
     credentials: true,
   },
 })
@@ -50,7 +54,7 @@ export class MessagesGateway
             email: payload.email,
             username: payload.username,
           };
-          await client.join(userId);
+          await client.join(userId as string);
         }
       }
     } catch {
@@ -69,7 +73,7 @@ export class MessagesGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() conversationId: string,
   ) {
-    client.join(conversationId);
+    void client.join(conversationId);
 
     this.logger.log(
       `Client ${client.id} joined conversation ${conversationId}`,
@@ -81,7 +85,7 @@ export class MessagesGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() conversationId: string,
   ) {
-    client.leave(conversationId);
+    void client.leave(conversationId);
 
     this.logger.log(`Client ${client.id} left conversation ${conversationId}`);
   }

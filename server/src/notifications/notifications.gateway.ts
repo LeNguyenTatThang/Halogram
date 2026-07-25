@@ -7,10 +7,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 
+const gatewayOrigins = (
+  process.env.CORS_ORIGINS || 'http://localhost:5173'
+).split(',');
+
 @WebSocketGateway({
   namespace: 'haloggram',
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: gatewayOrigins,
     credentials: true,
   },
 })
@@ -44,7 +48,7 @@ export class NotificationsGateway
             email: payload.email,
             username: payload.username,
           };
-          await client.join(userId);
+          await client.join(userId as string);
         }
       }
     } catch {
