@@ -15,7 +15,8 @@ export async function getActiveLivestreams(): Promise<Livestream[]> {
     headers: getHeaders(),
   })
   if (!res.ok) throw new Error('Failed to fetch active livestreams')
-  return res.json()
+  const data = await res.json()
+  return Array.isArray(data) ? data : []
 }
 
 export async function getLivestreamById(id: string): Promise<Livestream> {

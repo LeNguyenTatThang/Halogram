@@ -40,6 +40,10 @@ model User {
   postTags              PostTag[]
   livestreams           Livestream[]
   livestreamMessages    LivestreamMessage[]
+  shop                  Shop?
+  cart                  Cart?
+  orders                Order[]
+  voucherUsages         VoucherUsage[]
 
   @@map("users")
 }
@@ -309,6 +313,256 @@ model LivestreamMessage {
   @@index([livestreamId, createdAt])
   @@index([userId])
   @@map("livestream_messages")
+}
+
+enum ShopVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Shop {
+  id              String                @id @default(cuid())
+  name            String                @db.VarChar(100)
+  slug            String                @unique @db.VarChar(100)
+  description     String?               @db.Text
+  phone           String?               @db.VarChar(20)
+  email           String?               @db.VarChar(255)
+  address         String?               @db.Text
+  logo            String?
+  coverImage      String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  ownerId         String                @unique
+  owner           User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  verification    ShopVerification?
+  products        Product[]
+  vouchers        Voucher[]
+  promotions      Promotion[]
+  orders          Order[]
+
+  @@index([slug])
+  @@map("shops")
+}
+
+model ShopVerification {
+  id         String                  @id @default(cuid())
+  shopId     String                  @unique
+  shop       Shop                    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  status     ShopVerificationStatus  @default(PENDING)
+  idDocument String?
+  notes      String?                 @db.Text
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+
+  @@map("shop_verifications")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @db.VarChar(50)
+  slug      String    @unique @db.VarChar(60)
+  image     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+
+  @@index([slug])
+  @@map("categories")
+}
+
+model Product {
+  id          String         @id @default(cuid())
+  shopId      String
+  categoryId  String
+  name        String         @db.VarChar(200)
+  slug        String         @db.VarChar(220)
+  description String?        @db.Text
+  price       Int
+  salePrice   Int?
+  stock       Int            @default(0)
+  soldCount   Int            @default(0)
+  rating      Float          @default(0)
+  reviewCount Int            @default(0)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  shop        Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category    Category       @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  promotions  PromotionProduct[]
+
+  @@unique([shopId, slug])
+  @@index([categoryId])
+  @@index([isActive, createdAt])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String   @db.Text
+  productId String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPING
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  shopId          String
+  status          OrderStatus @default(PENDING)
+  subtotal        Int
+  discount        Int         @default(0)
+  shippingFee     Int         @default(0)
+  total           Int
+  shippingName    String?     @db.VarChar(100)
+  shippingPhone   String?     @db.VarChar(20)
+  shippingAddress String?     @db.Text
+  note            String?     @db.Text
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id])
+  shop            Shop        @relation(fields: [shopId], references: [id])
+  items           OrderItem[]
+  voucherUsage    VoucherUsage?
+
+  @@index([userId, createdAt])
+  @@index([shopId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+enum VoucherDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model Voucher {
+  id              String              @id @default(cuid())
+  shopId          String
+  code            String              @unique @db.VarChar(50)
+  discountType    VoucherDiscountType
+  discountValue   Int
+  minOrderValue   Int                 @default(0)
+  maxDiscount     Int?
+  quantity        Int                 @default(100)
+  usedCount       Int                 @default(0)
+  perUserLimit    Int                 @default(1)
+  startDate       DateTime
+  endDate         DateTime
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  shop            Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  usages          VoucherUsage[]
+
+  @@index([shopId])
+  @@index([code])
+  @@map("vouchers")
+}
+
+model VoucherUsage {
+  id        String   @id @default(cuid())
+  voucherId String
+  userId    String
+  orderId   String   @unique
+  discount  Int
+  createdAt DateTime @default(now())
+  voucher   Voucher  @relation(fields: [voucherId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([voucherId, userId])
+  @@index([voucherId])
+  @@index([userId])
+  @@map("voucher_usages")
+}
+
+enum PromotionType {
+  FLASH_SALE
+  PRODUCT_DISCOUNT
+}
+
+model Promotion {
+  id          String           @id @default(cuid())
+  shopId      String
+  title       String           @db.VarChar(200)
+  type        PromotionType
+  discount    Int              @db.TinyInt
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  shop        Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  products    PromotionProduct[]
+
+  @@index([shopId])
+  @@index([type, isActive, endDate])
+  @@map("promotions")
+}
+
+model PromotionProduct {
+  promotionId String
+  productId   String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, productId])
+  @@map("promotion_products")
 }
 
 model Call {

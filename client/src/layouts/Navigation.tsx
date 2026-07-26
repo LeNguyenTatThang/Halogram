@@ -7,6 +7,7 @@ import {
     User,
     Settings as SettingsIcon,
     Radio,
+    ShoppingBag,
     LogOut
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -51,6 +52,12 @@ const navItems = [
         id: 'livestream',
         icon: Radio,
         href: '/livestream',
+        type: 'link'
+    },
+    {
+        id: 'haloshop',
+        icon: ShoppingBag,
+        href: '/shop',
         type: 'link'
     },
     {

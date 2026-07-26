@@ -24,6 +24,7 @@ import LivestreamPage from './pages/livestream/LivestreamPage'
 import LivestreamViewer from './pages/livestream/LivestreamViewer'
 import LivestreamBroadcast from './pages/livestream/LivestreamBroadcast'
 import StartLivestream from './pages/livestream/StartLivestream'
+import HaloShopPage from './pages/shop/HaloShopPage'
 import IncomingCallModal from './components/call/IncomingCallModal'
 import { useCall } from './context/useCall'
 import VideoCall from './layouts/online/VideoCall'
@@ -344,6 +345,11 @@ function App() {
                     <Route
                         path="/livestream/:id/broadcast"
                         element={<LivestreamBroadcast />}
+                    />
+
+                    <Route
+                        path="/shop"
+                        element={<HaloShopPage />}
                     />
                 </Route>
 
