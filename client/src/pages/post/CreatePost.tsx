@@ -5,6 +5,7 @@ import { Upload, X, ArrowLeft, UserPlus } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { createPost } from '../../utils/post'
 import TagFriendsModal from '../../components/post/TagFriendsModal'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 interface CreatePostProps {
     onClose: () => void;
@@ -155,7 +156,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                                         className="w-8 h-8 rounded-full object-cover"
                                     />
                                     <div className="flex-1">
-                                        <span className="font-semibold text-sm">{user?.username}</span>
+                                        <span className="font-semibold text-sm inline-flex items-center gap-0.5">{user?.username}{user?.isVerified && <VerifiedBadge />}</span>
                                         <textarea
                                             value={caption}
                                             onChange={(e) => setCaption(e.target.value)}

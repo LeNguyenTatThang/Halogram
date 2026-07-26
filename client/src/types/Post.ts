@@ -3,6 +3,7 @@ export interface TaggedUser {
   username: string
   displayName: string
   avatar: string | null
+  isVerified?: boolean
 }
 
 export interface Post {
@@ -14,6 +15,7 @@ export interface Post {
     username: string
     displayName: string
     avatar: string | null
+    isVerified?: boolean
   }
 
   images?: {
@@ -28,6 +30,7 @@ export interface Post {
       id: string
       avatar: string
       username: string
+      isVerified?: boolean
     }
   }[] | null
 

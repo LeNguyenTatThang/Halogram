@@ -31,6 +31,7 @@ export class PostService {
             username: true,
             displayName: true,
             avatar: true,
+            isVerified: true,
           },
         },
         likes: {
@@ -46,6 +47,7 @@ export class PostService {
                 username: true,
                 displayName: true,
                 avatar: true,
+                isVerified: true,
               },
             },
           },
@@ -451,6 +453,7 @@ export class PostService {
             username: true,
             displayName: true,
             avatar: true,
+            isVerified: true,
           },
         },
         images: true,
@@ -502,6 +505,7 @@ export class PostService {
             username: true,
             displayName: true,
             avatar: true,
+            isVerified: true,
           },
         },
         likes: {

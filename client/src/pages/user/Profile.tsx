@@ -13,6 +13,7 @@ import { addFriend, cancelFriend, removeFriend } from '../../utils/friend'
 import { createConversation } from '../../utils/messages'
 import EditProfileModal from '../../components/profile/EditProfileModal'
 import EditPostModal from '../../components/profile/EditPostModal'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 const LOADING = 'loading'
 const ERROR = 'error'
@@ -177,7 +178,7 @@ const Profile: React.FC = () => {
                     />
                     <div className="flex-1 min-w-0 text-center sm:text-left">
                         <div className="flex items-center justify-center sm:justify-start gap-4 mb-2">
-                            <h1 className="text-xl font-semibold truncate">{profile.username}</h1>
+                            <h1 className="text-xl font-semibold truncate inline-flex items-center gap-1">{profile.username}{profile.isVerified && <VerifiedBadge />}</h1>
                             {isOwnProfile && <Settings className="w-5 h-5 cursor-pointer hover:text-gray-600 transition-colors flex-shrink-0" />}
                         </div>
                         <div className="flex justify-center sm:justify-start gap-6 text-sm mb-3">

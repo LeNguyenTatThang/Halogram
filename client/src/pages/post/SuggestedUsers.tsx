@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import configAxios from '../../api/axios'
 import { followUser } from '../../utils/follow'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 interface SuggestedUser {
   id: string
   username: string
   displayName: string
   avatar: string | null
+  isVerified?: boolean
 }
 
 const SuggestedUsers = () => {
@@ -59,7 +61,7 @@ const SuggestedUsers = () => {
               className="h-14 w-14 rounded-full object-cover"
             />
             <div>
-              <p className="text-sm font-semibold">{user.username}</p>
+              <p className="text-sm font-semibold inline-flex items-center gap-0.5">{user.username}{user.isVerified && <VerifiedBadge />}</p>
               <p className="text-sm text-gray-500">{user.displayName}</p>
             </div>
           </div>
@@ -113,8 +115,9 @@ const SuggestedUsers = () => {
                   className="h-11 w-11 rounded-full object-cover flex-shrink-0"
                 />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate">
+                  <p className="text-sm font-semibold truncate inline-flex items-center gap-0.5">
                     {suggested.username}
+                    {suggested.isVerified && <VerifiedBadge />}
                   </p>
                   <p className="text-xs text-gray-500 truncate">
                     {suggested.displayName}

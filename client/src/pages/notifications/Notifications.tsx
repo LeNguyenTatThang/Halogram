@@ -4,6 +4,7 @@ import { useNotifications } from '../../context/useNotifications'
 import { timeAgo } from '../../hooks/useTimeAgo'
 import { Bell } from 'lucide-react'
 import type { Notification } from '../../types/Notification'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 const defaultAvatarUrl =
   'https://ui-avatars.com/api/?name=User&background=random'
@@ -77,8 +78,9 @@ const Notifications = ({ onClose }: NotificationsProps) => {
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm">
-              <span className="font-semibold">
+              <span className="font-semibold inline-flex items-center gap-0.5">
                 {notification.actor.displayName}
+                {notification.actor.isVerified && <VerifiedBadge />}
               </span>{' '}
               <span className="text-gray-600 dark:text-gray-400">
                 {t(notification.type.toLowerCase())}

@@ -3,6 +3,7 @@ export interface FriendUser {
   username: string;
   displayName: string;
   avatar: string | null;
+  isVerified?: boolean;
 }
 
 export interface Friend {

@@ -5,6 +5,7 @@ import { createConversation, getConversationMessages, getConversations } from '.
 import { showDesktopNotification, setBrowserTitle, updateFaviconBadge } from '../utils/browserNotification'
 import { useAuth } from '../hooks/useAuth'
 import { playSound } from '../utils/sound'
+import VerifiedBadge from '../components/common/VerifiedBadge'
 import type { FriendUser } from '../types/Friend'
 
 const defaultAvatarUrl = 'https://ui-avatars.com/api/?name=User&background=random'
@@ -69,7 +70,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                         className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
                     <div className="min-w-0">
-                        <span className="font-semibold text-sm">{senderUser.username || senderUser.displayName}</span>
+                        <span className="font-semibold text-sm inline-flex items-center gap-0.5">{senderUser.username || senderUser.displayName}{senderUser.isVerified && <VerifiedBadge />}</span>
                         <p className="text-sm text-gray-600 truncate">{message.content}</p>
                     </div>
                 </div>

@@ -7,6 +7,7 @@ import type { Notification } from '../types/Notification'
 import { NotificationContext } from './NotificationContextType'
 import { useAuth } from '../hooks/useAuth'
 import i18n from '../lib/i18n'
+import VerifiedBadge from '../components/common/VerifiedBadge'
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -76,7 +77,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
               className="w-8 h-8 rounded-full object-cover flex-shrink-0"
             />
             <div className="min-w-0">
-              <span className="font-semibold text-sm">{notification.actor.displayName}</span>{' '}
+              <span className="font-semibold text-sm inline-flex items-center gap-0.5">{notification.actor.displayName}{notification.actor.isVerified && <VerifiedBadge />}</span>{' '}
               <span className="text-sm text-gray-600">{actionText}</span>
             </div>
           </div>

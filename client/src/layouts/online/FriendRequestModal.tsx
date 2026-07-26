@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Friend  } from '../../types/Friend'
 import { useTranslation } from 'react-i18next'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 interface FriendRequestModalProps {
     isOpen: boolean
     onClose: () => void
@@ -62,8 +63,9 @@ const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
                                     className="w-8 h-8 rounded-full object-cover"
                                 />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium truncate">
+                                    <p className="text-sm font-medium truncate inline-flex items-center gap-0.5">
                                         {friend.friend.displayName}
+                                        {friend.friend.isVerified && <VerifiedBadge />}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                         @{friend.friend.username}

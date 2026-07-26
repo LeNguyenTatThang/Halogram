@@ -141,6 +141,7 @@ export class UsersService {
         username: true,
         displayName: true,
         avatar: true,
+        isVerified: true,
       },
       take: 5,
     });
@@ -196,6 +197,7 @@ export class UsersService {
         username: true,
         displayName: true,
         avatar: true,
+        isVerified: true,
 
         sentRequests: {
           where: {

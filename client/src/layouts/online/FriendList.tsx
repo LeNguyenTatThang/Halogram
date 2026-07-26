@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Friend, FriendUser } from '../../types/Friend' 
 import Logo from '../../assets/logo.png'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 interface FriendListProps {
     friends: Friend[]
@@ -35,8 +36,9 @@ const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat, onlineUser
                         )}
                     </div>
                     <div className="ml-3 min-w-0 flex-1 text-left">
-                        <p className="text-sm font-semibold truncate">
+                        <p className="text-sm font-semibold truncate inline-flex items-center gap-0.5">
                             {friend.friend.displayName}
+                            {friend.friend.isVerified && <VerifiedBadge />}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                             @{friend.friend.username}

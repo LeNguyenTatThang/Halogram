@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { X, Search, Check } from 'lucide-react'
 import { listFriends } from '../../utils/friend'
+import VerifiedBadge from '../common/VerifiedBadge'
 
 interface Friend {
   id: string
   username: string
   avatar: string | null
+  isVerified?: boolean
 }
 
 interface TagFriendsModalProps {
@@ -93,7 +95,7 @@ const TagFriendsModal: React.FC<TagFriendsModalProps> = ({
                   alt={friend.username}
                   className="w-10 h-10 rounded-full object-cover"
                 />
-                <span className="text-sm font-medium flex-1 text-left">{friend.username}</span>
+                <span className="text-sm font-medium flex-1 text-left inline-flex items-center gap-0.5">{friend.username}{friend.isVerified && <VerifiedBadge />}</span>
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                     selected.has(friend.id)

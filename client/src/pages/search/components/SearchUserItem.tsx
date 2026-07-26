@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Check, Clock3, UserPlus } from 'lucide-react'
 import type { SearchUser } from '../../../types/Search'
 import Logo from '../../../assets/logo.png'
+import VerifiedBadge from '../../../components/common/VerifiedBadge'
 
 interface SearchUserItemProps {
     user: SearchUser
@@ -29,7 +30,7 @@ const SearchUserItem = ({ user, onSendRequest, onCancelRequest, onRemoveFriend, 
                 />
 
                 <div className="min-w-0">
-                    <p className="font-semibold truncate">{user.displayName}</p>
+                    <p className="font-semibold truncate inline-flex items-center gap-0.5">{user.displayName}{user.isVerified && <VerifiedBadge />}</p>
                     <p className="text-sm text-gray-500 truncate">@{user.username}</p>
                 </div>
             </button>

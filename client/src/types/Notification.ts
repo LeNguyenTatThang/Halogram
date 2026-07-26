@@ -3,6 +3,7 @@ export interface NotificationActor {
   username: string
   displayName: string
   avatar: string | null
+  isVerified?: boolean
 }
 
 export type NotificationType =

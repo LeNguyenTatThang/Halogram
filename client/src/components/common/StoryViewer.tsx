@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import type { Story } from '../../types/Story'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import VerifiedBadge from './VerifiedBadge'
 
 interface StoryViewerProps {
     story: Story
@@ -90,7 +91,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ story: initialStory, stories,
                                 className="w-10 h-10 rounded-full object-cover border-2 border-white"
                             />
                             <div>
-                                <p className="text-white font-semibold text-sm">{currentStory.user.username}</p>
+                                <p className="text-white font-semibold text-sm inline-flex items-center gap-0.5">{currentStory.user.username}{currentStory.user.isVerified && <VerifiedBadge className="text-white" />}</p>
                                 <p className="text-gray-300 text-xs">2 hours ago</p>
                             </div>
                         </div>

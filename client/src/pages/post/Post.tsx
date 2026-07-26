@@ -2,11 +2,12 @@ import React, { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Post as PostType } from '../../types/Post'
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight, Trash2, X, Tag } from 'lucide-react'
 import { timeAgo } from '../../hooks/useTimeAgo'
 import { useAuth } from '../../hooks/useAuth'
 import defaultAvatarUrl from '../../assets/Logo.png'
 import LazyImage from '../../components/common/LazyImage'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 interface PostProps {
     post: PostType
     onLike: (postId: string) => void
@@ -15,6 +16,16 @@ interface PostProps {
     onRemoveTag?: (postId: string) => Promise<void>
     priority?: boolean
 }
+
+const renderNameWithBadge = (n: { display: string; username: string; isVerified?: boolean }, navigate: ReturnType<typeof useNavigate>) => (
+    <button
+        onClick={() => navigate(`/profile/${n.username}`)}
+        className="font-semibold text-blue-500 hover:text-blue-700 inline-flex items-center gap-0.5"
+    >
+        {n.display}
+        {n.isVerified && <VerifiedBadge />}
+    </button>
+)
 
 function renderTagNames(
     tags: NonNullable<PostType['tags']>,
@@ -30,37 +41,20 @@ function renderTagNames(
             username: tag.user.username,
             display: isYou ? t('post.tag_you') : (tag.user.displayName || tag.user.username),
             isYou,
+            isVerified: tag.user.isVerified,
         }
     })
 
     if (names.length === 1) {
-        const n = names[0]
-        return (
-            <button
-                onClick={() => navigate(`/profile/${n.username}`)}
-                className="font-semibold text-blue-500 hover:text-blue-700"
-            >
-                {n.display}
-            </button>
-        )
+        return renderNameWithBadge(names[0], navigate)
     }
 
     if (names.length === 2) {
         return (
-            <span>
-                <button
-                    onClick={() => navigate(`/profile/${names[0].username}`)}
-                    className="font-semibold text-blue-500 hover:text-blue-700"
-                >
-                    {names[0].display}
-                </button>
+            <span className="inline-flex items-center gap-0.5">
+                {renderNameWithBadge(names[0], navigate)}
                 <span>{t('post.tag_and')}</span>
-                <button
-                    onClick={() => navigate(`/profile/${names[1].username}`)}
-                    className="font-semibold text-blue-500 hover:text-blue-700"
-                >
-                    {names[1].display}
-                </button>
+                {renderNameWithBadge(names[1], navigate)}
             </span>
         )
     }
@@ -68,16 +62,11 @@ function renderTagNames(
     const visible = names.slice(0, maxVisible)
     const remaining = names.length - maxVisible
     return (
-        <span>
+        <span className="inline-flex items-center gap-0.5 flex-wrap">
             {visible.map((n, i) => (
-                <span key={n.id}>
-                    <button
-                        onClick={() => navigate(`/profile/${n.username}`)}
-                        className="font-semibold text-blue-500 hover:text-blue-700"
-                    >
-                        {n.display}
-                    </button>
-                    {i < visible.length - 1 && <span>, </span>}
+                <span key={n.id} className="inline-flex items-center gap-0.5">
+                    {renderNameWithBadge(n, navigate)}
+                    {i < visible.length - 1 && <span>,</span>}
                 </span>
             ))}
             <span>
@@ -218,6 +207,7 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemove
                             <span className="font-semibold text-sm truncate">
                                 {post.user?.displayName ?? post.user?.username}
                             </span>
+                            {post.user?.isVerified && <VerifiedBadge className="text-blue-400 ml-0.5" />}
                         </div>
 
                         <span className="text-xs text-gray-500">
@@ -255,19 +245,27 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemove
 
             {/* TAGGED USERS */}
             {post.tags && post.tags.length > 0 && (
-                <div className="mb-1 px-4">
-                    <span className="text-sm text-gray-500">
-                        {t('post.tag_with')}{' '}
-                        {renderTagNames(post.tags, currentUser?.id ?? '', navigate, t)}
+                <div className="mb-2 px-4">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-full text-sm flex-wrap">
+                        <Tag size={14} className="text-blue-500 shrink-0" />
+                        <span className="text-gray-500 shrink-0 leading-none">{t('post.tag_with')}</span>
+                        <span className="min-w-0 leading-none">
+                            {renderTagNames(post.tags, currentUser?.id ?? '', navigate, t)}
+                        </span>
+                        {isTagged && onRemoveTag && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setShowRemoveTagConfirm(true)
+                                }}
+                                className="ml-0.5 p-[3px] text-gray-400 hover:text-white hover:bg-red-500 rounded-full transition-colors"
+                                title={t('post.remove_tag')}
+                                type="button"
+                            >
+                                <X size={13} />
+                            </button>
+                        )}
                     </span>
-                    {isTagged && onRemoveTag && (
-                        <button
-                            onClick={() => setShowRemoveTagConfirm(true)}
-                            className="ml-2 text-xs text-red-500 hover:text-red-700 underline"
-                        >
-                            {t('post.remove_tag')}
-                        </button>
-                    )}
                 </div>
             )}
 
@@ -391,9 +389,10 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemove
                                 </button>
                                 <button
                                     onClick={() => navigate(`/profile/${c.user?.username}`)}
-                                    className="font-semibold text-sm hover:underline"
+                                    className="font-semibold text-sm hover:underline inline-flex items-center gap-0.5"
                                 >
                                     {c.user?.username}
+                                    {(c.user as { isVerified?: boolean })?.isVerified && <VerifiedBadge />}
                                 </button>
                                 <span className="text-sm">{c.text}</span>
                             </div>

@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Story } from '../../types/Story'
 import { Plus } from 'lucide-react'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 // import { useAuth } from '../../hooks/useAuth'
 
 interface StoriesProps {

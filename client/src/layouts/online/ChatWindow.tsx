@@ -11,6 +11,7 @@ import { sendConversationMessage } from '../../utils/messages'
 import { useAuth } from '../../hooks/useAuth'
 import { useCall } from '../../context/useCall'
 import { useChat, type ChatMessage } from '../../context/ChatContext'
+import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 const defaultAvatarUrl =
     'https://ui-avatars.com/api/?name=User&background=random'
@@ -206,7 +207,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, popupIndex, onClose }) =>
                 <div className="flex items-center gap-2">
                     <img src={user.avatar || defaultAvatarUrl} alt={user.username} className="w-8 h-8 rounded-full border-2 border-white" />
                     <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-sm leading-tight">{user.username}</span>
+                        <span className="font-semibold text-sm leading-tight inline-flex items-center gap-0.5">{user.username}{user.isVerified && <VerifiedBadge className="text-white" />}</span>
                         <span className={`text-[11px] leading-tight ${peerTyping ? 'text-green-100 font-medium' : 'text-blue-100'}`}>
                             {peerTyping ? 'đang nhập...' : 'online'}
                         </span>

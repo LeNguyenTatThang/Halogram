@@ -335,6 +335,7 @@ export class FriendshipsService {
               username: true,
               displayName: true,
               avatar: true,
+              isVerified: true,
           },
         },
         friend: {
@@ -343,6 +344,7 @@ export class FriendshipsService {
               username: true,
               displayName: true,
               avatar: true,
+              isVerified: true,
           },
         },
       },
@@ -380,6 +382,7 @@ export class FriendshipsService {
               username: true,
               displayName: true,
               avatar: true,
+              isVerified: true,
             },
           },
           friend: {
@@ -388,6 +391,7 @@ export class FriendshipsService {
               username: true,
               displayName: true,
               avatar: true,
+              isVerified: true,
             },
           },
         },

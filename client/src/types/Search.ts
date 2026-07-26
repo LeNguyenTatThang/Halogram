@@ -9,4 +9,5 @@ export interface SearchUser {
     displayName: string
     avatar: string | null
     friendshipStatus: FriendshipStatus
+    isVerified?: boolean
 }
