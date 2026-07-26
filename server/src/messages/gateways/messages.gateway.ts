@@ -7,9 +7,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import { MessagesService } from '../messages.service';
+import { WsJwtGuard } from '../../auth/guards/ws-jwt.guard';
 
 const gatewayOrigins = (
   process.env.CORS_ORIGINS || 'http://localhost:5173'
@@ -22,6 +24,7 @@ const gatewayOrigins = (
     credentials: true,
   },
 })
+@UseGuards(WsJwtGuard)
 export class MessagesGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -30,7 +33,10 @@ export class MessagesGateway
 
   private readonly logger = new Logger(MessagesGateway.name);
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly messagesService: MessagesService,
+  ) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -57,8 +63,8 @@ export class MessagesGateway
           await client.join(userId as string);
         }
       }
-    } catch {
-      // Ignore connection errors for unauthenticated users
+    } catch (err) {
+      this.logger.warn(`Messages gateway auth error: ${client.id} - ${(err as Error).message}`);
     }
 
     this.logger.log(`Client connected: ${client.id}`);
@@ -69,48 +75,87 @@ export class MessagesGateway
   }
 
   @SubscribeMessage('joinConversation')
-  handleJoinConversation(
+  async handleJoinConversation(
     @ConnectedSocket() client: Socket,
     @MessageBody() conversationId: string,
   ) {
-    void client.join(conversationId);
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) {
+      client.emit('error', { message: 'Authentication required' });
+      return;
+    }
 
-    this.logger.log(
-      `Client ${client.id} joined conversation ${conversationId}`,
-    );
+    try {
+      await this.messagesService.checkMember(conversationId, userId);
+      await client.join(conversationId);
+      this.logger.log(
+        `Client ${client.id} joined conversation ${conversationId}`,
+      );
+    } catch {
+      client.emit('error', { message: 'Not a member of this conversation' });
+    }
   }
 
   @SubscribeMessage('leaveConversation')
-  handleLeaveConversation(
+  async handleLeaveConversation(
     @ConnectedSocket() client: Socket,
     @MessageBody() conversationId: string,
   ) {
-    void client.leave(conversationId);
-
+    await client.leave(conversationId);
     this.logger.log(`Client ${client.id} left conversation ${conversationId}`);
   }
 
   @SubscribeMessage('typing')
   handleTyping(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { conversationId: string; userId: string },
+    @MessageBody() payload: { conversationId: string },
   ) {
-    this.server.to(payload.conversationId).emit('typing', payload);
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
+    this.server.to(payload.conversationId).emit('typing', {
+      conversationId: payload.conversationId,
+      userId,
+    });
   }
 
   @SubscribeMessage('stopTyping')
   handleStopTyping(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { conversationId: string; userId: string },
+    @MessageBody() payload: { conversationId: string },
   ) {
-    this.server.to(payload.conversationId).emit('stopTyping', payload);
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
+    this.server.to(payload.conversationId).emit('stopTyping', {
+      conversationId: payload.conversationId,
+      userId,
+    });
   }
 
   @SubscribeMessage('sendMessage')
-  handleSendMessage(
+  async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { conversationId: string; message: string },
+    @MessageBody() payload: { conversationId: string; message: string; image?: string },
   ) {
-    this.server.to(payload.conversationId).emit('receiveMessage', payload);
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) {
+      client.emit('error', { message: 'Authentication required' });
+      return;
+    }
+
+    try {
+      const message = await this.messagesService.createMessage(userId, {
+        conversationId: payload.conversationId,
+        content: payload.message,
+        image: payload.image,
+      });
+
+      this.server.to(payload.conversationId).emit('receiveMessage', message);
+    } catch (err) {
+      client.emit('error', {
+        message: err instanceof Error ? err.message : 'Failed to send message',
+      });
+    }
   }
 }

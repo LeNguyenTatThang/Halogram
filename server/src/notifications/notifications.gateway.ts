@@ -1,11 +1,14 @@
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
+import { UseGuards } from '@nestjs/common';
+import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
 
 const gatewayOrigins = (
   process.env.CORS_ORIGINS || 'http://localhost:5173'
@@ -18,6 +21,7 @@ const gatewayOrigins = (
     credentials: true,
   },
 })
+@UseGuards(WsJwtGuard)
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {

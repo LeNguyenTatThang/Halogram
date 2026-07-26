@@ -6,7 +6,7 @@ import { CreateMessageDto } from './dto/create-message.dto';
 export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async checkMember(conversationId: string, userId: string) {
+  async checkMember(conversationId: string, userId: string) {
     const member = await this.prisma.conversationMember.findFirst({
       where: {
         conversationId,
@@ -85,7 +85,6 @@ export class MessagesService {
                 id: true,
                 username: true,
                 avatar: true,
-                email: true,
                 isVerified: true,
               },
             },
@@ -119,7 +118,6 @@ export class MessagesService {
                 id: true,
                 username: true,
                 avatar: true,
-                email: true,
                 isVerified: true,
               },
             },

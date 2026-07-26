@@ -1,5 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
+
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+];
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 @Injectable()
 export class CloudinaryService {
@@ -11,7 +20,22 @@ export class CloudinaryService {
     });
   }
 
-  async uploadImage(buffer: Buffer, folder: string): Promise<string> {
+  private validateFile(file: Express.Multer.File): void {
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Invalid file type: ${file.mimetype}. Allowed: ${ALLOWED_MIME_TYPES.join(', ')}`,
+      );
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      throw new BadRequestException(
+        `File too large: ${file.size}. Max: ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+      );
+    }
+  }
+
+  async uploadImage(file: Express.Multer.File, folder: string): Promise<string> {
+    this.validateFile(file);
+
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
@@ -29,7 +53,7 @@ export class CloudinaryService {
             resolve(result?.secure_url ?? '');
           },
         )
-        .end(buffer);
+        .end(file.buffer);
     });
   }
 
@@ -37,8 +61,11 @@ export class CloudinaryService {
     files: Express.Multer.File[],
     folder: string,
   ): Promise<string[]> {
+    for (const file of files) {
+      this.validateFile(file);
+    }
     return Promise.all(
-      files.map((file) => this.uploadImage(file.buffer, folder)),
+      files.map((file) => this.uploadImage(file, folder)),
     );
   }
 }

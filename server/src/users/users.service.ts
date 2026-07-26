@@ -24,7 +24,7 @@ export class UsersService {
 
     if (avatarFile) {
       const url = await this.cloudinaryService.uploadImage(
-        avatarFile.buffer,
+        avatarFile,
         'halogram/avatars',
       );
       updateData.avatar = url;
@@ -174,7 +174,6 @@ export class UsersService {
         OR: [
           { username: { contains: keyword } },
           { displayName: { contains: keyword } },
-          { email: { contains: keyword } },
         ],
       },
 

@@ -581,7 +581,15 @@ export class PostService {
     return this.prisma.post.findUnique({
       where: { id: postId },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+            isVerified: true,
+          },
+        },
         comments: true,
         likes: true,
       },

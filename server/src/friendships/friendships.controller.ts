@@ -3,6 +3,7 @@ import { FriendshipsService } from './friendships.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
+import { FriendDto } from './dto/friend.dto';
 
 @Controller('friendships')
 export class FriendshipsController {
@@ -12,7 +13,7 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   async requestFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body() dto: { friendId: string },
+    @Body() dto: FriendDto,
   ) {
     return this.friendshipsService.requestFriendship(userId, dto.friendId);
   }
@@ -21,7 +22,7 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   async acceptFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body() dto: { friendId: string },
+    @Body() dto: FriendDto,
   ) {
     return this.friendshipsService.acceptFriendship(userId, dto.friendId);
   }
@@ -30,7 +31,7 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   async removeFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body() dto: { friendId: string },
+    @Body() dto: FriendDto,
   ) {
     return this.friendshipsService.removeFriendship(userId, dto.friendId);
   }
@@ -39,7 +40,7 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   async cancelFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body() dto: { friendId: string },
+    @Body() dto: FriendDto,
   ) {
     return this.friendshipsService.cancelFriendship(userId, dto.friendId);
   }
@@ -48,7 +49,7 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   async blockFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body() dto: { friendId: string },
+    @Body() dto: FriendDto,
   ) {
     return this.friendshipsService.blockFriendship(userId, dto.friendId);
   }
@@ -57,7 +58,7 @@ export class FriendshipsController {
   @UseGuards(JwtAuthGuard)
   unblockFriendship(
     @CurrentUser() { id: userId }: JwtUser,
-    @Body() dto: { friendId: string },
+    @Body() dto: FriendDto,
   ) {
     return this.friendshipsService.unblockFriendship(userId, dto.friendId);
   }

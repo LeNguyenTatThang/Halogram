@@ -9,6 +9,7 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -30,6 +31,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ limit: 5, ttl: 60 })
   async login(
     @Body() dto: SignInDto,
     @Res({ passthrough: true }) res: Response,
@@ -39,7 +41,7 @@ export class AuthController {
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/auth/refresh',
     });
@@ -53,6 +55,7 @@ export class AuthController {
 
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ limit: 5, ttl: 60 })
   async signUp(@Body() dto: SignUpDto) {
     return this.authService.signUp(dto);
   }

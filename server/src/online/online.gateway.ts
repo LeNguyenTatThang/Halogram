@@ -6,10 +6,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { OnlineStatusService } from './online-status.service';
+import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
 
 const gatewayOrigins = (
   process.env.CORS_ORIGINS || 'http://localhost:5173'
@@ -22,6 +23,7 @@ const gatewayOrigins = (
     credentials: true,
   },
 })
+@UseGuards(WsJwtGuard)
 export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
@@ -51,14 +53,10 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const userId = payload.sub || payload.id;
         if (userId) {
           client.data.user = { id: userId };
-          const wasOffline = this.onlineStatusService.onUserConnected(
+          this.onlineStatusService.onUserConnected(
             userId as string,
             client.id,
           );
-
-          if (wasOffline) {
-            this.server.emit('userOnline', { userId });
-          }
 
           client.emit('onlineUsers', {
             userIds: this.onlineStatusService.getOnlineUserIds(),
@@ -66,12 +64,15 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
       }
     } catch {
-      // Ignore connection errors for unauthenticated users
+      this.logger.warn(`Online connection failed auth: ${client.id}`);
     }
   }
 
   @SubscribeMessage('getOnlineUsers')
   handleGetOnlineUsers(@ConnectedSocket() client: Socket) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
     const userIds = this.onlineStatusService.getOnlineUserIds();
     client.emit('onlineUsers', { userIds });
   }
@@ -79,14 +80,10 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     const userId = client.data.user?.id;
     if (userId) {
-      const isNowOffline = this.onlineStatusService.onUserDisconnected(
+      this.onlineStatusService.onUserDisconnected(
         userId as string,
         client.id,
       );
-
-      if (isNowOffline) {
-        this.server.emit('userOffline', { userId });
-      }
     }
 
     this.logger.log(`Client disconnected: ${client.id}`);

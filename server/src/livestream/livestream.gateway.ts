@@ -10,6 +10,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { LivestreamService } from './livestream.service';
+import { UseGuards } from '@nestjs/common';
+import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
 
 const gatewayOrigins = (
   process.env.CORS_ORIGINS || 'http://localhost:5173'
@@ -30,6 +32,7 @@ interface ViewerInfo {
     credentials: true,
   },
 })
+@UseGuards(WsJwtGuard)
 export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
@@ -56,7 +59,7 @@ export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconne
         return (payload.sub || payload.id) as string;
       }
     } catch {
-      // ignore
+      // no-op
     }
     return null;
   }
@@ -118,10 +121,10 @@ export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconne
     const viewers = this.livestreamViewers.get(data.livestreamId)!;
     const viewerInfo: ViewerInfo = {
       userId,
-      username: (client.handshake.auth as any)?.username || 'unknown',
-      displayName: (client.handshake.auth as any)?.displayName || 'Unknown',
-      avatar: (client.handshake.auth as any)?.avatar || null,
-      isVerified: (client.handshake.auth as any)?.isVerified || false,
+      username: client.data.user?.username || 'unknown',
+      displayName: client.data.user?.username || 'Unknown',
+      avatar: null,
+      isVerified: false,
     };
 
     if (!viewers.has(client.id)) {

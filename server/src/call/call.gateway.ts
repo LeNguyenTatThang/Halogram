@@ -10,6 +10,9 @@ import {
 import { Server, Socket } from 'socket.io';
 import type CallPayload from './dto/call-payload.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ForbiddenException, Logger, UseGuards } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
 
 const gatewayOrigins = (
   process.env.CORS_ORIGINS || 'http://localhost:5173'
@@ -22,11 +25,17 @@ const gatewayOrigins = (
     credentials: true,
   },
 })
+@UseGuards(WsJwtGuard)
 export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly jwtService: JwtService) {}
+  private readonly logger = new Logger(CallGateway.name);
+
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -51,20 +60,15 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
             username: payload.username,
           };
           await client.join(userId);
-          console.log(`📞 Call Connected: ${client.id} joined room ${userId}`);
-        } else {
-          console.log(`📞 Call Connected: ${client.id} (no user ID in token)`);
         }
-      } else {
-        console.log(`📞 Call Connected: ${client.id} (no token)`);
       }
-    } catch (err) {
-      console.error(`📞 Call connection auth error: ${(err as Error).message}`);
+    } catch {
+      this.logger.warn(`Call gateway auth failed for ${client.id}`);
     }
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`📞 Call Disconnected: ${client.id}`);
+    this.logger.log(`Call client disconnected: ${client.id}`);
   }
 
   @SubscribeMessage('joinCall')
@@ -72,8 +76,21 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) {
+      client.emit('error', { message: 'Authentication required' });
+      return;
+    }
+
+    const member = await this.prisma.conversationMember.findFirst({
+      where: { conversationId: roomId, userId },
+    });
+    if (!member) {
+      client.emit('error', { message: 'Not a participant in this call' });
+      return;
+    }
+
     await client.join(roomId);
-    console.log(`📞 ${client.id} joined call ${roomId}`);
   }
 
   @SubscribeMessage('leaveCall')
@@ -86,11 +103,27 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('callUser')
   async handleCallUser(
-    @MessageBody() payload: CallPayload,
+    @MessageBody() payload: { receiverId: string; type: 'AUDIO' | 'VIDEO' },
     @ConnectedSocket() client: Socket,
   ) {
-    await client.join(payload.roomId);
-    client.to(payload.receiverId).emit('incomingCall', payload);
+    const userId = client.data.user?.id as string | undefined;
+    const username = client.data.user?.username as string | undefined;
+    if (!userId) {
+      client.emit('error', { message: 'Authentication required' });
+      return;
+    }
+
+    const roomId = `call_${userId}_${payload.receiverId}_${Date.now()}`;
+    const callPayload: CallPayload = {
+      roomId,
+      receiverId: payload.receiverId,
+      callerId: userId,
+      callerName: username || 'Unknown',
+      type: payload.type,
+    };
+
+    await client.join(roomId);
+    client.to(payload.receiverId).emit('incomingCall', callPayload);
   }
 
   @SubscribeMessage('acceptCall')
@@ -98,6 +131,14 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: CallPayload,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
+    if (payload.receiverId !== userId) {
+      client.emit('error', { message: 'Not authorized to accept this call' });
+      return;
+    }
+
     await client.join(payload.roomId);
     client.to(payload.roomId).emit('callAccepted', payload);
   }
@@ -107,6 +148,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: CallPayload,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
     client.to(payload.roomId).emit('callRejected', payload);
   }
 
@@ -115,6 +159,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: CallPayload,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
     client.to(payload.roomId).emit('offer', payload);
   }
 
@@ -123,6 +170,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: CallPayload,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
     client.to(payload.roomId).emit('answer', payload);
   }
 
@@ -131,6 +181,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: CallPayload,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
     client.to(payload.roomId).emit('iceCandidate', payload);
   }
 
@@ -139,6 +192,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: CallPayload,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = client.data.user?.id as string | undefined;
+    if (!userId) return;
+
     client.to(payload.roomId).emit('callEnded', payload);
   }
 }

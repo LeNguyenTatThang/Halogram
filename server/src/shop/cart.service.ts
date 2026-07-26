@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -55,6 +55,10 @@ export class CartService {
     userId: string,
     dto: { productId: string; quantity: number },
   ) {
+    if (dto.quantity <= 0) {
+      throw new BadRequestException('Quantity must be greater than 0');
+    }
+
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId },
     });

@@ -83,7 +83,6 @@ export class ShopController {
     return this.shopService.getVerificationStatus(user.id);
   }
 
-  // Admin endpoints
   @UseGuards(JwtAuthGuard)
   @Get('verifications/pending')
   getPendingVerifications() {

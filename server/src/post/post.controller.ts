@@ -12,12 +12,23 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { IsString, IsOptional, IsArray, MaxLength } from 'class-validator';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 
 import { PostService } from './post.service';
+
+class CreatePostBody {
+  @IsString()
+  @MaxLength(2000)
+  caption!: string;
+
+  @IsOptional()
+  @IsString()
+  tagUserIds?: string;
+}
 
 @Controller('post')
 export class PostController {
@@ -28,12 +39,17 @@ export class PostController {
   @UseInterceptors(FilesInterceptor('images', 10))
   async createPost(
     @CurrentUser() user: JwtUser,
-    @Body() body: { caption: string; status: string; tagUserIds?: string },
+    @Body() body: { caption: string; tagUserIds?: string },
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const tagUserIds = body.tagUserIds
-      ? (JSON.parse(body.tagUserIds) as string[])
-      : undefined;
+    let tagUserIds: string[] | undefined;
+    if (body.tagUserIds) {
+      try {
+        tagUserIds = JSON.parse(body.tagUserIds) as string[];
+      } catch {
+        tagUserIds = undefined;
+      }
+    }
 
     return this.postService.createPost({
       caption: body.caption,
@@ -48,13 +64,18 @@ export class PostController {
   @UseInterceptors(FilesInterceptor('images', 10))
   async updatePost(
     @CurrentUser() user: JwtUser,
-    @Body() body: { caption: string; status: string; tagUserIds?: string },
+    @Body() body: { caption: string; tagUserIds?: string },
     @Param('id') id: string,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    const tagUserIds = body.tagUserIds
-      ? (JSON.parse(body.tagUserIds) as string[])
-      : undefined;
+    let tagUserIds: string[] | undefined;
+    if (body.tagUserIds) {
+      try {
+        tagUserIds = JSON.parse(body.tagUserIds) as string[];
+      } catch {
+        tagUserIds = undefined;
+      }
+    }
 
     return this.postService.updatePost({
       postId: id,
