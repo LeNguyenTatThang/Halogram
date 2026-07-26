@@ -38,6 +38,8 @@ model User {
   notificationsSent     Notification[]       @relation("NotificationActor")
   savedPosts            SavedPost[]
   postTags              PostTag[]
+  livestreams           Livestream[]
+  livestreamMessages    LivestreamMessage[]
 
   @@map("users")
 }
@@ -272,6 +274,41 @@ model PostTag {
   @@index([userId])
   @@index([postId])
   @@map("post_tags")
+}
+
+model Livestream {
+  id          String            @id @default(cuid())
+  streamerId  String
+  title       String            @db.VarChar(255)
+  status      LivestreamStatus  @default(LIVE)
+  startedAt   DateTime          @default(now())
+  endedAt     DateTime?
+  viewerCount Int               @default(0)
+  streamer    User              @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+  messages    LivestreamMessage[]
+
+  @@index([status])
+  @@index([streamerId])
+  @@map("livestreams")
+}
+
+enum LivestreamStatus {
+  LIVE
+  ENDED
+}
+
+model LivestreamMessage {
+  id           String     @id @default(cuid())
+  livestreamId String
+  userId       String
+  content      String     @db.Text
+  createdAt    DateTime   @default(now())
+  livestream   Livestream @relation(fields: [livestreamId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([livestreamId, createdAt])
+  @@index([userId])
+  @@map("livestream_messages")
 }
 
 model Call {

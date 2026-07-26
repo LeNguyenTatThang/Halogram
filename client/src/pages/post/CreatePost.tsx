@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Upload, X, ArrowLeft, UserPlus } from 'lucide-react'
+import { Upload, X, ArrowLeft, UserPlus, Camera } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { createPost } from '../../utils/post'
 import TagFriendsModal from '../../components/post/TagFriendsModal'
@@ -20,7 +20,87 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
     const [caption, setCaption] = useState('')
     const [tagUserIds, setTagUserIds] = useState<string[]>([])
     const [showTagModal, setShowTagModal] = useState(false)
+    const [showCamera, setShowCamera] = useState(false)
+    const mediaStreamRef = useRef<MediaStream | null>(null)
+    const videoRef = useRef<HTMLVideoElement>(null)
+    const canvasRef = useRef<HTMLCanvasElement>(null)
     const { user } = useAuth()
+
+    const stopCamera = () => {
+        if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach(track => track.stop())
+            mediaStreamRef.current = null
+        }
+        setShowCamera(false)
+    }
+
+    useEffect(() => {
+        return () => {
+            if (mediaStreamRef.current) {
+                mediaStreamRef.current.getTracks().forEach(track => track.stop())
+            }
+        }
+    }, [])
+
+    const startCamera = async () => {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            toast.error('Camera is not supported by your browser')
+            return
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user' },
+                audio: false,
+            })
+            mediaStreamRef.current = stream
+            setShowCamera(true)
+            setTimeout(() => {
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream
+                }
+            }, 0)
+        } catch (err: unknown) {
+            if (err instanceof DOMException) {
+                if (err.name === 'NotAllowedError') {
+                    toast.error('Camera permission denied. Please allow camera access.')
+                } else if (err.name === 'NotFoundError') {
+                    toast.error('No camera found on your device.')
+                } else if (err.name === 'NotReadableError') {
+                    toast.error('Camera is being used by another application.')
+                } else {
+                    toast.error('Could not access camera.')
+                }
+            } else {
+                toast.error('Could not access camera.')
+            }
+        }
+    }
+
+    const capturePhoto = () => {
+        const video = videoRef.current
+        const canvas = canvasRef.current
+        if (!video || !canvas) return
+
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        ctx.drawImage(video, 0, 0)
+
+        canvas.toBlob((blob) => {
+            if (!blob) return
+            const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' })
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                const dataUrl = e.target?.result as string
+                setImageFiles(prev => [...prev, file])
+                setSelectedImages(prev => [...prev, dataUrl])
+            }
+            reader.readAsDataURL(blob)
+            stopCamera()
+            setStep('caption')
+        }, 'image/jpeg', 0.9)
+    }
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files ?? [])
@@ -76,15 +156,6 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
             })
     }
 
-    const mockImages = [
-        'https://images.pexels.com/photos/1591447/pexels-photo-1591447.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/1040881/pexels-photo-1040881.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400',
-        'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400'
-    ]
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg w-full max-w-md mx-4 max-h-[90vh] overflow-hidden">
@@ -101,7 +172,10 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                         {step === 'upload' ? 'Create new post' : 'New post'}
                     </h2>
                     <button
-                        onClick={onClose}
+                        onClick={() => {
+                            stopCamera()
+                            onClose()
+                        }}
                         className="p-2 hover:bg-gray-100 rounded-full"
                     >
                         <X className="w-5 h-5" />
@@ -110,40 +184,62 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
 
                 {step === 'upload' ? (
                     <div className="p-6">
-                        <div className="text-center mb-6">
-                            <Upload className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                            <p className="text-xl font-medium mb-2">Drag photos here</p>
-                            <p className="text-gray-600 mb-4">or</p>
-                            <label className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors">
-                                Select from computer
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                />
-                            </label>
-                        </div>
-
-                        <div className="border-t pt-6">
-                            <p className="text-sm text-gray-600 mb-4">Or choose from these sample images:</p>
-                            <div className="grid grid-cols-3 gap-2">
-                                {mockImages.map((image, index) => (
-                                    <img
-                                        key={index}
-                                        src={image}
-                                        alt={`Sample ${index + 1}`}
-                                        className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80"
-                                        onClick={() => {
-                                            setSelectedImages(images => [...images, image])
-                                            setImageFiles([]) // sample images không gửi file
-                                            setStep('caption')
-                                        }}
+                        {showCamera ? (
+                            <div className="text-center">
+                                <div className="relative bg-black rounded-lg overflow-hidden mb-4 mx-auto max-w-sm">
+                                    <video
+                                        ref={videoRef}
+                                        autoPlay
+                                        muted
+                                        playsInline
+                                        className="w-full h-80 object-cover"
                                     />
-                                ))}
+                                    <canvas ref={canvasRef} className="hidden" />
+                                </div>
+                                <div className="flex gap-3 justify-center">
+                                    <button
+                                        onClick={capturePhoto}
+                                        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                                    >
+                                        Capture
+                                    </button>
+                                    <button
+                                        onClick={stopCamera}
+                                        className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                    >
+                                        Cancel Camera
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="text-center mb-6">
+                                <Upload className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                                <p className="text-xl font-medium mb-2">Drag photos here</p>
+                                <p className="text-gray-600 mb-4">or</p>
+                                <label className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-600 transition-colors inline-block">
+                                    Select from computer
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                    />
+                                </label>
+                                <div className="mt-4 flex items-center gap-3">
+                                    <div className="flex-1 h-px bg-gray-200" />
+                                    <span className="text-gray-400 text-sm">or</span>
+                                    <div className="flex-1 h-px bg-gray-200" />
+                                </div>
+                                <button
+                                    onClick={startCamera}
+                                    className="mt-4 flex items-center gap-2 mx-auto text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                                >
+                                    <Camera className="w-5 h-5" />
+                                    Open Camera
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex flex-col h-96">

@@ -6,6 +6,7 @@ import {
     Heart,
     User,
     Settings as SettingsIcon,
+    Radio,
     LogOut
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -44,6 +45,12 @@ const navItems = [
         id: 'profile',
         icon: User,
         href: '/profile',
+        type: 'link'
+    },
+    {
+        id: 'livestream',
+        icon: Radio,
+        href: '/livestream',
         type: 'link'
     },
     {

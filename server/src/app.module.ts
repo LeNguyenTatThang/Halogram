@@ -14,6 +14,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { MessagesModule } from './messages/messages.module';
 import { CallModule } from './call/call.module';
 import { OnlineModule } from './online/online.module';
+import { LivestreamModule } from './livestream/livestream.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { OnlineModule } from './online/online.module';
     MessagesModule,
     CallModule,
     OnlineModule,
+    LivestreamModule,
   ],
   controllers: [AppController],
   providers: [AppService],

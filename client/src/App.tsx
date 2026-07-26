@@ -20,6 +20,10 @@ import { createComment } from './utils/comment'
 import StoryViewer from './components/common/StoryViewer'
 import type { Story } from './types/Story'
 import { socket } from './lib/socket'
+import LivestreamPage from './pages/livestream/LivestreamPage'
+import LivestreamViewer from './pages/livestream/LivestreamViewer'
+import LivestreamBroadcast from './pages/livestream/LivestreamBroadcast'
+import StartLivestream from './pages/livestream/StartLivestream'
 import IncomingCallModal from './components/call/IncomingCallModal'
 import { useCall } from './context/useCall'
 import VideoCall from './layouts/online/VideoCall'
@@ -323,6 +327,23 @@ function App() {
                     <Route
                         path="/notifications"
                         element={<Notifications />}
+                    />
+
+                    <Route
+                        path="/livestream"
+                        element={<LivestreamPage />}
+                    />
+                    <Route
+                        path="/livestream/start"
+                        element={<StartLivestream />}
+                    />
+                    <Route
+                        path="/livestream/:id"
+                        element={<LivestreamViewer />}
+                    />
+                    <Route
+                        path="/livestream/:id/broadcast"
+                        element={<LivestreamBroadcast />}
                     />
                 </Route>
 
