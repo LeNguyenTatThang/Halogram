@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, Package, Loader2 } from 'lucide-react'
 import type { Product, ProductStatus } from '../../types/shop'
 import { getMyProducts, deleteProduct } from '../../utils/shop'
 
