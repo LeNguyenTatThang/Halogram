@@ -41,6 +41,19 @@ export interface ProductImage {
   order: number
 }
 
+export interface ProductVariant {
+  id: string
+  productId: string
+  name: string
+  sku: string | null
+  price: number
+  stock: number
+  image: string | null
+  order: number
+}
+
+export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'OUT_OF_STOCK' | 'ARCHIVED'
+
 export interface Product {
   id: string
   shopId: string
@@ -50,14 +63,17 @@ export interface Product {
   description: string | null
   price: number
   salePrice: number | null
+  sku: string | null
   stock: number
   soldCount: number
   rating: number
   reviewCount: number
   isActive: boolean
+  status: ProductStatus
   createdAt: string
   updatedAt: string
   images: ProductImage[]
+  variants?: ProductVariant[]
   category?: Category
   shop?: {
     id: string

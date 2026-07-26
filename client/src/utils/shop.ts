@@ -73,3 +73,32 @@ export async function removeCartItem(itemId: string): Promise<Cart> {
   const res = await configAxios.delete(`/shop/cart/item/${itemId}`)
   return res.data
 }
+
+export async function getMyProducts(params?: {
+  search?: string
+  status?: string
+  sort?: string
+  page?: number
+  limit?: number
+}): Promise<ProductListResponse> {
+  const res = await configAxios.get('/shop/products/my/list', { params })
+  return res.data
+}
+
+export async function createProduct(formData: FormData): Promise<Product> {
+  const res = await configAxios.post('/shop/products', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return res.data
+}
+
+export async function updateProduct(id: string, formData: FormData): Promise<Product> {
+  const res = await configAxios.put(`/shop/products/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return res.data
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await configAxios.delete(`/shop/products/${id}`)
+}

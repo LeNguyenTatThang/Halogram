@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -70,21 +71,34 @@ export class ProductController {
       name: string;
       description?: string;
       price: string;
+      salePrice?: string;
+      sku?: string;
       categoryId: string;
       stock?: string;
+      variants?: string;
     },
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    let variants: { name: string; price: number; stock: number; sku?: string; imageIndex?: number }[] | undefined;
+    if (dto.variants) {
+      try {
+        variants = JSON.parse(dto.variants);
+      } catch { }
+    }
+
     return this.productService.create(
       user.id,
       {
         name: dto.name,
         description: dto.description,
         price: parseInt(dto.price),
+        salePrice: dto.salePrice ? parseInt(dto.salePrice) : undefined,
+        sku: dto.sku,
         categoryId: dto.categoryId,
         stock: dto.stock ? parseInt(dto.stock) : 0,
       },
       files || [],
+      variants,
     );
   }
 
@@ -100,9 +114,12 @@ export class ProductController {
       description?: string;
       price?: string;
       salePrice?: string;
+      sku?: string;
       stock?: string;
       categoryId?: string;
+      status?: string;
       isActive?: string;
+      variants?: string;
     },
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
@@ -111,11 +128,44 @@ export class ProductController {
     if (dto.description !== undefined) parsed.description = dto.description;
     if (dto.price !== undefined) parsed.price = parseInt(dto.price);
     if (dto.salePrice !== undefined) parsed.salePrice = parseInt(dto.salePrice);
+    if (dto.sku !== undefined) parsed.sku = dto.sku;
     if (dto.stock !== undefined) parsed.stock = parseInt(dto.stock);
     if (dto.categoryId !== undefined) parsed.categoryId = dto.categoryId;
+    if (dto.status !== undefined) parsed.status = dto.status;
     if (dto.isActive !== undefined) parsed.isActive = dto.isActive === 'true';
 
-    return this.productService.update(user.id, id, parsed as any, files);
+    let variants: { name: string; price: number; stock: number; sku?: string; imageIndex?: number }[] | undefined;
+    if (dto.variants) {
+      try {
+        variants = JSON.parse(dto.variants);
+      } catch { }
+    }
+
+    return this.productService.update(user.id, id, parsed as any, files, variants);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  @UseInterceptors(FilesInterceptor('images', 10))
+  patch(
+    @CurrentUser() user: JwtUser,
+    @Param('id') id: string,
+    @Body()
+    dto: {
+      name?: string;
+      description?: string;
+      price?: string;
+      salePrice?: string;
+      sku?: string;
+      stock?: string;
+      categoryId?: string;
+      status?: string;
+      isActive?: string;
+      variants?: string;
+    },
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    return this.update(user, id, dto, files);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -128,13 +178,18 @@ export class ProductController {
   @Get('my/list')
   getMyProducts(
     @CurrentUser() user: JwtUser,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('sort') sort?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.productService.getShopProducts(
-      user.id,
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-    );
+    return this.productService.getShopProducts(user.id, {
+      search,
+      status,
+      sort,
+      page: page ? parseInt(page) : 1,
+      limit: limit ? parseInt(limit) : 20,
+    });
   }
 }
