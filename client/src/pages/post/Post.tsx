@@ -13,6 +13,7 @@ interface PostProps {
     onComment: (postId: string, comment: string) => void
     onDelete?: (postId: string) => Promise<void>
     onRemoveTag?: (postId: string) => Promise<void>
+    priority?: boolean
 }
 
 function renderTagNames(
@@ -89,7 +90,7 @@ function renderTagNames(
     )
 }
 
-const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemoveTag }) => {
+const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemoveTag, priority }) => {
     const navigate = useNavigate()
     const { t } = useTranslation()
     const { user: currentUser } = useAuth()
@@ -299,6 +300,8 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemove
                                 alt={`Post image ${activeImageIndex + 1}`}
                                 wrapperClassName="h-full w-full"
                                 className="h-full w-full object-cover"
+                                loading={priority ? 'eager' : 'lazy'}
+                                fetchPriority={priority ? 'high' : undefined}
                             />
                         )}
 

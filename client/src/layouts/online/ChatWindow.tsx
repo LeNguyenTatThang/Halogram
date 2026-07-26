@@ -2,45 +2,39 @@ import React, { useEffect, useRef, useState } from 'react'
 import {
     setBrowserTitle,
     updateFaviconBadge,
-    showDesktopNotification,
 } from '../../utils/browserNotification'
 import type { FriendUser } from '../../types/Friend'
 import { motion } from 'framer-motion'
 import { Send, Phone, Video, X } from 'lucide-react'
-import { connectSocket, socket } from '../../lib/socket'
-import { createConversation, getConversationMessages, sendConversationMessage } from '../../utils/messages'
+import { socket } from '../../lib/socket'
+import { sendConversationMessage } from '../../utils/messages'
 import { useAuth } from '../../hooks/useAuth'
 import { useCall } from '../../context/useCall'
+import { useChat, type ChatMessage } from '../../context/ChatContext'
 
 const defaultAvatarUrl =
     'https://ui-avatars.com/api/?name=User&background=random'
 
 interface ChatWindowProps {
     user: FriendUser
-    index: number
+    popupIndex: number
     onClose: (id: string) => void
 }
 
-interface ChatMessage {
-    id: string
-    content: string
-    senderId: string
-    createdAt: string
-    conversationId: string
-}
-
-const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ user, popupIndex, onClose }) => {
     const { user: currentUser } = useAuth()
-    const { joinCall, leaveCall } = useCall()
-    const { callUser } = useCall()
-    const [messages, setMessages] = useState<ChatMessage[]>([])
+    const { joinCall, leaveCall, callUser } = useCall()
+    const { openChats, addOptimisticMessage, setActiveConversation } = useChat()
     const [draft, setDraft] = useState('')
-    const [conversationId, setConversationId] = useState<string | null>(null)
     const [peerTyping, setPeerTyping] = useState(false)
     const typingTimerRef = useRef<number | null>(null)
     const messageEndRef = useRef<HTMLDivElement | null>(null)
-    const conversationIdRef = useRef<string | null>(null)
-    const unreadCountRef = useRef(0)
+    const peerTypingTimerRef = useRef<number | null>(null)
+
+    const popup = openChats.find((c: { user: { id: string } }) => c.user.id === user.id)
+    const messages = popup?.messages ?? []
+    const messagesLength = messages.length
+    const conversationId = popup?.conversationId ?? null
 
     const handleVoiceCall = () => {
         if (!conversationId || !currentUser) return
@@ -56,7 +50,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
             type: 'AUDIO',
         })
     }
-    
 
     const handleVideoCall = () => {
         if (!conversationId || !currentUser) return
@@ -73,103 +66,65 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
         })
     }
 
-    const appendMessage = (message: ChatMessage) => {
-        setMessages(prev => {
-            if (prev.some(item => item.id === message.id)) {
-                return prev
-            }
-
-            return [...prev, message]
-        })
-    }
-
     const scrollToBottom = () => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
 
     useEffect(() => {
         scrollToBottom()
-    }, [messages])
+    }, [messagesLength])
 
     useEffect(() => {
-        if (!localStorage.getItem('accessToken')) {
-            return
+        setActiveConversation(conversationId)
+        return () => {
+            setActiveConversation(null)
         }
+    }, [conversationId, setActiveConversation])
 
-        connectSocket()
+    useEffect(() => {
+        if (!conversationId || !currentUser) return
 
-        const initConversation = async () => {
-            try {
-                const res = await createConversation(user.id)
-                const nextConversationId = res.data?.id ?? res.data?.data?.id
-                if (!nextConversationId) return
+        joinCall(conversationId)
 
-                conversationIdRef.current = nextConversationId
-                setConversationId(nextConversationId)
-                joinCall(nextConversationId)
-                connectSocket()
-                socket.emit('joinConversation', nextConversationId)
-
-                const historyRes = await getConversationMessages(nextConversationId)
-                const history = (historyRes.data ?? []).map((item: { id: string; content: string; senderId: string; createdAt: string }) => ({
-                    id: item.id,
-                    content: item.content,
-                    senderId: item.senderId,
-                    createdAt: item.createdAt,
-                    conversationId: nextConversationId
-                }))
-                setMessages(history)
-            } catch (error) {
-                console.error('Failed to init chat', error)
-            }
+        return () => {
+            leaveCall(conversationId)
         }
+    }, [conversationId, currentUser, joinCall, leaveCall])
 
-        initConversation()
-
-        const handleReceiveMessage = (message: ChatMessage) => {
-            if (message.conversationId !== conversationIdRef.current) return
-            appendMessage(message)
-
-            if (message.senderId === currentUser?.id) return
-
-            if (document.hidden) {
-                unreadCountRef.current++
-
-                setBrowserTitle(unreadCountRef.current)
-                updateFaviconBadge(unreadCountRef.current)
-            }
-
-            showDesktopNotification(
-                user.username,
-                message.content,
-                user.avatar || defaultAvatarUrl
-            )
-        }
+    useEffect(() => {
+        if (!currentUser) return
 
         const handleTyping = (payload: { conversationId: string; userId: string }) => {
-            if (payload.conversationId !== conversationIdRef.current || payload.userId === currentUser?.id) return
+            if (payload.conversationId !== conversationId || payload.userId === currentUser.id) return
             setPeerTyping(true)
+
+            if (peerTypingTimerRef.current) {
+                window.clearTimeout(peerTypingTimerRef.current)
+            }
+            peerTypingTimerRef.current = window.setTimeout(() => {
+                setPeerTyping(false)
+            }, 3000)
         }
 
         const handleStopTyping = (payload: { conversationId: string; userId: string }) => {
-            if (payload.conversationId !== conversationIdRef.current || payload.userId === currentUser?.id) return
+            if (payload.conversationId !== conversationId || payload.userId === currentUser.id) return
             setPeerTyping(false)
+            if (peerTypingTimerRef.current) {
+                window.clearTimeout(peerTypingTimerRef.current)
+            }
         }
 
-        socket.on('receiveMessage', handleReceiveMessage)
         socket.on('typing', handleTyping)
         socket.on('stopTyping', handleStopTyping)
 
         return () => {
-            socket.off('receiveMessage', handleReceiveMessage)
             socket.off('typing', handleTyping)
             socket.off('stopTyping', handleStopTyping)
-            if (conversationIdRef.current) {
-                socket.emit('leaveConversation', conversationIdRef.current)
-                leaveCall(conversationIdRef.current)
+            if (peerTypingTimerRef.current) {
+                window.clearTimeout(peerTypingTimerRef.current)
             }
         }
-    }, [currentUser?.id, user.id, user.avatar, user.username, joinCall, leaveCall])
+    }, [conversationId, currentUser])
 
     const emitTyping = (typing: boolean) => {
         if (!conversationId || !currentUser?.id) return
@@ -203,15 +158,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
     const sendMessage = async () => {
         if (!draft.trim() || !conversationId || !currentUser?.id) return
 
-        const messagePayload = {
-            id: `${Date.now()}`,
+        const messagePayload: ChatMessage = {
+            id: `${Date.now()}-${currentUser.id}`,
             content: draft.trim(),
             senderId: currentUser.id,
             createdAt: new Date().toISOString(),
             conversationId,
         }
 
-        appendMessage(messagePayload)
+        addOptimisticMessage(conversationId, messagePayload)
         socket.emit('sendMessage', messagePayload)
         emitTyping(false)
         setDraft('')
@@ -225,16 +180,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
 
     useEffect(() => {
         const handleFocus = () => {
-            unreadCountRef.current = 0
-
-            setBrowserTitle(0)
-            updateFaviconBadge(0)
+            const unread = 0
+            setBrowserTitle(unread)
+            updateFaviconBadge(unread)
         }
 
-        window.addEventListener("focus", handleFocus)
+        window.addEventListener('focus', handleFocus)
 
         return () => {
-            window.removeEventListener("focus", handleFocus)
+            window.removeEventListener('focus', handleFocus)
         }
     }, [])
 
@@ -246,7 +200,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className="absolute bottom-0 h-96 w-80 rounded-xl shadow-2xl border border-gray-200 bg-white flex flex-col overflow-hidden animate-slide-up-fade dark:border-gray-700 dark:bg-black dark:bg-opacity-900 dark:text-white"
-            style={{ right: `${index * 330 + 20}px`, zIndex: 50 }}
+            style={{ right: `${popupIndex * 330 + 20}px`, zIndex: 50 }}
         >
             <div className="flex items-center justify-between px-2 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
                 <div className="flex items-center gap-2">
@@ -260,16 +214,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, index, onClose }) => {
                 </div>
                 <div className="flex items-center gap-1">
                     <button
-                        onClick= {handleVoiceCall}
+                        onClick={handleVoiceCall}
                         className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi thoại"
                     >
-                            <Phone size={16} />
+                        <Phone size={16} />
                     </button>
                     <button
-                        onClick= {handleVideoCall}
+                        onClick={handleVideoCall}
                         className="p-1.5 hover:bg-purple-200 rounded-full transition" title="Gọi video"
                     >
-                            <Video size={16} />
+                        <Video size={16} />
                     </button>
                     <button
                         onClick={() => onClose(user.id)}

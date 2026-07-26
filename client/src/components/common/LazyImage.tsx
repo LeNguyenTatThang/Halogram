@@ -29,11 +29,11 @@ const LazyImage = ({
             )}
 
             <img
-                {...props}
                 src={src}
                 alt={alt}
                 loading="lazy"
                 decoding="async"
+                {...props}
                 onLoad={handleLoad}
                 className={`h-full w-full object-cover transition-opacity duration-200 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`.trim()}
             />

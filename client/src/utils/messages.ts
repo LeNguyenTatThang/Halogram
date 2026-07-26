@@ -12,6 +12,13 @@ export const createConversation = async (friendId: string) => {
     return res.data
 }
 
+export const getConversations = async () => {
+    const res = await configAxios.get('/messages/conversations', {
+        headers: getAuthHeaders(),
+    })
+    return res.data
+}
+
 export const getConversationMessages = async (conversationId: string, limit = 50) => {
     const res = await configAxios.get(`/messages/conversations/${conversationId}/messages`, {
         params: { limit },

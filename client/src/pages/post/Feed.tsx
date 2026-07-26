@@ -76,7 +76,7 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, 
                     </div>
                 ) : (
                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {posts.map(post => (
+                        {posts.map((post, index) => (
                             <Post
                                 key={post.id}
                                 post={post}
@@ -84,6 +84,7 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, 
                                 onComment={onComment}
                                 onDelete={onDeletePost}
                                 onRemoveTag={onRemoveTag}
+                                priority={index === 0}
                             />
                         ))}
                     </div>

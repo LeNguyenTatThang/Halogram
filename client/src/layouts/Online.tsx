@@ -7,28 +7,26 @@ import ChatWindow from './online/ChatWindow'
 import type {Friend, FriendUser} from '../types/Friend'
 import { useTranslation } from 'react-i18next'
 import { socket } from '../lib/socket'
+import { useChat } from '../context/ChatContext'
 
 const Online: React.FC = () => {
     const { t } = useTranslation('chat')
     const [isOpen, setIsOpen] = useState<boolean>(true)
-    const [activeChats, setActiveChats] = useState<FriendUser[]>([])
+    const { openChats, openChat, closeChat } = useChat()
     const [friends, setFriends] = useState<Friend[]>([])
     const [friendRequests, setFriendRequests] = useState<Friend[]>([])
     const [isOpenModel, setIsOpenModel] = useState<boolean>(false)
     const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set())
-    const openChat = (user: FriendUser) => {
-        const alreadyOpen = activeChats.find(u => u.id === user.id)
-        if (alreadyOpen) return
 
-        if (activeChats.length < 3) {
-            setActiveChats([...activeChats, user])
-        } else {
-            setActiveChats([...activeChats.slice(1), user])
-        }
+    const handleOpenChat = (user: FriendUser) => {
+        openChat(user)
     }
 
-    const closeChat = (id: string) => {
-        setActiveChats(activeChats.filter(u => u.id !== id))
+    const handleCloseChat = (userId: string) => {
+        const popup = openChats.find(c => c.user.id === userId)
+        if (popup) {
+            closeChat(popup.conversationId)
+        }
     }
 
     const getListFriends = async () => {
@@ -162,7 +160,7 @@ const Online: React.FC = () => {
                     onAcceptFriend={handleAcceptFriend}
                 />
 
-                <FriendList friends={friends} onOpenChat={openChat} onlineUserIds={onlineUserIds} />
+                <FriendList friends={friends} onOpenChat={handleOpenChat} onlineUserIds={onlineUserIds} />
             </div>
 
             {/* Floating Friend Button */}
@@ -183,12 +181,12 @@ const Online: React.FC = () => {
             {/* Chat Windows */}
             <div className="fixed bottom-1 right-64 z-50">
                 <div className="relative">
-                    {activeChats.map((user, index) => (
+                    {openChats.map((popup, index) => (
                         <ChatWindow
-                            key={user.id}
-                            user={user}
-                            index={index}
-                            onClose={closeChat}
+                            key={popup.conversationId}
+                            user={popup.user}
+                            popupIndex={index}
+                            onClose={handleCloseChat}
                         />
                     ))}
                 </div>

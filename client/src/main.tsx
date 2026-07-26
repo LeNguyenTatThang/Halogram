@@ -7,14 +7,17 @@ import App from './App.tsx'
 import { AuthProvider } from './context/AuthProvider.tsx'
 import { CallProvider } from './context/CallContext.tsx'
 import { NotificationProvider } from './context/NotificationContext.tsx'
+import { ChatProvider } from './context/ChatContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <NotificationProvider>
         <CallProvider>
-          <App />
-          <Toaster position="bottom-center" />
+          <ChatProvider>
+            <App />
+            <Toaster position="bottom-center" />
+          </ChatProvider>
         </CallProvider>
       </NotificationProvider>
     </AuthProvider>
