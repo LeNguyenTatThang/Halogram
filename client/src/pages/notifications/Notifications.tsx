@@ -5,9 +5,7 @@ import { timeAgo } from '../../hooks/useTimeAgo'
 import { Bell } from 'lucide-react'
 import type { Notification } from '../../types/Notification'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
-
-const defaultAvatarUrl =
-  'https://ui-avatars.com/api/?name=User&background=random'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 interface NotificationsProps {
   onClose?: () => void
@@ -71,11 +69,7 @@ const Notifications = ({ onClose }: NotificationsProps) => {
               : 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30'
           }`}
         >
-          <img
-            src={notification.actor.avatar || defaultAvatarUrl}
-            alt={notification.actor.username}
-            className="w-10 h-10 rounded-full flex-shrink-0"
-          />
+            <UserAvatar src={notification.actor.avatar} name={notification.actor.displayName || notification.actor.username} size={40} className="flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm">
               <span className="font-semibold inline-flex items-center gap-0.5">

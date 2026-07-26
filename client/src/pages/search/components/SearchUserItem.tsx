@@ -3,6 +3,7 @@ import { Check, Clock3, UserPlus } from 'lucide-react'
 import type { SearchUser } from '../../../types/Search'
 import Logo from '../../../assets/logo.png'
 import VerifiedBadge from '../../../components/common/VerifiedBadge'
+import UserAvatar from '../../../components/ui/UserAvatar'
 
 interface SearchUserItemProps {
     user: SearchUser
@@ -23,11 +24,7 @@ const SearchUserItem = ({ user, onSendRequest, onCancelRequest, onRemoveFriend, 
                 onClick={() => navigate(`/profile/${user.username}`)}
                 className="flex items-center gap-3 flex-1 min-w-0 text-left"
             >
-                <img
-                    src={user.avatar ?? Logo}
-                    alt={user.username}
-                    className="h-10 w-10 rounded-full object-cover flex-shrink-0"
-                />
+                <UserAvatar src={user.avatar} name={user.displayName || user.username} size={40} className="flex-shrink-0" />
 
                 <div className="min-w-0">
                     <p className="font-semibold truncate inline-flex items-center gap-0.5">{user.displayName}{user.isVerified && <VerifiedBadge />}</p>

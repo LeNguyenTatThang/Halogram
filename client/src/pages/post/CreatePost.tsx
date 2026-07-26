@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { createPost } from '../../utils/post'
 import TagFriendsModal from '../../components/post/TagFriendsModal'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 interface CreatePostProps {
     onClose: () => void;
@@ -246,11 +247,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ onClose, onPost }) => {
                         <div className="flex-1 overflow-y-auto">
                             <div className="p-4">
                                 <div className="flex items-start space-x-3 mb-4">
-                                    <img
-                                        src={user?.avatar}
-                                        alt={user?.username}
-                                        className="w-8 h-8 rounded-full object-cover"
-                                    />
+                                    <UserAvatar src={user?.avatar} name={user?.displayName || user?.username} size={32} />
                                     <div className="flex-1">
                                         <span className="font-semibold text-sm inline-flex items-center gap-0.5">{user?.username}{user?.isVerified && <VerifiedBadge />}</span>
                                         <textarea

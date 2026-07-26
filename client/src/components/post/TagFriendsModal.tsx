@@ -3,6 +3,7 @@ import { X, Search, Check } from 'lucide-react'
 import { listFriends } from '../../utils/friend'
 import VerifiedBadge from '../common/VerifiedBadge'
 import HalogramLoading from '../ui/HalogramLoading'
+import UserAvatar from '../ui/UserAvatar'
 
 interface Friend {
   id: string
@@ -91,11 +92,7 @@ const TagFriendsModal: React.FC<TagFriendsModalProps> = ({
                 onClick={() => toggle(friend.id)}
                 className="flex items-center gap-3 w-full p-3 hover:bg-gray-50 transition-colors"
               >
-                <img
-                  src={friend.avatar || `https://ui-avatars.com/api/?name=${friend.username}&background=random`}
-                  alt={friend.username}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <UserAvatar src={friend.avatar} name={friend.username} size={40} />
                 <span className="text-sm font-medium flex-1 text-left inline-flex items-center gap-0.5">{friend.username}{friend.isVerified && <VerifiedBadge />}</span>
                 <div
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${

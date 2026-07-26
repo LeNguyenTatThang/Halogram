@@ -6,9 +6,8 @@ import { showDesktopNotification, setBrowserTitle, updateFaviconBadge } from '..
 import { useAuth } from '../hooks/useAuth'
 import { playSound } from '../utils/sound'
 import VerifiedBadge from '../components/common/VerifiedBadge'
+import UserAvatar from '../components/ui/UserAvatar'
 import type { FriendUser } from '../types/Friend'
-
-const defaultAvatarUrl = 'https://ui-avatars.com/api/?name=User&background=random'
 
 export interface ChatMessage {
     id: string
@@ -58,16 +57,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         showDesktopNotification(
             senderUser.username || senderUser.displayName,
             message.content,
-            senderUser.avatar || defaultAvatarUrl,
+            senderUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(senderUser.displayName || senderUser.username)}&background=random`,
         )
 
         toast(
             (t) => (
                 <div className="flex items-center gap-3" onClick={() => toast.dismiss(t.id)}>
-                    <img
-                        src={senderUser.avatar || defaultAvatarUrl}
-                        alt={senderUser.username}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    <UserAvatar
+                        src={senderUser.avatar}
+                        name={senderUser.displayName || senderUser.username}
+                        size={32}
                     />
                     <div className="min-w-0">
                         <span className="font-semibold text-sm inline-flex items-center gap-0.5">{senderUser.username || senderUser.displayName}{senderUser.isVerified && <VerifiedBadge />}</span>

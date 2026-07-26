@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send } from 'lucide-react'
 import type { LivestreamMessage } from '../../types/livestream'
 import VerifiedBadge from '../common/VerifiedBadge'
+import UserAvatar from '../ui/UserAvatar'
 
 interface LivestreamChatProps {
   messages: LivestreamMessage[]
@@ -34,11 +35,7 @@ const LivestreamChat: React.FC<LivestreamChatProps> = ({ messages, onSend, disab
         )}
         {messages.map((msg) => (
           <div key={msg.id} className="flex items-start gap-1.5">
-            <img
-              src={msg.user.avatar || '/default-avatar.png'}
-              alt=""
-              className="w-5 h-5 rounded-full mt-0.5 flex-shrink-0"
-            />
+            <UserAvatar src={msg.user.avatar} name={msg.user.displayName || msg.user.username} size={20} className="mt-0.5 flex-shrink-0" />
             <div>
               <span className="text-xs font-semibold inline-flex items-center gap-0.5">
                 {msg.user.displayName}

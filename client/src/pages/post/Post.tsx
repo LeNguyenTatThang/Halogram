@@ -5,9 +5,9 @@ import type { Post as PostType } from '../../types/Post'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight, Trash2, X, Tag } from 'lucide-react'
 import { timeAgo } from '../../hooks/useTimeAgo'
 import { useAuth } from '../../hooks/useAuth'
-import defaultAvatarUrl from '../../assets/Logo.png'
 import LazyImage from '../../components/common/LazyImage'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 interface PostProps {
     post: PostType
     onLike: (postId: string) => void
@@ -193,14 +193,7 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemove
                     onClick={() => navigate(`/profile/${post.user?.username}`)}
                     className="flex items-center space-x-3 flex-1 min-w-0 text-left"
                 >
-                    <img
-                        src={
-                            post.user?.avatar ||
-                            'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400'
-                        }
-                        alt="User Avatar"
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                    />
+                    <UserAvatar src={post.user?.avatar} name={post.user?.displayName || post.user?.username} size={32} className="flex-shrink-0" />
 
                     <div className="min-w-0">
                         <div className="flex items-center space-x-1">
@@ -381,11 +374,7 @@ const Post: React.FC<PostProps> = ({ post, onLike, onComment, onDelete, onRemove
                         {(showAllComments ? comments : [...comments].reverse()).map((c) => (
                             <div key={c.id} className="mb-1 flex items-center gap-1">
                                 <button onClick={() => navigate(`/profile/${c.user?.username}`)}>
-                                    <img
-                                        src={c.user?.avatar ? c.user.avatar : defaultAvatarUrl}
-                                        alt={c.user?.username}
-                                        className="w-5 h-5 rounded-full flex-shrink-0"
-                                    />
+                                    <UserAvatar src={c.user?.avatar} name={c.user?.username} size={20} className="flex-shrink-0" />
                                 </button>
                                 <button
                                     onClick={() => navigate(`/profile/${c.user?.username}`)}

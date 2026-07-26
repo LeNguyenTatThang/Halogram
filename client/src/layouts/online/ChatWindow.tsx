@@ -12,9 +12,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCall } from '../../context/useCall'
 import { useChat, type ChatMessage } from '../../context/ChatContext'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
-
-const defaultAvatarUrl =
-    'https://ui-avatars.com/api/?name=User&background=random'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 interface ChatWindowProps {
     user: FriendUser
@@ -205,7 +203,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, popupIndex, onClose }) =>
         >
             <div className="flex items-center justify-between px-2 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
                 <div className="flex items-center gap-2">
-                    <img src={user.avatar || defaultAvatarUrl} alt={user.username} className="w-8 h-8 rounded-full border-2 border-white" />
+                    <UserAvatar src={user.avatar} name={user.displayName || user.username} size={32} className="ring-2 ring-white" />
                     <div className="flex flex-col min-w-0">
                         <span className="font-semibold text-sm leading-tight inline-flex items-center gap-0.5">{user.username}{user.isVerified && <VerifiedBadge className="text-white" />}</span>
                         <span className={`text-[11px] leading-tight ${peerTyping ? 'text-green-100 font-medium' : 'text-blue-100'}`}>
@@ -238,7 +236,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, popupIndex, onClose }) =>
             <div className="flex-1 px-4 py-2 overflow-y-auto text-sm text-gray-700 space-y-3 bg-gray-50 dark:bg-gray-800 dark:text-gray-300">
                 {peerTyping && (
                     <div className="flex items-end gap-2 animate-pulse">
-                        <img src={user.avatar || defaultAvatarUrl} alt={user.username} className="w-6 h-6 rounded-full self-end" />
+                        <UserAvatar src={user.avatar} name={user.displayName || user.username} size={24} className="self-end" />
                         <div className="bg-white rounded-full px-3 py-2 shadow text-gray-800 dark:bg-gray-600 dark:text-gray-300 flex items-center gap-1">
                             <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:0ms]" />
                             <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:150ms]" />
@@ -249,7 +247,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ user, popupIndex, onClose }) =>
                 {messages.map((message) => (
                     <div key={message.id} className={`flex ${isOwnMessage(message.senderId) ? 'justify-end' : 'items-end gap-2'}`}>
                         {!isOwnMessage(message.senderId) && (
-                            <img src={user.avatar || defaultAvatarUrl} alt={user.username} className="w-6 h-6 rounded-full self-end" />
+<UserAvatar src={user.avatar} name={user.displayName || user.username} size={24} className="self-end" />
                         )}
                         <div className={`rounded-lg px-3 py-2 shadow max-w-[70%] ${isOwnMessage(message.senderId) ? 'bg-blue-500 text-white' : 'bg-white text-gray-800 dark:bg-gray-600 dark:text-gray-300'}`}>
                             <p className="leading-snug">{message.content}</p>

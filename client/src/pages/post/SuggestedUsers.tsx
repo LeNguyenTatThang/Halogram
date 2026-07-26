@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import configAxios from '../../api/axios'
 import { followUser } from '../../utils/follow'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 interface SuggestedUser {
   id: string
@@ -56,10 +57,7 @@ const SuggestedUsers = () => {
       {user && (
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
-              src={user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
-              className="h-14 w-14 rounded-full object-cover"
-            />
+            <UserAvatar src={user.avatar} name={user.displayName || user.username} size={56} />
             <div>
               <p className="text-sm font-semibold inline-flex items-center gap-0.5">{user.username}{user.isVerified && <VerifiedBadge />}</p>
               <p className="text-sm text-gray-500">{user.displayName}</p>
@@ -110,10 +108,7 @@ const SuggestedUsers = () => {
                 onClick={() => navigate(`/profile/${suggested.username}`)}
                 className="flex items-center gap-3 flex-1 min-w-0 text-left"
               >
-                <img
-                  src={suggested.avatar || `https://ui-avatars.com/api/?name=${suggested.username}&background=random`}
-                  className="h-11 w-11 rounded-full object-cover flex-shrink-0"
-                />
+                <UserAvatar src={suggested.avatar} name={suggested.displayName || suggested.username} size={44} className="flex-shrink-0" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate inline-flex items-center gap-0.5">
                     {suggested.username}

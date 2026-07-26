@@ -5,6 +5,7 @@ import { useLivestream } from '../../hooks/useLivestream'
 import LivestreamChat from '../../components/livestream/LivestreamChat'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
 import HalogramLoading from '../../components/ui/HalogramLoading'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 const LivestreamBroadcast: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -92,11 +93,7 @@ const LivestreamBroadcast: React.FC = () => {
           <>
             <div className="absolute top-4 left-4 flex items-center gap-3">
               <div className="flex items-center gap-2 bg-black/50 backdrop-blur rounded-full px-3 py-1.5">
-                <img
-                  src={livestream.streamer.avatar || '/default-avatar.png'}
-                  alt={livestream.streamer.username}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
+                <UserAvatar src={livestream.streamer.avatar} name={livestream.streamer.displayName || livestream.streamer.username} size={32} />
                 <div>
                   <div className="flex items-center gap-1">
                     <span className="text-white text-sm font-semibold">

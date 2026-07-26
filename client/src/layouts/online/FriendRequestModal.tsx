@@ -2,6 +2,7 @@ import React from 'react'
 import type { Friend  } from '../../types/Friend'
 import { useTranslation } from 'react-i18next'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 interface FriendRequestModalProps {
     isOpen: boolean
     onClose: () => void
@@ -55,13 +56,7 @@ const FriendRequestModal: React.FC<FriendRequestModalProps> = ({
                             className="flex items-center justify-between mb-3 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
                             <div className="flex items-center gap-3">
-                                <img
-                                    src={friend.friend.avatar || '/default-avatar.png'}
-                                    alt={friend.friend.username}
-                                    width={32}
-                                    height={32}
-                                    className="w-8 h-8 rounded-full object-cover"
-                                />
+                                <UserAvatar src={friend.friend.avatar} name={friend.friend.displayName || friend.friend.username} size={32} />
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium truncate inline-flex items-center gap-0.5">
                                         {friend.friend.displayName}

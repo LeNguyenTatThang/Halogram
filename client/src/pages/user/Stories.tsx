@@ -2,6 +2,7 @@ import React from 'react'
 import type { Story } from '../../types/Story'
 import { Plus } from 'lucide-react'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 // import { useAuth } from '../../hooks/useAuth'
 
 interface StoriesProps {
@@ -48,15 +49,7 @@ const Stories: React.FC<StoriesProps> = ({ stories, onStoryClick }) => {
                             : 'bg-gradient-to-r from-purple-500 to-pink-500'
                             }`}>
                             <div className="w-full h-full rounded-full bg-white p-0.5">
-                                <img
-                                    src={story.user.avatar}
-                                    alt={story.user.username}
-                                    width={64}
-                                    height={64}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="w-full h-full rounded-full object-cover"
-                                />
+                                <UserAvatar src={story.user.avatar} name={story.user.username} size={64} />
                             </div>
                         </div>
                         <p className="text-xs text-gray-900 mt-1 truncate w-16 dark:text-white">

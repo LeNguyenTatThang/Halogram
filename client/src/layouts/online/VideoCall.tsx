@@ -1,8 +1,8 @@
 import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react'
 import { useCall } from '../../context/useCall'
-import defaultAvatar from '../../assets/Logo.png'
 import { useEffect, useState } from 'react'
 import HalogramLoading from '../../components/ui/HalogramLoading'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 interface VideoCallProps {
     open: boolean
@@ -89,9 +89,11 @@ const VideoCall = ({
                 />
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                    <img
-                        src={avatar ?? defaultAvatar}
-                        className="w-24 h-24 rounded-full mb-4 object-cover"
+                    <UserAvatar
+                        src={avatar}
+                        name={username}
+                        size={96}
+                        className="mb-4 ring-4 ring-white/30"
                     />
                     <h2 className="text-xl font-semibold">
                         {username}

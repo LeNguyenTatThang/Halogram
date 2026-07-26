@@ -2,6 +2,7 @@ import React from 'react'
 import type { Friend, FriendUser } from '../../types/Friend' 
 import Logo from '../../assets/logo.png'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 interface FriendListProps {
     friends: Friend[]
@@ -26,11 +27,7 @@ const FriendList: React.FC<FriendListProps> = ({ friends, onOpenChat, onlineUser
                     className="w-full flex items-center px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
                 >
                     <div className="relative flex-shrink-0">
-                        <img
-                            src={friend.friend.avatar ?? Logo}
-                            alt={friend.friend.username}
-                            className="w-10 h-10 rounded-full object-cover"
-                        />
+                        <UserAvatar src={friend.friend.avatar} name={friend.friend.displayName || friend.friend.username} size={40} />
                         {onlineUserIds.has(friend.friend.id) && (
                             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-black transition-opacity duration-200" />
                         )}

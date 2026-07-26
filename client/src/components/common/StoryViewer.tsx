@@ -3,6 +3,7 @@ import type { Story } from '../../types/Story'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import VerifiedBadge from './VerifiedBadge'
+import UserAvatar from '../ui/UserAvatar'
 
 interface StoryViewerProps {
     story: Story
@@ -85,11 +86,7 @@ const StoryViewer: React.FC<StoryViewerProps> = ({ story: initialStory, stories,
                     {/* Header */}
                     <div className="absolute top-8 left-0 right-0 flex items-center justify-between px-6 z-10">
                         <div className="flex items-center gap-3">
-                            <img
-                                src={currentStory.user.avatar}
-                                alt={currentStory.user.username}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-white"
-                            />
+                            <UserAvatar src={currentStory.user.avatar} name={currentStory.user.username} size={40} className="border-2 border-white" />
                             <div>
                                 <p className="text-white font-semibold text-sm inline-flex items-center gap-0.5">{currentStory.user.username}{currentStory.user.isVerified && <VerifiedBadge className="text-white" />}</p>
                                 <p className="text-gray-300 text-xs">2 hours ago</p>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Eye, Play } from 'lucide-react'
 import type { Livestream } from '../../types/livestream'
 import VerifiedBadge from '../common/VerifiedBadge'
+import UserAvatar from '../ui/UserAvatar'
 
 interface LivestreamCardProps {
   livestream: Livestream
@@ -38,11 +39,7 @@ const LivestreamCard: React.FC<LivestreamCardProps> = ({ livestream }) => {
 
       <div className="p-3">
         <div className="flex items-center gap-2 mb-1.5">
-          <img
-            src={livestream.streamer.avatar || '/default-avatar.png'}
-            alt={livestream.streamer.username}
-            className="w-7 h-7 rounded-full object-cover"
-          />
+          <UserAvatar src={livestream.streamer.avatar} name={livestream.streamer.displayName || livestream.streamer.username} size={28} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
               <span className="font-semibold text-sm truncate">

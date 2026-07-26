@@ -15,6 +15,7 @@ import EditProfileModal from '../../components/profile/EditProfileModal'
 import EditPostModal from '../../components/profile/EditPostModal'
 import HalogramLoading from '../../components/ui/HalogramLoading'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import UserAvatar from '../../components/ui/UserAvatar'
 
 const LOADING = 'loading'
 const ERROR = 'error'
@@ -172,11 +173,7 @@ const Profile: React.FC = () => {
             <div className="max-w-4xl mx-auto px-4 py-8">
                 {/* Profile Header */}
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
-                    <img
-                        src={profile.avatar}
-                        alt={profile.username}
-                        className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-full object-cover flex-shrink-0"
-                    />
+                    <UserAvatar src={profile.avatar} name={profile.displayName || profile.username} size={128} className="flex-shrink-0" />
                     <div className="flex-1 min-w-0 text-center sm:text-left">
                         <div className="flex items-center justify-center sm:justify-start gap-4 mb-2">
                             <h1 className="text-xl font-semibold truncate inline-flex items-center gap-1">{profile.username}{profile.isVerified && <VerifiedBadge />}</h1>
