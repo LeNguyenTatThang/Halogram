@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface UserAvatarProps {
   src?: string | null
   name?: string | null
@@ -10,19 +12,21 @@ function getInitials(name: string): string {
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((w) => w[0])
+    .map((w) => w[0]?.toUpperCase() || '')
     .join('')
-    .toUpperCase()
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ src, name, className = '', size = 40 }) => {
-  if (src) {
+const UserAvatar = ({ src, name, className = '', size = 40 }: UserAvatarProps) => {
+  const [imgError, setImgError] = useState(false)
+
+  if (src && !imgError) {
     return (
       <img
         src={src}
         alt={name || 'Avatar'}
         className={`rounded-full object-cover bg-gray-100 ${className}`}
         style={{ width: size, height: size }}
+        onError={() => setImgError(true)}
       />
     )
   }
