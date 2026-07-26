@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Pencil, Trash2, Package, Loader2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, Package } from 'lucide-react'
 import type { Product, ProductStatus } from '../../types/shop'
 import { getMyProducts, deleteProduct } from '../../utils/shop'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 const STATUS_TABS = [
   { value: '', label: 'Tất cả' },
@@ -142,7 +143,7 @@ const ProductManage: React.FC = () => {
 
         {loading ? (
           <div className="flex justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            <HalogramLoading size="lg" />
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-16">

@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
+import HalogramLoadingPage from "../components/ui/HalogramLoadingPage"
 
 export default function AuthGuard({
     children,
@@ -17,7 +18,7 @@ export default function AuthGuard({
     }, [loading, isAuthenticated, navigate])
 
     if (loading || !isAuthenticated) {
-        return <div>Loading...</div>
+        return <HalogramLoadingPage />
     }
 
     return <>{children}</>

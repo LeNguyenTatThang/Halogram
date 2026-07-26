@@ -4,6 +4,7 @@ import type { Story } from '../../types/Story'
 import  Post from './Post'
 import Stories from '../user/Stories'
 import SuggestedUsers from './SuggestedUsers'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 interface FeedProps {
     posts: PostType[]
@@ -93,7 +94,7 @@ const Feed: React.FC<FeedProps> = ({ posts, stories, isLoading = false, onLike, 
                 <div 
                     ref={loadMoreRef}
                     className='mt-4 flex min-h-16 items-center justify-center text-sm text-gray-500 dark:text-gray-400'>
-                        {nextCursor ? 'Loading more posts...' : 'No more posts'}
+                        {nextCursor ? <HalogramLoading size="sm" text="Đang tải thêm..." /> : 'No more posts'}
                 </div>
             </div>
         </div>

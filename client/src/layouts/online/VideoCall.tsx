@@ -2,6 +2,7 @@ import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react'
 import { useCall } from '../../context/useCall'
 import defaultAvatar from '../../assets/Logo.png'
 import { useEffect, useState } from 'react'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 interface VideoCallProps {
     open: boolean
@@ -97,9 +98,9 @@ const VideoCall = ({
                     </h2>
 
                     {isLoading ? (
-                        <p className="text-gray-300 mt-2">
-                            Requesting camera & microphone permissions...
-                        </p>
+                        <div className="mt-2">
+                            <HalogramLoading size="sm" text="Đang kết nối..." />
+                        </div>
                     ) : permissionError ? (
                         <div className="text-center mt-4">
                             <p className="text-red-400 text-sm mb-2">
@@ -113,9 +114,9 @@ const VideoCall = ({
                             </button>
                         </div>
                     ) : (
-                        <p className="text-gray-300 mt-2">
-                            Connecting...
-                        </p>
+                        <div className="mt-2">
+                            <HalogramLoading size="sm" text="Connecting..." />
+                        </div>
                     )}
                 </div>
 

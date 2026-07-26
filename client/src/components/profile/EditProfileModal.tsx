@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { X } from 'lucide-react'
 import type { User } from '../../types/User'
 import { updateProfile } from '../../utils/profile'
+import HalogramLoading from '../ui/HalogramLoading'
 
 interface EditProfileModalProps {
     user: User
@@ -101,7 +102,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose, onSa
                     </button>
                     <button onClick={handleSave} disabled={saving}
                         className="px-6 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition">
-                        {saving ? 'Saving...' : 'Save'}
+                        {saving ? <HalogramLoading size="sm" showText={false} /> : 'Save'}
                     </button>
                 </div>
             </div>

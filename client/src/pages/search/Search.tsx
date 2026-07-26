@@ -5,6 +5,7 @@ import SearchSkeletonList from './components/SearchSkeletonList'
 import SearchUserItem from './components/SearchUserItem'
 import type { SearchUser } from '../../types/Search'
 import {  addFriend, cancelFriend, removeFriend } from '../../utils/friend'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 const Search = () => {
     const [keyword, setKeyword] = useState('')
@@ -159,7 +160,7 @@ const Search = () => {
 
             {loadingMore && (
                 <div className="py-3 text-center text-sm text-gray-500">
-                    Loading more...
+                    <HalogramLoading size="sm" text="Đang tải thêm..." />
                 </div>
             )}
         </div>

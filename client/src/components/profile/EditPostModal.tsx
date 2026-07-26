@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Post } from '../../types/Post'
 import { updatePost } from '../../utils/post'
+import HalogramLoading from '../ui/HalogramLoading'
 
 interface EditPostModalProps {
     post: Post
@@ -74,7 +75,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose, onSaved })
                     </button>
                     <button onClick={handleSave} disabled={saving}
                         className="px-6 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition">
-                        {saving ? 'Saving...' : 'Save'}
+                        {saving ? <HalogramLoading size="sm" showText={false} /> : 'Save'}
                     </button>
                 </div>
             </div>

@@ -13,6 +13,7 @@ import { addFriend, cancelFriend, removeFriend } from '../../utils/friend'
 import { createConversation } from '../../utils/messages'
 import EditProfileModal from '../../components/profile/EditProfileModal'
 import EditPostModal from '../../components/profile/EditPostModal'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
 
 const LOADING = 'loading'
@@ -149,7 +150,7 @@ const Profile: React.FC = () => {
     if (profileStatus === LOADING) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
+                <HalogramLoading size="lg" text="Đang tải trang cá nhân..." />
             </div>
         )
     }
@@ -263,7 +264,7 @@ const Profile: React.FC = () => {
                 <div className="mt-1">
                     {postsStatus === LOADING && activeTab === 'posts' ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
+                            <HalogramLoading size="md" />
                         </div>
                     ) : displayPosts.length > 0 ? (
                         <div className="grid grid-cols-3 gap-1">

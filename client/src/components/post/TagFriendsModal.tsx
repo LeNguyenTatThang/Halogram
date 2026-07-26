@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { X, Search, Check } from 'lucide-react'
 import { listFriends } from '../../utils/friend'
 import VerifiedBadge from '../common/VerifiedBadge'
+import HalogramLoading from '../ui/HalogramLoading'
 
 interface Friend {
   id: string
@@ -80,7 +81,7 @@ const TagFriendsModal: React.FC<TagFriendsModalProps> = ({
 
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="p-4 text-center text-sm text-gray-500">Loading...</div>
+            <div className="p-4 text-center text-sm text-gray-500"><HalogramLoading size="sm" showText={false} /></div>
           ) : filtered.length === 0 ? (
             <div className="p-4 text-center text-sm text-gray-500">No friends found</div>
           ) : (

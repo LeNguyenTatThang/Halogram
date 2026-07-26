@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, Upload, Plus, Loader2, Info, ImagePlus } from 'lucide-react'
+import { X, Upload, Plus, Info, ImagePlus } from 'lucide-react'
 import type { Category } from '../../types/shop'
 import { getCategories, createProduct } from '../../utils/shop'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 interface VariantEntry {
   key: string
@@ -471,8 +472,7 @@ const ProductCreate: React.FC = () => {
             disabled={submitting}
             className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center gap-2"
           >
-            {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {submitting ? 'Đang đăng...' : 'Đăng sản phẩm'}
+            {submitting ? <HalogramLoading size="sm" showText={false} /> : 'Đăng sản phẩm'}
           </button>
         </div>
       </div>

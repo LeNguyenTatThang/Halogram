@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Mic, MicOff, VideoOff, ArrowLeft, Loader2 } from 'lucide-react'
+import { Camera, Mic, MicOff, VideoOff, ArrowLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { createLivestream } from '../../utils/livestream'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 const StartLivestream: React.FC = () => {
   const navigate = useNavigate()
@@ -109,7 +110,7 @@ const StartLivestream: React.FC = () => {
           />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+            <HalogramLoading size="sm" showText={false} />
           </div>
         )}
 
@@ -168,10 +169,7 @@ const StartLivestream: React.FC = () => {
           className="w-full bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {starting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Starting...
-            </>
+            <HalogramLoading size="sm" showText={false} />
           ) : (
             <>
               <span className="w-2 h-2 bg-white rounded-full" />

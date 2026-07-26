@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { X, Eye, Loader2, Radio } from 'lucide-react'
+import { X, Eye, Radio } from 'lucide-react'
 import { useLivestream } from '../../hooks/useLivestream'
 import LivestreamChat from '../../components/livestream/LivestreamChat'
 import VerifiedBadge from '../../components/common/VerifiedBadge'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 const LivestreamBroadcast: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -45,7 +46,7 @@ const LivestreamBroadcast: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        <HalogramLoading size="lg" text="Đang tải livestream..." />
       </div>
     )
   }

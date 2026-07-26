@@ -32,6 +32,7 @@ import ProductCreate from './pages/shop/ProductCreate'
 import ProductEdit from './pages/shop/ProductEdit'
 import ProductDetail from './pages/shop/ProductDetail'
 import IncomingCallModal from './components/call/IncomingCallModal'
+import HalogramLoadingPage from './components/ui/HalogramLoadingPage'
 import { useCall } from './context/useCall'
 import VideoCall from './layouts/online/VideoCall'
 
@@ -244,7 +245,7 @@ function App() {
 
     
     if (loading) {
-        return <div>Loading...</div>
+        return <HalogramLoadingPage />
     }
 
     return (

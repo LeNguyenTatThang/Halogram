@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Radio, Loader2 } from 'lucide-react'
+import { Radio } from 'lucide-react'
 import type { Livestream } from '../../types/livestream'
 import { getActiveLivestreams } from '../../utils/livestream'
 import LivestreamCard from '../../components/livestream/LivestreamCard'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 const LivestreamPage: React.FC = () => {
   const navigate = useNavigate()
@@ -35,7 +36,7 @@ const LivestreamPage: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <HalogramLoading size="lg" />
         </div>
       ) : livestreams.length === 0 ? (
         <div className="text-center py-20">

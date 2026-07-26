@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import Logo from '../../assets/Logo.png'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 interface SignupFormProps {
     onSwitchToLogin: () => void
@@ -136,7 +137,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
                     disabled={isLoading}
                     className="w-full bg-blue-600 text-white py-2 rounded-md focus:outline-none hover:bg-blue-700 transition-all disabled:opacity-50"
                 >
-                    {isLoading ? t('signingUp') || 'Signing up...' : t('signUp') || 'Sign up'}
+                    {isLoading ? <HalogramLoading size="sm" showText={false} /> : t('signUp') || 'Sign up'}
                 </button>
             </form>
 

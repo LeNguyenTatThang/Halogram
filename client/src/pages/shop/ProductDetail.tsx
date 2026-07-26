@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ShoppingBag, ChevronLeft, Minus, Plus, Loader2, Star, ShieldCheck, Truck } from 'lucide-react'
+import { ShoppingBag, ChevronLeft, Minus, Plus, Star, ShieldCheck, Truck } from 'lucide-react'
 import type { Product } from '../../types/shop'
 import { getProductById } from '../../utils/shop'
 import VerifiedShopBadge from '../../components/shop/VerifiedShopBadge'
+import HalogramLoading from '../../components/ui/HalogramLoading'
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>()
@@ -24,7 +25,7 @@ const ProductDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        <HalogramLoading size="lg" text="Đang tải sản phẩm..." />
       </div>
     )
   }
