@@ -30,6 +30,7 @@ import SellerDashboard from './pages/shop/SellerDashboard'
 import ProductManage from './pages/shop/ProductManage'
 import ProductCreate from './pages/shop/ProductCreate'
 import ProductEdit from './pages/shop/ProductEdit'
+import ProductDetail from './pages/shop/ProductDetail'
 import IncomingCallModal from './components/call/IncomingCallModal'
 import { useCall } from './context/useCall'
 import VideoCall from './layouts/online/VideoCall'
@@ -355,6 +356,10 @@ function App() {
                     <Route
                         path="/shop"
                         element={<HaloShopPage />}
+                    />
+                    <Route
+                        path="/shop/products/:productId"
+                        element={<ProductDetail />}
                     />
                     <Route
                         path="/shop/manage"
