@@ -18,6 +18,8 @@ import { Req } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { JwtUser } from './interfaces/jwt-user.interface';
+import { SuccessMessage } from '../common/decorators/success-message.decorator';
+
 interface AuthRequest extends Request {
   user: {
     id: string;
@@ -32,6 +34,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @SuccessMessage('Login successful')
   async login(
     @Body() dto: SignInDto,
     @Res({ passthrough: true }) res: Response,
@@ -46,16 +49,13 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
-    return {
-      message: 'Login successful',
-      accessToken: result.accessToken,
-      data: result.user,
-    };
+    return { accessToken: result.accessToken, user: result.user };
   }
 
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @SuccessMessage('Sign up successful')
   async signUp(@Body() dto: SignUpDto) {
     return this.authService.signUp(dto);
   }
@@ -81,6 +81,7 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
+  @SuccessMessage('Logout successful')
   async logout(
     @CurrentUser() { id: userId }: JwtUser,
     @Res({ passthrough: true }) res: Response,
@@ -94,8 +95,6 @@ export class AuthController {
       path: '/auth/refresh',
     });
 
-    return {
-      message: 'Logout successful',
-    };
+    return null;
   }
 }

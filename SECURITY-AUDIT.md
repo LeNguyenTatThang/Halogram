@@ -142,8 +142,6 @@ This document catalogs all security findings discovered during a comprehensive a
 
 ## Friendships
 
-## Friendships
-
 ### FRIEND-001: Blocked user can unblock themselves
 
 | Field | Value |
@@ -157,7 +155,49 @@ This document catalogs all security findings discovered during a comprehensive a
 
 ---
 
-## Summary
+## CSRF Protection
+
+### CSRF-001: No CSRF protection for mutation endpoints
+
+| Field | Value |
+|-------|-------|
+| **Severity** | Medium |
+| **Status** | FALSE_POSITIVE |
+| **Location** | All controllers |
+| **Description** | No CSRF middleware is configured. In cookie-based auth, CSRF could allow cross-origin state-changing requests. |
+| **Analysis** | After reviewing the authentication architecture: API authentication uses `Authorization: Bearer <accessToken>` header for all mutation endpoints (POST/PUT/PATCH/DELETE). Browsers do not automatically attach `Authorization` headers cross-origin, so CSRF is not exploitable on these endpoints. The only cookie-based flow is `POST /auth/refresh`, which uses `refreshToken` HttpOnly cookie with `sameSite: 'strict'` and path restricted to `/auth/refresh` — preventing cross-origin sending entirely. The existing `sameSite: 'strict'` on the refresh token cookie provides CSRF protection for the refresh flow. `POST /auth/logout` is guarded by `JwtAuthGuard` (Bearer token). Therefore, no additional CSRF middleware is required. |
+| **Conclusion** | CSRF is **mitigated by architecture**: API auth uses Authorization header; refresh token cookie has `sameSite: 'strict'`. |
+
+---
+
+## Security Headers
+
+### HDR-001: Missing security headers (no Helmet)
+
+| Field | Value |
+|-------|-------|
+| **Severity** | Medium |
+| **Status** | FIXED |
+| **Location** | `server/src/main.ts` |
+| **Description** | NestJS application had no security headers middleware — no `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, or other security response headers. |
+| **Fix** | Installed `helmet@8.3.0` and configured in `main.ts` with `crossOriginResourcePolicy: { policy: 'cross-origin' }` (required for cross-origin image loading) and conditional `strictTransportSecurity` (enabled only in production). All other Helmet defaults applied. |
+| **Verification** | Verified `helmet()` is called before `cookieParser()` in `main.ts`. HSTS is set to `false` for non-production (avoids issues on localhost). `crossOriginResourcePolicy: cross-origin` is set to allow Cloudinary and other CDN resources to be loaded by the frontend. |
+
+---
+
+## File Upload Validation
+
+### UPLOAD-001: Insufficient file upload validation
+
+| Field | Value |
+|-------|-------|
+| **Severity** | Medium |
+| **Status** | FIXED |
+| **Location** | `server/src/cloudinary/cloudinary.service.ts` |
+| **Description** | File upload validation relied solely on `file.mimetype` (which can be spoofed) and `file.size` checks. No file extension validation or magic byte content verification was performed. |
+| **Fix** | Added three validation layers in `CloudinaryService.validateFile()`: (1) **Extension validation** — checks `file.originalname` extension against `ALLOWED_EXTENSIONS` (`.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`); (2) **Magic byte validation** — checks the file header bytes against known signatures for each allowed MIME type (JPEG: `FF D8 FF`, PNG: `89 50 4E 47...`, GIF: `47 49 46 38 37/39 61`, WebP: `52 49 46 46`); (3) **Empty file check** — rejects files with 0 size. File count limits are enforced by `FilesInterceptor('images', 10)` at the controller level (max 10 images). All validation happens before any data is sent to Cloudinary. |
+| **Validation layers** | (1) MIME type — `file.mimetype` must be in `ALLOWED_MIME_TYPES`; (2) File size — max 10MB; (3) File extension — must match `ALLOWED_EXTENSIONS`; (4) Magic bytes — file header must match expected signature; (5) Empty file rejected. Upload endpoints: avatar (`PATCH /users/me`), post images (`POST /post/create-post`, `PUT /post/update-post/:id`), shop logo/cover (`POST /shop/upload-logo`, `POST /shop/upload-cover`), product images (`POST /shop/products`, `PUT /shop/products/:id`, `PATCH /shop/products/:id`). |
+| **Verification** | Verified `validateFile()` is called on every upload (both `uploadImage` and `uploadImages`). Magic byte signatures match each allowed type. Extension check handles case-insensitivity via `.toLowerCase()`. Empty file check catches zero-byte uploads. |
 
 | ID | Finding | Severity | Status |
 |----|---------|----------|--------|
@@ -172,3 +212,6 @@ This document catalogs all security findings discovered during a comprehensive a
 | WS-004 | Livestream extractUserId ignores header | Medium | FIXED |
 | LIVESTREAM-001 | Public livestream endpoints | Medium | FIXED |
 | FRIEND-001 | Blocked user can unblock | Low | FIXED |
+| CSRF-001 | No CSRF protection | Medium | FALSE_POSITIVE |
+| HDR-001 | Missing security headers | Medium | FIXED |
+| UPLOAD-001 | Insufficient file upload validation | Medium | FIXED |

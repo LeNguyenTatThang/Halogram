@@ -214,7 +214,9 @@ export class LivestreamGateway
     if (!userId) return;
 
     if (!client.rooms.has(data.livestreamId)) {
-      client.emit('livestream:error', { message: 'Not a participant in this livestream' });
+      client.emit('livestream:error', {
+        message: 'Not a participant in this livestream',
+      });
       return;
     }
 
@@ -248,7 +250,9 @@ export class LivestreamGateway
 
     const livestream = await this.livestreamService.getById(data.livestreamId);
     if (!livestream || livestream.streamerId !== userId) {
-      client.emit('livestream:error', { message: 'Only the streamer can send answers' });
+      client.emit('livestream:error', {
+        message: 'Only the streamer can send answers',
+      });
       return;
     }
 

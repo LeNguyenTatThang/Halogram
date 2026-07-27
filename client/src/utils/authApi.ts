@@ -8,6 +8,19 @@ const refreshAxios = axios.create({
     withCredentials: true,
 })
 
+refreshAxios.interceptors.response.use(
+    (response) => {
+        if (
+            response.data &&
+            typeof response.data === 'object' &&
+            'data' in response.data
+        ) {
+            response.data = response.data.data
+        }
+        return response
+    },
+)
+
 export const refreshToken = async () => {
     const { data } = await refreshAxios.post('/auth/refresh')
 

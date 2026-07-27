@@ -18,8 +18,7 @@ export class CategoryController {
 
   @Get()
   async findAll() {
-    const categories = await this.categoryService.findAll();
-    return { categories };
+    return this.categoryService.findAll();
   }
 
   @Get(':id')

@@ -35,9 +35,9 @@ export const AuthProvider = ({
                     return
                 }
 
-                const response = await getCurrentUser()
+                const data = await getCurrentUser()
 
-                setUser(response.data)
+                setUser(data)
             } catch (error) {
                 console.error(error)
                 localStorage.removeItem(
@@ -57,14 +57,14 @@ export const AuthProvider = ({
         email: string,
         password: string
     ) => {
-        const response = await loginUser(email, password)
+        const data = await loginUser(email, password)
 
         localStorage.setItem(
             'accessToken',
-            response.data.accessToken
+            data.accessToken
         )
 
-        setUser(response.data.data)
+        setUser(data.user)
     }
 
     const logout = () => {

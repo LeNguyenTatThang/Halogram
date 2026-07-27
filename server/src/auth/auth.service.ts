@@ -89,10 +89,7 @@ export class AuthService {
       },
     });
 
-    return {
-      message: 'Sign up successful',
-      data: UserTransformer.transform(user),
-    };
+    return UserTransformer.transform(user);
   }
 
   async getCurrentUser(userId: string) {

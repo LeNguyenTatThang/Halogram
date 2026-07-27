@@ -8,7 +8,21 @@ const ALLOWED_MIME_TYPES = [
   'image/webp',
 ];
 
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+const MAGIC_BYTES: Record<string, Uint8Array[]> = {
+  'image/jpeg': [new Uint8Array([0xff, 0xd8, 0xff])],
+  'image/png': [
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  ],
+  'image/gif': [
+    new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x37, 0x61]),
+    new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+  ],
+  'image/webp': [new Uint8Array([0x52, 0x49, 0x46, 0x46])],
+};
 
 @Injectable()
 export class CloudinaryService {
@@ -26,10 +40,37 @@ export class CloudinaryService {
         `Invalid file type: ${file.mimetype}. Allowed: ${ALLOWED_MIME_TYPES.join(', ')}`,
       );
     }
+
     if (file.size > MAX_FILE_SIZE) {
       throw new BadRequestException(
         `File too large: ${file.size}. Max: ${MAX_FILE_SIZE / 1024 / 1024}MB`,
       );
+    }
+
+    if (file.size === 0) {
+      throw new BadRequestException('File is empty');
+    }
+
+    const ext = file.originalname
+      .toLowerCase()
+      .slice(file.originalname.lastIndexOf('.'));
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      throw new BadRequestException(
+        `Invalid file extension: ${ext}. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`,
+      );
+    }
+
+    const sigs = MAGIC_BYTES[file.mimetype];
+    if (sigs) {
+      const header = file.buffer.subarray(0, 12);
+      const match = sigs.some((sig) =>
+        sig.every((byte, i) => header[i] === byte),
+      );
+      if (!match) {
+        throw new BadRequestException(
+          'File content does not match expected image format',
+        );
+      }
     }
   }
 

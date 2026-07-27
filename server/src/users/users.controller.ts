@@ -16,6 +16,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { SearchDto } from './dto/search.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { SuccessMessage } from '../common/decorators/success-message.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -46,17 +47,9 @@ export class UsersController {
 
   @Get('search')
   @UseGuards(JwtAuthGuard)
+  @SuccessMessage('Users fetched successfully')
   async searchUsers(@CurrentUser() user: JwtUser, @Query() query: SearchDto) {
-    const users = await this.usersService.searchUsers(
-      query.keyword,
-      user.id,
-      query.cursor,
-    );
-    return {
-      success: true,
-      message: 'Users fetched successfully',
-      data: users,
-    };
+    return this.usersService.searchUsers(query.keyword, user.id, query.cursor);
   }
 
   @Get(':username')

@@ -29,7 +29,7 @@ const Search = () => {
 
                 const res = await searchUsers(keyword, cursor)
 
-                const newUsers: SearchUser[] = res.data.users
+                const newUsers: SearchUser[] = res.users
 
                 if (append) {
                     setUsers((prev) => [...prev, ...newUsers])
@@ -37,8 +37,8 @@ const Search = () => {
                     setUsers(newUsers)
                 }
 
-                setNextCursor(res.data.nextCursor)
-                setHasMore(!!res.data.nextCursor)
+                setNextCursor(res.nextCursor)
+                setHasMore(!!res.nextCursor)
             } catch (err) {
                 console.error(err)
             } finally {

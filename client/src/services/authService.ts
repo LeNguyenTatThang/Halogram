@@ -18,18 +18,19 @@ export const loginUser = async (
     email: string,
     password: string
 ) => {
-    return await configAxios.post(
+    const res = await configAxios.post(
         '/auth/login',
         {
             email,
             password,
         }
     )
+    return res.data
 }
 
 export const register = async (
-firstName: string, lastName: string, email: string, username: string, password: string, passwordConfirmation: string) => {
-    return await configAxios.post(
+    firstName: string, lastName: string, email: string, username: string, password: string, passwordConfirmation: string) => {
+    const res = await configAxios.post(
         '/auth/sign-up',
         {
             firstName,
@@ -40,11 +41,12 @@ firstName: string, lastName: string, email: string, username: string, password: 
             passwordConfirmation,
         }
     )
+    return res.data
 }
 
 export const getCurrentUser = async () => {
     const token = localStorage.getItem('accessToken')
-    return await configAxios.get(
+    const res = await configAxios.get(
         '/auth/me',
         {
             headers: {
@@ -52,4 +54,5 @@ export const getCurrentUser = async () => {
             },
         }
     )
+    return res.data
 }
