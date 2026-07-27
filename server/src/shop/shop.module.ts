@@ -11,7 +11,12 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
   imports: [CloudinaryModule],
-  controllers: [CategoryController, ProductController, CartController, ShopController],
+  controllers: [
+    CategoryController,
+    ProductController,
+    CartController,
+    ShopController,
+  ],
   providers: [ShopService, CategoryService, ProductService, CartService],
 })
 export class ShopModule {}

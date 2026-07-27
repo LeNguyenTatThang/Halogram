@@ -33,7 +33,10 @@ export class CloudinaryService {
     }
   }
 
-  async uploadImage(file: Express.Multer.File, folder: string): Promise<string> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<string> {
     this.validateFile(file);
 
     return new Promise((resolve, reject) => {
@@ -64,8 +67,6 @@ export class CloudinaryService {
     for (const file of files) {
       this.validateFile(file);
     }
-    return Promise.all(
-      files.map((file) => this.uploadImage(file, folder)),
-    );
+    return Promise.all(files.map((file) => this.uploadImage(file, folder)));
   }
 }

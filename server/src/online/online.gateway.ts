@@ -53,10 +53,7 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const userId = payload.sub || payload.id;
         if (userId) {
           client.data.user = { id: userId };
-          this.onlineStatusService.onUserConnected(
-            userId as string,
-            client.id,
-          );
+          this.onlineStatusService.onUserConnected(userId as string, client.id);
 
           client.emit('onlineUsers', {
             userIds: this.onlineStatusService.getOnlineUserIds(),
@@ -80,10 +77,7 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleDisconnect(client: Socket) {
     const userId = client.data.user?.id;
     if (userId) {
-      this.onlineStatusService.onUserDisconnected(
-        userId as string,
-        client.id,
-      );
+      this.onlineStatusService.onUserDisconnected(userId as string, client.id);
     }
 
     this.logger.log(`Client disconnected: ${client.id}`);

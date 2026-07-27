@@ -147,7 +147,10 @@ export class ShopService {
     });
     if (!shop) throw new NotFoundException('Shop not found');
 
-    const url = await this.cloudinary.uploadImage(file, 'halogram/shops/covers');
+    const url = await this.cloudinary.uploadImage(
+      file,
+      'halogram/shops/covers',
+    );
 
     return this.prisma.shop.update({
       where: { id: shop.id },

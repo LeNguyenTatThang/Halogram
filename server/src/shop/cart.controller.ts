@@ -44,10 +44,7 @@ export class CartController {
 
   @UseGuards(JwtAuthGuard)
   @Delete('item/:itemId')
-  removeItem(
-    @CurrentUser() user: JwtUser,
-    @Param('itemId') itemId: string,
-  ) {
+  removeItem(@CurrentUser() user: JwtUser, @Param('itemId') itemId: string) {
     return this.cartService.removeItem(user.id, itemId);
   }
 

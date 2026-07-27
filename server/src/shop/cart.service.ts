@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -51,10 +55,7 @@ export class CartService {
     return this.getOrCreateCart(userId);
   }
 
-  async addItem(
-    userId: string,
-    dto: { productId: string; quantity: number },
-  ) {
+  async addItem(userId: string, dto: { productId: string; quantity: number }) {
     if (dto.quantity <= 0) {
       throw new BadRequestException('Quantity must be greater than 0');
     }
@@ -91,11 +92,7 @@ export class CartService {
     return this.getOrCreateCart(userId);
   }
 
-  async updateItemQuantity(
-    userId: string,
-    itemId: string,
-    quantity: number,
-  ) {
+  async updateItemQuantity(userId: string, itemId: string, quantity: number) {
     const cart = await this.getOrCreateCart(userId);
     const item = cart.items.find((i) => i.id === itemId);
     if (!item) throw new NotFoundException('Item not found in cart');

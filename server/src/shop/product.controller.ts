@@ -79,11 +79,19 @@ export class ProductController {
     },
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    let variants: { name: string; price: number; stock: number; sku?: string; imageIndex?: number }[] | undefined;
+    let variants:
+      | {
+          name: string;
+          price: number;
+          stock: number;
+          sku?: string;
+          imageIndex?: number;
+        }[]
+      | undefined;
     if (dto.variants) {
       try {
         variants = JSON.parse(dto.variants);
-      } catch { }
+      } catch {}
     }
 
     return this.productService.create(
@@ -134,14 +142,22 @@ export class ProductController {
     if (dto.status !== undefined) parsed.status = dto.status;
     if (dto.isActive !== undefined) parsed.isActive = dto.isActive === 'true';
 
-    let variants: { name: string; price: number; stock: number; sku?: string; imageIndex?: number }[] | undefined;
+    let variants:
+      | {
+          name: string;
+          price: number;
+          stock: number;
+          sku?: string;
+          imageIndex?: number;
+        }[]
+      | undefined;
     if (dto.variants) {
       try {
         variants = JSON.parse(dto.variants);
-      } catch { }
+      } catch {}
     }
 
-    return this.productService.update(user.id, id, parsed as any, files, variants);
+    return this.productService.update(user.id, id, parsed, files, variants);
   }
 
   @UseGuards(JwtAuthGuard)

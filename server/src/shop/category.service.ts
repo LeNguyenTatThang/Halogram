@@ -35,10 +35,7 @@ export class CategoryService {
     return category;
   }
 
-  async update(
-    id: string,
-    dto: { name?: string; image?: string },
-  ) {
+  async update(id: string, dto: { name?: string; image?: string }) {
     const category = await this.prisma.category.findUnique({
       where: { id },
     });

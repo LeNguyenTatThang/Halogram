@@ -39,7 +39,13 @@ export class ProductService {
       stock?: number;
     },
     files: Express.Multer.File[],
-    variants?: { name: string; price: number; stock: number; sku?: string; imageIndex?: number }[],
+    variants?: {
+      name: string;
+      price: number;
+      stock: number;
+      sku?: string;
+      imageIndex?: number;
+    }[],
   ) {
     const shop = await this.getVerifiedShop(userId);
 
@@ -67,7 +73,9 @@ export class ProductService {
           price: dto.price,
           salePrice: dto.salePrice,
           sku: dto.sku,
-          stock: hasVariants ? variants!.reduce((sum, v) => sum + v.stock, 0) : (dto.stock ?? 0),
+          stock: hasVariants
+            ? variants.reduce((sum, v) => sum + v.stock, 0)
+            : (dto.stock ?? 0),
           images: {
             create: imageUrls.map((url, i) => ({
               url,
@@ -76,12 +84,15 @@ export class ProductService {
           },
           variants: hasVariants
             ? {
-                create: variants!.map((v, i) => ({
+                create: variants.map((v, i) => ({
                   name: v.name,
                   sku: v.sku,
                   price: v.price,
                   stock: v.stock,
-                  image: v.imageIndex !== undefined ? imageUrls[v.imageIndex] : undefined,
+                  image:
+                    v.imageIndex !== undefined
+                      ? imageUrls[v.imageIndex]
+                      : undefined,
                   order: i,
                 })),
               }
@@ -138,8 +149,10 @@ export class ProductService {
 
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       where.price = {};
-      if (query.minPrice !== undefined) (where.price as Record<string, unknown>).gte = query.minPrice;
-      if (query.maxPrice !== undefined) (where.price as Record<string, unknown>).lte = query.maxPrice;
+      if (query.minPrice !== undefined)
+        (where.price as Record<string, unknown>).gte = query.minPrice;
+      if (query.maxPrice !== undefined)
+        (where.price as Record<string, unknown>).lte = query.maxPrice;
     }
 
     let orderBy: Record<string, string> = { createdAt: 'desc' };
@@ -209,7 +222,9 @@ export class ProductService {
           category: true,
         },
       }),
-      this.prisma.product.count({ where: { shopId, status: { not: 'ARCHIVED' }, isActive: true } }),
+      this.prisma.product.count({
+        where: { shopId, status: { not: 'ARCHIVED' }, isActive: true },
+      }),
     ]);
 
     return {
@@ -258,7 +273,14 @@ export class ProductService {
       isActive?: boolean;
     },
     files?: Express.Multer.File[],
-    variants?: { name: string; price: number; stock: number; sku?: string; imageIndex?: number; id?: string }[],
+    variants?: {
+      name: string;
+      price: number;
+      stock: number;
+      sku?: string;
+      imageIndex?: number;
+      id?: string;
+    }[],
   ) {
     const shop = await this.getVerifiedShop(userId);
 
@@ -321,9 +343,10 @@ export class ProductService {
               sku: v.sku,
               price: v.price,
               stock: v.stock,
-              image: v.imageIndex !== undefined && files && files[v.imageIndex]
-                ? undefined
-                : undefined,
+              image:
+                v.imageIndex !== undefined && files && files[v.imageIndex]
+                  ? undefined
+                  : undefined,
               order: i,
             })),
           });

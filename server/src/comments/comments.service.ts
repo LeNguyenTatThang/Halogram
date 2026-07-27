@@ -25,7 +25,9 @@ export class CommentsService {
       throw new BadRequestException('Comment cannot be empty');
     }
     if (comment.length > 1000) {
-      throw new BadRequestException('Comment is too long (max 1000 characters)');
+      throw new BadRequestException(
+        'Comment is too long (max 1000 characters)',
+      );
     }
 
     const newComment = await this.prisma.comment.create({
@@ -83,7 +85,9 @@ export class CommentsService {
       throw new BadRequestException('Comment cannot be empty');
     }
     if (text.length > 1000) {
-      throw new BadRequestException('Comment is too long (max 1000 characters)');
+      throw new BadRequestException(
+        'Comment is too long (max 1000 characters)',
+      );
     }
 
     const updatedComment = await this.prisma.comment.update({
