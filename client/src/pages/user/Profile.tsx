@@ -170,7 +170,7 @@ const Profile: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-black">
-            <div className="max-w-4xl mx-auto px-4 py-8">
+            <div className="flex flex-col justify-self-end max-w-5xl px-4 py-8 md:mr-5">
                 {/* Profile Header */}
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                     <UserAvatar src={profile.avatar} name={profile.displayName || profile.username} size={128} className="flex-shrink-0" />

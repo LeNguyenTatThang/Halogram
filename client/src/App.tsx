@@ -35,6 +35,7 @@ import IncomingCallModal from './components/call/IncomingCallModal'
 import HalogramLoadingPage from './components/ui/HalogramLoadingPage'
 import { useCall } from './context/useCall'
 import VideoCall from './layouts/online/VideoCall'
+import Online from './layouts/Online'
 
 function App() {
     const { t } = useTranslation()
@@ -376,6 +377,8 @@ function App() {
                 {/* Route không tồn tại */}
                 <Route path="*" element={<NotFound />} />
             </Routes>
+
+            {isAuthenticated && <Online />}
         </Router>
     )
 }

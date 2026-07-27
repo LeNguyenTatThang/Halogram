@@ -32,9 +32,7 @@ const TagFriendsModal: React.FC<TagFriendsModalProps> = ({
     const fetchFriends = async () => {
       try {
         const res = await listFriends()
-        if (res.success) {
-          setFriends(res.data.map((f: { friend: Friend }) => f.friend))
-        }
+        setFriends(res.map((f: { friend: Friend }) => f.friend))
       } catch {
         // ignore
       } finally {

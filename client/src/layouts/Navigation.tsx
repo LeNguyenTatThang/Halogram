@@ -94,7 +94,7 @@ const Navigation: React.FC = () => {
             <div
                 className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:bg-white md:border-r md:border-gray-200 z-40 shadow-lg transition-all duration-300
             dark:border-gray-700 dark:text-white dark:bg-black dark:bg-opacity-900 dark:shadow-none"
-                style={{ width: isSidebarExpanded ? 256 : 64 }}
+                style={{ width: isSidebarExpanded ? 200 : 64 }}
                 onMouseEnter={() => { if (!isPanelOpen) setIsSidebarHovered(true) }}
                 onMouseLeave={() => setIsSidebarHovered(false)}
             >

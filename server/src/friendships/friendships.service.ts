@@ -294,17 +294,6 @@ export class FriendshipsService {
   }
 
   async getFriendshipRequests(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      return {
-        success: false,
-        message: 'User not found',
-      };
-    }
-
     const friendshipRequests = await this.prisma.friendship.findMany({
       where: {
         friendId: userId,
@@ -332,77 +321,51 @@ export class FriendshipsService {
       },
     });
 
-    return {
-      success: true,
-      message: 'Friendship requests fetched successfully',
-      data: friendshipRequests,
-    };
+    return friendshipRequests;
   }
 
   async getFriendships(userId: string) {
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (!user) {
-        return {
-          success: false,
-          message: 'User not found',
-        };
-      }
-
-      const friendships = await this.prisma.friendship.findMany({
-        where: {
-          status: 'ACCEPTED',
-          OR: [{ userId }, { friendId: userId }],
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-              isVerified: true,
-            },
-          },
-          friend: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-              isVerified: true,
-            },
+    const friendships = await this.prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [{ userId }, { friendId: userId }],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+            isVerified: true,
           },
         },
-        orderBy: {
-          updatedAt: 'desc',
+        friend: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+            isVerified: true,
+          },
         },
-      });
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
 
-      const data = friendships.map((friendship) => {
-        const otherUser =
-          friendship.userId === userId ? friendship.friend : friendship.user;
-
-        return {
-          id: friendship.id,
-          status: friendship.status,
-          createdAt: friendship.createdAt,
-          updatedAt: friendship.updatedAt,
-          friend: otherUser,
-        };
-      });
+    return friendships.map((friendship) => {
+      const otherUser =
+        friendship.userId === userId ? friendship.friend : friendship.user;
 
       return {
-        success: true,
-        message: 'Friendships fetched successfully',
-        data,
+        id: friendship.id,
+        status: friendship.status,
+        createdAt: friendship.createdAt,
+        updatedAt: friendship.updatedAt,
+        friend: otherUser,
       };
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    });
   }
 }

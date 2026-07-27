@@ -32,7 +32,7 @@ const Online: React.FC = () => {
     const getListFriends = async () => {
         try {
             const res = await listFriends()
-            setFriends(res.data)
+            setFriends(res)
 
         } catch (err) {
             console.log(err)
@@ -42,10 +42,7 @@ const Online: React.FC = () => {
     const fetchFriendRequests = async () => {
         try {
             const res = await listFriendRequests()
-
-            if (res.success) {
-                setFriendRequests(res.data)
-            }
+            setFriendRequests(res)
         } catch (err) {
             console.error(err)
         }
@@ -53,11 +50,9 @@ const Online: React.FC = () => {
     
     const handleAcceptFriend = async (friendId: string) => {
         try {
-            const res = await acceptFriend(friendId)
-            if (res.success) {
-                setFriendRequests(prev => prev.filter(fr => fr.id !== friendId))
-                getListFriends()
-            } 
+            await acceptFriend(friendId)
+            setFriendRequests(prev => prev.filter(fr => fr.id !== friendId))
+            getListFriends()
         } catch (err) {
             console.log(err)
         }
@@ -71,18 +66,13 @@ const Online: React.FC = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [friendsRes, requestsRes] = await Promise.all([
+                const [friends, requests] = await Promise.all([
                     listFriends(),
                     listFriendRequests(),
                 ])
 
-                if (friendsRes.success) {
-                    setFriends(friendsRes.data)
-                }
-
-                if (requestsRes.success) {
-                    setFriendRequests(requestsRes.data)
-                }
+                setFriends(friends)
+                setFriendRequests(requests)
             } catch (err) {
                 console.error(err)
             }

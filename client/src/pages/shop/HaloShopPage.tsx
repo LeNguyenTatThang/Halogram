@@ -62,7 +62,7 @@ const HaloShopPage: React.FC = () => {
   }, [categoryId, search, sort, page])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+    <div className="ml-10 max-w-7xl mx-auto px-4 py-4 md:py-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <ShoppingBag className="w-6 h-6 text-blue-600" />
