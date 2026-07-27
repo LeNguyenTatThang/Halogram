@@ -64,7 +64,9 @@ export class MessagesGateway
         }
       }
     } catch (err) {
-      this.logger.warn(`Messages gateway auth error: ${client.id} - ${(err as Error).message}`);
+      this.logger.warn(
+        `Messages gateway auth error: ${client.id} - ${(err as Error).message}`,
+      );
     }
 
     this.logger.log(`Client connected: ${client.id}`);
@@ -106,37 +108,48 @@ export class MessagesGateway
   }
 
   @SubscribeMessage('typing')
-  handleTyping(
+  async handleTyping(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { conversationId: string },
   ) {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
 
-    this.server.to(payload.conversationId).emit('typing', {
-      conversationId: payload.conversationId,
-      userId,
-    });
+    try {
+      await this.messagesService.checkMember(payload.conversationId, userId);
+      this.server.to(payload.conversationId).emit('typing', {
+        conversationId: payload.conversationId,
+        userId,
+      });
+    } catch {
+      client.emit('error', { message: 'Not a member of this conversation' });
+    }
   }
 
   @SubscribeMessage('stopTyping')
-  handleStopTyping(
+  async handleStopTyping(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { conversationId: string },
   ) {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
 
-    this.server.to(payload.conversationId).emit('stopTyping', {
-      conversationId: payload.conversationId,
-      userId,
-    });
+    try {
+      await this.messagesService.checkMember(payload.conversationId, userId);
+      this.server.to(payload.conversationId).emit('stopTyping', {
+        conversationId: payload.conversationId,
+        userId,
+      });
+    } catch {
+      client.emit('error', { message: 'Not a member of this conversation' });
+    }
   }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { conversationId: string; message: string; image?: string },
+    @MessageBody()
+    payload: { conversationId: string; message: string; image?: string },
   ) {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) {

@@ -265,18 +265,9 @@ export class FriendshipsService {
 
     const friendship = await this.prisma.friendship.findFirst({
       where: {
-        OR: [
-          {
-            userId: userId,
-            friendId: friendId,
-            status: 'BLOCKED',
-          },
-          {
-            userId: friendId,
-            friendId: userId,
-            status: 'BLOCKED',
-          },
-        ],
+        userId: userId,
+        friendId: friendId,
+        status: 'BLOCKED',
       },
     });
 
@@ -289,18 +280,9 @@ export class FriendshipsService {
 
     const updatedFriendship = await this.prisma.friendship.deleteMany({
       where: {
-        OR: [
-          {
-            userId: userId,
-            friendId: friendId,
-            status: 'BLOCKED',
-          },
-          {
-            userId: friendId,
-            friendId: userId,
-            status: 'BLOCKED',
-          },
-        ],
+        userId: userId,
+        friendId: friendId,
+        status: 'BLOCKED',
       },
     });
 
@@ -332,19 +314,19 @@ export class FriendshipsService {
         user: {
           select: {
             id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-              isVerified: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+            isVerified: true,
           },
         },
         friend: {
           select: {
             id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-              isVerified: true,
+            username: true,
+            displayName: true,
+            avatar: true,
+            isVerified: true,
           },
         },
       },

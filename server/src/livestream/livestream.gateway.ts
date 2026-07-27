@@ -10,7 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { LivestreamService } from './livestream.service';
-import { UseGuards } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { WsJwtGuard } from '../auth/guards/ws-jwt.guard';
 
 const gatewayOrigins = (
@@ -33,7 +33,9 @@ interface ViewerInfo {
   },
 })
 @UseGuards(WsJwtGuard)
-export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class LivestreamGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server!: Server;
 
@@ -44,28 +46,41 @@ export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconne
     private readonly livestreamService: LivestreamService,
   ) {}
 
+  private readonly logger = new Logger(LivestreamGateway.name);
+
   private extractUserId(client: Socket): string | null {
     try {
       const tokenFromAuth = client.handshake.auth?.token;
+      const authHeader = client.handshake.headers.authorization;
       const token =
         typeof tokenFromAuth === 'string'
           ? tokenFromAuth
-          : undefined;
+          : typeof authHeader === 'string'
+            ? authHeader.replace(/^Bearer\s+/i, '')
+            : undefined;
 
       if (token) {
         const payload = this.jwtService.verify(token, {
           secret: process.env.JWT_SECRET,
         });
-        return (payload.sub || payload.id) as string;
+        const userId = (payload.sub || payload.id) as string;
+        if (userId) {
+          client.data.user = {
+            id: userId,
+            email: payload.email,
+            username: payload.username,
+          };
+        }
+        return userId;
       }
     } catch {
-      // no-op
+      this.logger.warn(`Livestream gateway auth failed for ${client.id}`);
     }
     return null;
   }
 
-  async handleConnection() {
-    // Auth is handled per-event or via middleware
+  async handleConnection(client: Socket) {
+    this.extractUserId(client);
   }
 
   handleDisconnect(client: Socket) {
@@ -78,7 +93,9 @@ export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconne
           this.livestreamViewers.delete(livestreamId);
         }
 
-        this.livestreamService.decrementViewerCount(livestreamId).catch(() => {});
+        this.livestreamService
+          .decrementViewerCount(livestreamId)
+          .catch(() => {});
 
         this.server.to(livestreamId).emit('livestream:viewer-count', {
           livestreamId,
@@ -185,8 +202,22 @@ export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconne
 
   @SubscribeMessage('livestream:viewer-offer')
   async handleViewerOffer(
-    @MessageBody() data: { livestreamId: string; offer: RTCSessionDescriptionInit; viewerSocketId: string },
+    @MessageBody()
+    data: {
+      livestreamId: string;
+      offer: RTCSessionDescriptionInit;
+      viewerSocketId: string;
+    },
+    @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.extractUserId(client);
+    if (!userId) return;
+
+    if (!client.rooms.has(data.livestreamId)) {
+      client.emit('livestream:error', { message: 'Not a participant in this livestream' });
+      return;
+    }
+
     const livestream = await this.livestreamService.getById(data.livestreamId);
     if (!livestream) return;
 
@@ -199,18 +230,50 @@ export class LivestreamGateway implements OnGatewayConnection, OnGatewayDisconne
 
   @SubscribeMessage('livestream:streamer-answer')
   async handleStreamerAnswer(
-    @MessageBody() data: { viewerSocketId: string; answer: RTCSessionDescriptionInit },
+    @MessageBody()
+    data: {
+      viewerSocketId: string;
+      answer: RTCSessionDescriptionInit;
+      livestreamId?: string;
+    },
+    @ConnectedSocket() client: Socket,
   ) {
-    this.server.to(data.viewerSocketId).emit('livestream:streamer-answer', {
+    const userId = this.extractUserId(client);
+    if (!userId) return;
+
+    if (!data.livestreamId) {
+      client.emit('livestream:error', { message: 'livestreamId required' });
+      return;
+    }
+
+    const livestream = await this.livestreamService.getById(data.livestreamId);
+    if (!livestream || livestream.streamerId !== userId) {
+      client.emit('livestream:error', { message: 'Only the streamer can send answers' });
+      return;
+    }
+
+    client.to(data.viewerSocketId).emit('livestream:streamer-answer', {
       answer: data.answer,
     });
   }
 
   @SubscribeMessage('livestream:ice-candidate')
   async handleIceCandidate(
-    @MessageBody() data: { livestreamId: string; candidate: RTCIceCandidateInit; targetSocketId?: string },
+    @MessageBody()
+    data: {
+      livestreamId: string;
+      candidate: RTCIceCandidateInit;
+      targetSocketId?: string;
+    },
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.extractUserId(client);
+    if (!userId) return;
+
+    if (!client.rooms.has(data.livestreamId)) {
+      return;
+    }
+
     if (data.targetSocketId) {
       this.server.to(data.targetSocketId).emit('livestream:ice-candidate', {
         candidate: data.candidate,

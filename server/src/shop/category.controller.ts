@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { CategoryService } from './category.service';
 
 @Controller('shop/categories')
@@ -26,13 +27,13 @@ export class CategoryController {
     return this.categoryService.findById(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post()
   create(@Body() dto: { name: string; image?: string }) {
     return this.categoryService.create(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Put(':id')
   update(
     @Param('id') id: string,
@@ -41,7 +42,7 @@ export class CategoryController {
     return this.categoryService.update(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(id);

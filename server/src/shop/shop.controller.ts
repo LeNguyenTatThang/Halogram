@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 import { ShopService } from './shop.service';
@@ -83,19 +84,19 @@ export class ShopController {
     return this.shopService.getVerificationStatus(user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('verifications/pending')
   getPendingVerifications() {
     return this.shopService.getPendingVerifications();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('verifications/:shopId/approve')
   approveVerification(@Param('shopId') shopId: string) {
     return this.shopService.approveVerification(shopId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('verifications/:shopId/reject')
   rejectVerification(
     @Param('shopId') shopId: string,

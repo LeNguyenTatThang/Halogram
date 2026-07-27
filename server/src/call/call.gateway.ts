@@ -67,6 +67,14 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  private isCallParticipant(roomId: string, userId: string): boolean {
+    const parts = roomId.split('_');
+    if (parts.length < 4 || parts[0] !== 'call') return false;
+    const callerId = parts[1];
+    const receiverId = parts[2];
+    return userId === callerId || userId === receiverId;
+  }
+
   handleDisconnect(client: Socket) {
     this.logger.log(`Call client disconnected: ${client.id}`);
   }
@@ -82,10 +90,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const member = await this.prisma.conversationMember.findFirst({
-      where: { conversationId: roomId, userId },
-    });
-    if (!member) {
+    if (!this.isCallParticipant(roomId, userId)) {
       client.emit('error', { message: 'Not a participant in this call' });
       return;
     }
@@ -151,6 +156,11 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
 
+    if (!this.isCallParticipant(payload.roomId, userId)) {
+      client.emit('error', { message: 'Not a participant in this call' });
+      return;
+    }
+
     client.to(payload.roomId).emit('callRejected', payload);
   }
 
@@ -161,6 +171,11 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
+
+    if (!this.isCallParticipant(payload.roomId, userId)) {
+      client.emit('error', { message: 'Not a participant in this call' });
+      return;
+    }
 
     client.to(payload.roomId).emit('offer', payload);
   }
@@ -173,6 +188,11 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
 
+    if (!this.isCallParticipant(payload.roomId, userId)) {
+      client.emit('error', { message: 'Not a participant in this call' });
+      return;
+    }
+
     client.to(payload.roomId).emit('answer', payload);
   }
 
@@ -184,6 +204,11 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
 
+    if (!this.isCallParticipant(payload.roomId, userId)) {
+      client.emit('error', { message: 'Not a participant in this call' });
+      return;
+    }
+
     client.to(payload.roomId).emit('iceCandidate', payload);
   }
 
@@ -194,6 +219,11 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const userId = client.data.user?.id as string | undefined;
     if (!userId) return;
+
+    if (!this.isCallParticipant(payload.roomId, userId)) {
+      client.emit('error', { message: 'Not a participant in this call' });
+      return;
+    }
 
     client.to(payload.roomId).emit('callEnded', payload);
   }

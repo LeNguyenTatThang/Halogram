@@ -7,10 +7,11 @@ import {
   Req,
   Body,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { LivestreamService } from './livestream.service';
-import type { CreateLivestreamDto } from './dto/create-livestream.dto';
-import type { Request } from 'express';
+import { CreateLivestreamDto } from './dto/create-livestream.dto';
+import type { JwtUser } from '../auth/interfaces/jwt-user.interface';
 
 @Controller('livestream')
 export class LivestreamController {
@@ -21,35 +22,27 @@ export class LivestreamController {
     return this.livestreamService.getActive();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   getById(@Param('id') id: string) {
     return this.livestreamService.getById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id/messages')
-  getMessages(
-    @Param('id') id: string,
-  ) {
+  getMessages(@Param('id') id: string) {
     return this.livestreamService.getMessages(id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(
-    @Req() req: Request,
-    @Body() dto: CreateLivestreamDto,
-  ) {
-    const userId = (req.user as any).id;
-    return this.livestreamService.create(userId, dto);
+  create(@CurrentUser() user: JwtUser, @Body() dto: CreateLivestreamDto) {
+    return this.livestreamService.create(user.id, dto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @Post(':id/end')
-  endStream(
-    @Param('id') id: string,
-    @Req() req: Request,
-  ) {
-    const userId = (req.user as any).id;
-    return this.livestreamService.endStream(id, userId);
+  endStream(@Param('id') id: string, @CurrentUser() user: JwtUser) {
+    return this.livestreamService.endStream(id, user.id);
   }
 }

@@ -853,45 +853,63 @@ stateDiagram-v2
 
 ## 🔐 Security Architecture
 
-Halogram implements multiple security layers including JWT authentication, input validation via class-validator, and resource ownership checks.
+Halogram follows a defense-in-depth security approach covering authentication, authorization, input validation, WebSocket security, WebRTC signaling security, rate limiting, and data protection.
 
 ```mermaid
 flowchart TD
-    C[Client Request]
-    CORS[CORS Filter<br/>env-configured origins]
-    JWT[JWT Bearer Token<br/>Passport Strategy]
-    VAL[ValidationPipe<br/>whitelist + forbidNonWhitelisted]
-    AUTH[JwtAuthGuard]
-    CTRL[Controller]
-    OWN[Service-Level<br/>Ownership Checks]
-    DB[(Database)]
-    INT[ResponseInterceptor<br/>Unified response format]
-
-    C --> CORS
-    CORS --> JWT
-    JWT --> VAL
-    VAL --> AUTH
-    AUTH --> CTRL
-    CTRL --> OWN
-    OWN --> DB
-    DB --> CTRL
-    CTRL --> INT
-    INT --> C
+    A[Client] --> B[JWT Authentication]
+    B --> C[Authorization]
+    C --> D[Resource Ownership]
+    D --> E[API / WebSocket / WebRTC]
+    E --> F[Database]
+    R[Rate Limiting<br/>ThrottlerGuard] -.-> A
+    V[ValidationPipe<br/>whitelist + transform] -.-> E
 ```
+
+### Security Status
+
+| Category | Score | Status |
+|---|---:|---|
+| **Authentication** | 9/10 | JWT access + refresh tokens, bcrypt password hashing, HTTP-only cookie for refresh token |
+| **Authorization** | 9/10 | JwtAuthGuard on protected endpoints, AdminGuard for admin operations |
+| **API Security** | 8/10 | ValidationPipe with whitelist, DTO validation, rate limiting (10 req/60s global, 5 req/60s auth) |
+| **WebSocket** | 8/10 | JWT handshake verification, per-event conversation membership checks |
+| **WebRTC** | 8/10 | Server-side participant verification via roomId parsing, conversation membership for join |
+| **Data Protection** | 9/10 | No email/password/refreshToken leakage in API responses, UserTransformer removed email |
+| **File Upload** | 7/10 | Cloudinary integration, multer file handling — no file type validation |
+| **Database** | 9/10 | Prisma ORM (no SQL injection), no raw queries |
+| **Halo Shop** | 9/10 | AdminGuard on verification and category management, ownership checks on products |
+| **Dependency Security** | 6/10 | Some outdated dependencies, no Dependabot/Snyk configured |
+
+### Security Remediation
+
+- Critical findings fixed: 2
+- High findings fixed: 7
+- Medium findings fixed: 2
+- Low findings fixed: 1
+- Partially fixed: 0
+- Open findings: 0
+
+> Security scores represent the current state of the codebase at the time of the latest internal security review. They do not guarantee that the application is completely secure.
 
 ### Security Layers
 
 | Layer | Implementation | Status |
 |---|---|---|
-| **Authentication** | JWT access token (15m) + refresh token (7d) | ✅ Implemented |
-| **Authorization** | JwtAuthGuard on protected endpoints | ✅ Implemented |
+| **Authentication** | JWT access token (15m) + refresh token (7d) in HTTP-only cookie | ✅ Implemented |
+| **Authorization** | JwtAuthGuard + AdminGuard on protected endpoints | ✅ Implemented |
 | **Input Validation** | Global ValidationPipe with whitelist + class-validator DTOs | ✅ Implemented |
-| **Ownership Checks** | Service-level verification (post.userId, product.shop.ownerId, etc.) | ⚠️ Partial |
-| **WebSocket Auth** | JWT verification on socket handshake | ⚠️ No per-event guards |
+| **Ownership Checks** | Service-level verification (post.userId, product.shop.ownerId, etc.) | ✅ Implemented |
+| **WebSocket Auth** | JWT verification on socket handshake, per-event guards (WsJwtGuard) | ✅ Implemented |
+| **WebRTC Call Auth** | Server-side participant verification via roomId parsing | ✅ Implemented |
+| **Livestream Auth** | Streamer identity verification via JWT + livestream ownership | ✅ Implemented |
 | **CORS** | Configurable via `CORS_ORIGINS` env variable | ✅ Implemented |
-| **Rate Limiting** | Not implemented | ❌ Missing |
+| **Rate Limiting** | `@nestjs/throttler` (10 req/60s global, 5 req/60s auth) | ✅ Implemented |
+| **Admin Access** | `AdminGuard` with `ADMIN_USER_IDS` env variable | ✅ Implemented |
+| **Block/Unblock** | Only the blocker can unblock | ✅ Implemented |
 | **CSRF Protection** | Not implemented | ❌ Missing |
 | **Security Headers** | Not implemented (no Helmet) | ❌ Missing |
+| **File Upload Validation** | Cloudinary handles remote validation; no local file type/content validation | ⚠️ Partial |
 
 For a detailed security analysis including all vulnerabilities, see:
 

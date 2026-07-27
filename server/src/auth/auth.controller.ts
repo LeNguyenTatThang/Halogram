@@ -31,7 +31,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ limit: 5, ttl: 60 })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async login(
     @Body() dto: SignInDto,
     @Res({ passthrough: true }) res: Response,
@@ -55,7 +55,7 @@ export class AuthController {
 
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
-  @Throttle({ limit: 5, ttl: 60 })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   async signUp(@Body() dto: SignUpDto) {
     return this.authService.signUp(dto);
   }
