@@ -362,32 +362,32 @@ pnpm exec prisma db seed
 ```mermaid
 flowchart TB
     subgraph Client["React Client"]
-        UI[React UI Components]
-        CTX[Contexts: Auth, Chat, Call, Notification]
-        SOCK[Socket.IO Client]
-        API_CLIENT[Axios HTTP Client]
+        UI["React UI Components"]
+        CTX["Contexts: Auth, Chat, Call, Notification"]
+        SOCK["Socket.IO Client"]
+        API_CLIENT["Axios HTTP Client"]
     end
 
     subgraph Server["NestJS Backend"]
-        REST[NestJS REST Controllers]
-        WS[WebSocket Gateways]
-        subgraph Gateways["Socket.IO Gateways (namespace: haloggram)"]
-            MG[MessagesGateway]
-            CG[CallGateway]
-            LG[LivestreamGateway]
-            OG[OnlineGateway]
-            NG[NotificationsGateway]
+        REST["NestJS REST Controllers"]
+        WS["WebSocket Gateways"]
+        subgraph Gateways["Socket.IO Gateways"]
+            MG["MessagesGateway"]
+            CG["CallGateway"]
+            LG["LivestreamGateway"]
+            OG["OnlineGateway"]
+            NG["NotificationsGateway"]
         end
-        GUARD[JWT Auth Guard]
-        VAL[ValidationPipe]
-        INTER[ResponseInterceptor]
-        SVC[Application Services]
+        GUARD["JWT Auth Guard"]
+        VAL["ValidationPipe"]
+        INTER["ResponseInterceptor"]
+        SVC["Application Services"]
     end
 
     subgraph Data["Data Layer"]
-        PRISMA[Prisma ORM]
-        DB[(MySQL Database)]
-        CDN[Cloudinary Image Storage]
+        PRISMA["Prisma ORM"]
+        DB[("MySQL Database")]
+        CDN["Cloudinary Image Storage"]
     end
 
     Client -->|HTTP REST| REST
@@ -416,23 +416,23 @@ sequenceDiagram
     participant API as Auth API
     participant DB as Database
 
-    U->>C: Enter email & password
+    U->>C: Enter email and password
     C->>API: POST /auth/login
     API->>DB: Find user by email/username
     DB-->>API: User found
     API->>DB: Compare bcrypt hash
     DB-->>API: Valid
-    API->>API: Generate JWT payload { sub, email, username }
-    API-->>C: { accessToken (15m), refreshToken (7d in httpOnly cookie) }
+    API->>API: Generate JWT payload
+    API-->>C: accessToken + refreshToken in HTTP-only cookie
     C->>C: Store accessToken in localStorage
     C-->>U: Login successful
 
     Note over C,API: On 401, client uses refresh token
-    C->>API: POST /auth/refresh (cookie)
+    C->>API: POST /auth/refresh
     API->>API: Verify refresh JWT
     API->>DB: Compare stored hash
     DB-->>API: Matches
-    API-->>C: { new accessToken }
+    API-->>C: new accessToken returned
 ```
 
 ---
@@ -443,14 +443,14 @@ All protected endpoints apply `@UseGuards(JwtAuthGuard)` which uses Passport's J
 
 ```mermaid
 flowchart TD
-    REQ[HTTP Request with Authorization Header]
-    JWT[Passport JWT Strategy]
-    GUARD[JwtAuthGuard]
-    DEC[@CurrentUser Decorator]
-    CTRL[Controller]
-    SVC[Service]
-    OWN[Ownership Check<br/>e.g. post.userId === userId]
-    DB[(Database)]
+    REQ["HTTP Request with Authorization: Bearer"]
+    JWT["Passport JWT Strategy"]
+    GUARD["JwtAuthGuard"]
+    DEC["@CurrentUser Decorator"]
+    CTRL["Controller"]
+    SVC["Service"]
+    OWN["Ownership Check<br/>e.g. post.userId === userId"]
+    DB[("Database")]
 
     REQ --> JWT
     JWT --> GUARD
@@ -469,16 +469,16 @@ Every API request passes through NestJS's global pipeline: CORS → cookie-parse
 
 ```mermaid
 flowchart LR
-    C[React Client]
-    AXI[Axios Instance]
-    CORS[CORS Middleware]
-    COOK[cookie-parser]
-    VAL[ValidationPipe<br/>whitelist + transform]
-    JWT[JwtAuthGuard]
-    CTRL[Controller]
-    SVC[Service]
-    INT[ResponseInterceptor<br/>{ status, message, data }]
-    DB[(Database)]
+    C["React Client"]
+    AXI["Axios Instance"]
+    CORS["CORS Middleware"]
+    COOK["cookie-parser"]
+    VAL["ValidationPipe<br/>whitelist + transform"]
+    JWT["JwtAuthGuard"]
+    CTRL["Controller"]
+    SVC["Service"]
+    INT["ResponseInterceptor<br/>{ status, message, data }"]
+    DB[("Database")]
 
     C --> AXI
     AXI --> CORS
@@ -561,15 +561,19 @@ Halogram has two parallel social relationship systems: **Follow** (one-way, publ
 
 ```mermaid
 flowchart LR
-    A[User A]
-    B[User B]
+    A["User A"]
+    B["User B"]
+    NOTE1["Follow is one-way. User A sees User B's public posts."]
+    NOTE2["Friendship is mutual. Both see each other's friends-only posts."]
 
     A -->|Follows| B
-    Note over A,B: Follow is one-way.<br/>User A sees User B's public posts.
+    NOTE1 -.- A
+    NOTE1 -.- B
 
     A -->|Sends Friend Request| B
     B -->|Accepts| A
-    Note over A,B: Friendship is mutual.<br/>Both see each other's friends-only posts.
+    NOTE2 -.- A
+    NOTE2 -.- B
 ```
 
 ---
@@ -585,22 +589,22 @@ sequenceDiagram
 
     U->>C: Create post with images
     C->>C: Upload images to Cloudinary
-    C->>API: POST /post/createPost
-    API->>DB: Store post + images
+    C->>API: POST createPost
+    API->>DB: Store post and images
     DB-->>API: Post created
 
     U->>C: Like post
-    C->>API: POST /post/like
+    C->>API: POST like
     API->>DB: Toggle like
-    DB-->>API: { liked, count }
+    DB-->>API: liked status and count
 
     U->>C: Comment on post
-    C->>API: POST /comment/createComment
+    C->>API: POST createComment
     API->>DB: Create comment
     DB-->>API: Comment created
 
     U->>C: View feed
-    C->>API: GET /post/listPost
+    C->>API: GET listPost
     API->>DB: Query posts with cursor pagination
     DB-->>API: Posts list
 ```
@@ -621,17 +625,17 @@ sequenceDiagram
     participant B as User B
 
     A->>C: Send message
-    C->>WS: socket.emit('sendMessage', { conversationId, message })
-    Note over WS: Currently broadcasts directly<br/>without saving to DB
-    WS-->>B: socket.on('receiveMessage', payload)
+    C->>WS: emit sendMessage
+    Note over WS: Broadcasting directly without saving to DB
+    WS-->>B: receiveMessage event
 
     B->>C: Typing
-    C->>WS: socket.emit('typing', { conversationId, userId })
-    WS-->>A: socket.on('typing', payload)
+    C->>WS: emit typing event
+    WS-->>A: typing event received
 
     Note over A,B: REST API for message history
     A->>C: Load conversation history
-    C->>SVC: GET /messages?conversationId=xxx&cursor=yyy
+    C->>SVC: GET messages by conversationId
     SVC->>DB: Query messages with cursor pagination
     DB-->>SVC: Message list
     SVC-->>C: Messages with user info
@@ -675,39 +679,39 @@ Audio/video calls use WebRTC peer-to-peer connections with Socket.IO signaling. 
 ```mermaid
 sequenceDiagram
     participant A as Caller
-    participant C_A as Caller Client
+    participant CA as Caller Client
     participant WS as Socket.IO Gateway
-    participant C_B as Callee Client
+    participant CB as Callee Client
     participant B as Callee
 
-    A->>C_A: Call user
-    C_A->>WS: socket.emit('callUser', { roomId, receiverId, callerId, type })
-    WS->>C_B: socket.on('incomingCall', payload)
-    C_B-->>B: Show incoming call UI
+    A->>CA: Call user
+    CA->>WS: emit callUser event
+    WS->>CB: incomingCall event
+    CB-->>B: Show incoming call UI
 
-    B->>C_B: Accept call
-    C_B->>WS: socket.emit('acceptCall', payload)
-    WS->>C_A: socket.on('callAccepted')
-    C_A->>C_A: Create RTCPeerConnection + local stream
-    C_A->>C_A: Create SDP offer
-    C_A->>WS: socket.emit('offer', { roomId, offer })
-    WS->>C_B: socket.on('offer', payload)
-    C_B->>C_B: Create RTCPeerConnection + local stream
-    C_B->>C_B: Set remote description + create answer
-    C_B->>WS: socket.emit('answer', { roomId, answer })
-    WS->>C_A: socket.on('answer', payload)
+    B->>CB: Accept call
+    CB->>WS: emit acceptCall
+    WS->>CA: callAccepted event
+    CA->>CA: Create RTCPeerConnection + local stream
+    CA->>CA: Create SDP offer
+    CA->>WS: emit offer with SDP
+    WS->>CB: offer event
+    CB->>CB: Create RTCPeerConnection + local stream
+    CB->>CB: Set remote description + create answer
+    CB->>WS: emit answer with SDP
+    WS->>CA: answer event
 
-    C_A->>C_A: Set remote description
+    CA->>CA: Set remote description
     loop ICE Candidates
-        C_A->>WS: socket.emit('iceCandidate', { roomId, candidate })
-        WS->>C_B: socket.on('iceCandidate', payload)
-        C_B->>C_B: Add ICE candidate
-        C_B->>WS: socket.emit('iceCandidate', { roomId, candidate })
-        WS->>C_A: socket.on('iceCandidate', payload)
-        C_A->>C_A: Add ICE candidate
+        CA->>WS: emit iceCandidate
+        WS->>CB: iceCandidate event
+        CB->>CB: Add ICE candidate
+        CB->>WS: emit iceCandidate
+        WS->>CA: iceCandidate event
+        CA->>CA: Add ICE candidate
     end
 
-    Note over C_A,C_B: Peer-to-peer media stream established
+    Note over CA,CB: Peer-to-peer media stream established
 ```
 
 ---
@@ -726,41 +730,41 @@ sequenceDiagram
     participant DB as Database
     participant V as Viewer
 
-    S->>WS: Start livestream (REST POST /livestream)
+    S->>WS: Start livestream via REST POST
     WS->>SVC: Create livestream record
     SVC->>DB: Insert livestream
     DB-->>SVC: Livestream created
 
-    V->>WS: socket.emit('livestream:join', { livestreamId })
+    V->>WS: emit livestream join
     WS->>SVC: Verify livestream is LIVE
     SVC-->>WS: Valid
     WS->>WS: Join room, track viewers
     WS-->>V: Viewer joined
-    WS-->>S: New viewer connected (with socketId)
+    WS-->>S: New viewer connected
 
-    S->>WS: livestream:viewer-offer (WebRTC offer for viewer)
+    S->>WS: viewer-offer WebRTC offer
     WS->>V: relay offer to viewer
 
-    V->>WS: livestream:streamer-answer (WebRTC answer)
+    V->>WS: streamer-answer WebRTC answer
     WS->>S: relay answer to streamer
 
     loop ICE Candidates
-        S->>WS: livestream:ice-candidate
+        S->>WS: ice-candidate
         WS->>V: relay candidate
-        V->>WS: livestream:ice-candidate
+        V->>WS: ice-candidate
         WS->>S: relay candidate
     end
 
     Note over S,V: Direct WebRTC media stream
 
-    V->>WS: socket.emit('livestream:chat-message', { livestreamId, content })
+    V->>WS: emit chat message
     WS->>SVC: Add message to DB
     SVC-->>WS: Message saved
     WS-->>S: Broadcast chat to room
     WS-->>V: Broadcast chat to room
 
-    S->>WS: socket.emit('livestream:end', { livestreamId })
-    WS->>SVC: End stream (ownership check)
+    S->>WS: emit livestream end
+    WS->>SVC: End stream via ownership check
     WS->>WS: Remove all viewers from room
 ```
 
@@ -772,17 +776,17 @@ Notifications are created server-side when a user action occurs (like, comment, 
 
 ```mermaid
 flowchart LR
-    ACT[User Action<br/>Like / Comment / Follow / Friend Request]
-    SVC[Notification Service]
-    DB[(Notification Database)]
-    WS[NotificationsGateway]
-    SOCK[Socket.IO<br/>emit to recipient's user room]
-    UI[Notification UI]
+    ACT["User Action<br/>Like / Comment / Follow / Friend Request"]
+    SVC["Notification Service"]
+    DB[("Notification Database")]
+    WS["NotificationsGateway"]
+    SOCK["Socket.IO<br/>emit to recipient's user room"]
+    UI["Notification UI"]
 
     ACT --> SVC
     SVC --> DB
     SVC --> WS
-    WS -->|emitNotification(recipientId, payload)| SOCK
+    WS -->|emitNotification| SOCK
     SOCK --> UI
 ```
 
@@ -857,13 +861,13 @@ Halogram follows a defense-in-depth security approach covering authentication, a
 
 ```mermaid
 flowchart TD
-    A[Client] --> B[JWT Authentication]
-    B --> C[Authorization]
-    C --> D[Resource Ownership]
-    D --> E[API / WebSocket / WebRTC]
-    E --> F[Database]
-    R[Rate Limiting<br/>ThrottlerGuard] -.-> A
-    V[ValidationPipe<br/>whitelist + transform] -.-> E
+    A["Client"] --> B["JWT Authentication"]
+    B --> C["Authorization"]
+    C --> D["Resource Ownership"]
+    D --> E["API / WebSocket / WebRTC"]
+    E --> F["Database"]
+    R["Rate Limiting<br/>ThrottlerGuard"] -.-> A
+    V["ValidationPipe<br/>whitelist + transform"] -.-> E
 ```
 
 ### Security Status
@@ -921,28 +925,28 @@ For a detailed security analysis including all vulnerabilities, see:
 
 ```mermaid
 flowchart TB
-    USER[User]
-    CLIENT[React Client<br/>Port 5173]
+    USER["User"]
+    CLIENT["React Client<br/>Port 5173"]
 
     subgraph Frontend["Frontend Layer"]
-        UI[React UI]
-        CTX[Auth / Chat / Call / Notification Contexts]
-        SOCK[Socket.IO Client]
-        AXI[Axios HTTP Client]
+        UI["React UI"]
+        CTX["Auth / Chat / Call / Notification Contexts"]
+        SOCK["Socket.IO Client"]
+        AXI["Axios HTTP Client"]
     end
 
     subgraph Backend["Backend Layer (NestJS Port 3000)"]
-        REST[REST Controllers<br/>Auth / Users / Post / Comment / Like<br/>Follow / Friendship / Shop / Cart<br/>Messages / Notifications / Livestream]
-        WS[WebSocket Gateways<br/>Messages / Call / Livestream<br/>Online / Notifications]
-        GUARD[JwtAuthGuard + Passport Strategy]
-        PIPE[ValidationPipe + ResponseInterceptor]
-        SVC[Services with Ownership Checks]
+        REST["REST Controllers<br/>Auth / Users / Post / Comment / Like<br/>Follow / Friendship / Shop / Cart<br/>Messages / Notifications / Livestream"]
+        WS["WebSocket Gateways<br/>Messages / Call / Livestream<br/>Online / Notifications"]
+        GUARD["JwtAuthGuard + Passport Strategy"]
+        PIPE["ValidationPipe + ResponseInterceptor"]
+        SVC["Services with Ownership Checks"]
     end
 
     subgraph Data["Data Layer"]
-        PRISMA[Prisma ORM<br/>31 Models]
-        DB[(MySQL Database)]
-        CDN[Cloudinary<br/>Image Upload]
+        PRISMA["Prisma ORM<br/>31 Models"]
+        DB[("MySQL Database")]
+        CDN["Cloudinary<br/>Image Upload"]
     end
 
     USER --> CLIENT
